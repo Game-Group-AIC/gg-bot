@@ -4,24 +4,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cz.jan.maly</groupId>
-    <artifactId>kusanagi</artifactId>
-    <packaging>pom</packaging>
+    <groupId>aic.gas.sc.gg_bot</groupId>
+    <artifactId>gg-bot</artifactId>
+    <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    <modules>
-        <module>bot</module>
-        <module>replay-parser</module>
-        <module>abstract-bot</module>
-        <module>mas-framework</module>
-    </modules>
 
-    <name>Kusunagi</name>
-    <description>Main goal of this project is to use players' replays to develop fully adaptive bot matching human level
-        expertise in RTS game Starcraft: Brood War
+    <name>gg-bot</name>
+    <description>
+        Main goal of this project is to use players' replays to develop
+        fully adaptive bot matching human level expertise in RTS game Starcraft: Brood War
     </description>
 
     <properties>
-        <bwmirror.version>2.5</bwmirror.version>
+        <mas-framework.version>0.1</mas-framework.version>
+        <abstract-bot.version>0.1</abstract-bot.version>
+        <replay-parser.version>0.1</replay-parser.version>
+
+        <bwmirror.version>2.6</bwmirror.version>
         <lombok-maven-plugin.version>1.16.10.0</lombok-maven-plugin.version>
         <lombok.version>1.16.10</lombok.version>
         <annotations.version>13.0</annotations.version>
@@ -33,10 +32,62 @@
         <commons-lang3.version>3.5</commons-lang3.version>
         <jsat.version>0.0.7</jsat.version>
         <guava.version>21.0</guava.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+
     <build>
+        <finalName>gg-bot</finalName>
         <plugins>
+
+            <!-- download source code in Eclipse, best practice -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>false</downloadJavadocs>
+                </configuration>
+            </plugin>
+
+            <!-- Set a compiler level -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <compilerArgument>-J -Xss512M</compilerArgument>
+                </configuration>
+            </plugin>
+
+            <!-- Make this jar executable -->
+            <!-- include dependencies -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>aic.gas.sc.gg_bot.main.SimpleBot</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok-maven-plugin</artifactId>
@@ -84,12 +135,28 @@
             <!--
                 BWMirror
                 In order to make this dependency work, run this command before building project:
-                mvn install:install-file -Dfile=<PATH TO BWMIRROR JAR> -DgroupId=bwmirror -DartifactId=bwmirror -Dversion=2.5 -Dpackaging=jar
+                mvn install:install-file -Dfile=<PATH TO BWMIRROR JAR> -DgroupId=bwmirror -DartifactId=bwmirror -Dversion=2.6 -Dpackaging=jar
             -->
             <dependency>
                 <groupId>bwmirror</groupId>
                 <artifactId>bwmirror</artifactId>
                 <version>${bwmirror.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>aic.gas.mas</groupId>
+                <artifactId>mas-framework</artifactId>
+                <version>${mas-framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>aic.gas.abstract_bot</groupId>
+                <artifactId>abstract-bot</artifactId>
+                <version>${abstract-bot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>aic.gas.sc.replay_parser</groupId>
+                <artifactId>replay-parser</artifactId>
+                <version>${replay-parser.version}</version>
             </dependency>
 
             <dependency>
@@ -160,6 +227,19 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>aic.gas.mas</groupId>
+            <artifactId>mas-framework</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>aic.gas.abstract_bot</groupId>
+            <artifactId>abstract-bot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>aic.gas.sc.replay_parser</groupId>
+            <artifactId>replay-parser</artifactId>
         </dependency>
     </dependencies>
 

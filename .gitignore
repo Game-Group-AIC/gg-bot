@@ -15,7 +15,4 @@ hs_err_pid*
 *.bwta
 storage/
 irl_demos/
-bot/target/
-abstract-bot/target/
-replay-parser/target/
-mas-framework/target/
+target/
