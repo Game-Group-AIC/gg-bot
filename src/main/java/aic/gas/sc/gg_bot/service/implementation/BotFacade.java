@@ -89,97 +89,115 @@ public class BotFacade extends DefaultBWListener {
 
   @Override
   public void onStart() {
-    //load decision points
-    DecisionLoadingServiceImpl.getInstance();
+    try {
+      UnitWrapperFactory.clearCache();
+      WrapperTypeFactory.clearCache();
+      AbstractPositionWrapper.clearCache();
 
-    UnitWrapperFactory.clearCache();
-    WrapperTypeFactory.clearCache();
-    AbstractPositionWrapper.clearCache();
+      //initialize game related data
+      game = mirror.getGame();
+      self = game.self();
 
-    //initialize game related data
-    game = mirror.getGame();
-    self = game.self();
+      //initialize command executor
+      gameCommandExecutor = new GameCommandExecutor(game);
+      masFacade = new MASFacade(() -> gameCommandExecutor.getCountOfPassedFrames());
+      ADDITIONAL_OBSERVATIONS_PROCESSOR = new AdditionalCommandToObserveGameProcessor(
+          gameCommandExecutor);
+      playerInitializer = playerInitializerCreationStrategy.createFactory();
+      agentUnitFactory = agentUnitFactoryCreationStrategy.createFactory();
+      locationInitializer = locationInitializerCreationStrategy.createFactory();
 
-    //initialize command executor
-    gameCommandExecutor = new GameCommandExecutor(game);
-    masFacade = new MASFacade(() -> gameCommandExecutor.getCountOfPassedFrames());
-    ADDITIONAL_OBSERVATIONS_PROCESSOR = new AdditionalCommandToObserveGameProcessor(
-        gameCommandExecutor);
-    playerInitializer = playerInitializerCreationStrategy.createFactory();
-    agentUnitFactory = agentUnitFactoryCreationStrategy.createFactory();
-    locationInitializer = locationInitializerCreationStrategy.createFactory();
+      //Use BWTA to analyze map
+      //This may take a few minutes if the map is processed first time!
+      MyLogger.getLogger().info("Analyzing map");
+      BWTA.readMap();
+      BWTA.analyze();
 
-    //Use BWTA to analyze map
-    //This may take a few minutes if the map is processed first time!
-    MyLogger.getLogger().info("Analyzing map");
-    BWTA.readMap();
-    BWTA.analyze();
+      MyLogger.getLogger().info("Map data ready");
 
-    MyLogger.getLogger().info("Map data ready");
+      //init annotation
+      annotator = new Annotator(game.getPlayers().stream()
+          .filter(player -> player.isEnemy(self) || player.getID() == self.getID())
+          .collect(Collectors.toList()), self, game);
 
-    //init annotation
-    annotator = new Annotator(game.getPlayers().stream()
-        .filter(player -> player.isEnemy(self) || player.getID() == self.getID())
-        .collect(Collectors.toList()), self, game);
+      //init player as another agent
+      Optional<APlayer> player = APlayer.wrapPlayer(self);
+      if (!player.isPresent()) {
+        MyLogger.getLogger().warning("Could not initiate player.");
+        throw new RuntimeException("Could not initiate player.");
+      }
+      AgentPlayer agentPlayer = playerInitializer
+          .createAgentForPlayer(player.get(), this, game.enemy().getRace());
+      masFacade.addAgentToSystem(agentPlayer);
 
-    //init player as another agent
-    Optional<APlayer> player = APlayer.wrapPlayer(self);
-    if (!player.isPresent()) {
-      MyLogger.getLogger().warning("Could not initiate player.");
-      throw new RuntimeException("Could not initiate player.");
+      //init base location as agents
+      BWTA.getBaseLocations().stream()
+          .map(location -> locationInitializer.createAgent(location, this))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
+
+      //init abstract agents
+      abstractAgentsInitializer.initializeAbstractAgents(this)
+          .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
+
+      //speed up game to setup value
+      game.setLocalSpeed(getGameDefaultSpeed());
+
+      MyLogger.getLogger().info("Local game speed set to " + getGameDefaultSpeed());
+
+      //load decision points
+      DecisionLoadingServiceImpl.getInstance();
+
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-    AgentPlayer agentPlayer = playerInitializer
-        .createAgentForPlayer(player.get(), this, game.enemy().getRace());
-    masFacade.addAgentToSystem(agentPlayer);
-
-    //init base location as agents
-    BWTA.getBaseLocations().stream()
-        .map(location -> locationInitializer.createAgent(location, this))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
-
-    //init abstract agents
-    abstractAgentsInitializer.initializeAbstractAgents(this)
-        .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
-
-    //speed up game to setup value
-    game.setLocalSpeed(getGameDefaultSpeed());
-
-    MyLogger.getLogger().info("Local game speed set to " + getGameDefaultSpeed());
   }
 
   @Override
   public void onUnitCreate(Unit unit) {
-    if (self.getID() == unit.getPlayer().getID()) {
-      Optional<AgentUnit> agent = agentUnitFactory
-          .createAgentForUnit(unit, this, game.getFrameCount());
-      agent.ifPresent(agentObservingGame -> {
-        agentsWithGameRepresentation.put(unit.getID(), agentObservingGame);
-        masFacade.addAgentToSystem(agentObservingGame);
-      });
+    try {
+      if (self.getID() == unit.getPlayer().getID()) {
+        Optional<AgentUnit> agent = agentUnitFactory
+            .createAgentForUnit(unit, this, game.getFrameCount());
+        agent.ifPresent(agentObservingGame -> {
+          agentsWithGameRepresentation.put(unit.getID(), agentObservingGame);
+          masFacade.addAgentToSystem(agentObservingGame);
+        });
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
   @Override
   public void onUnitDestroy(Unit unit) {
-    if (self.getID() == unit.getPlayer().getID()) {
-      Optional<AgentUnit> agent = Optional
-          .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
-      agent.ifPresent(agentObservingGame -> masFacade.removeAgentFromSystem(agentObservingGame,
-          unit.getType().isBuilding()));
+    try {
+      if (self.getID() == unit.getPlayer().getID()) {
+        Optional<AgentUnit> agent = Optional
+            .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
+        agent.ifPresent(agentObservingGame -> masFacade.removeAgentFromSystem(agentObservingGame,
+            unit.getType().isBuilding()));
+      }
+      UnitWrapperFactory.unitDied(unit);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-    UnitWrapperFactory.unitDied(unit);
   }
 
   @Override
   public void onUnitMorph(Unit unit) {
-    if (self.getID() == unit.getPlayer().getID()) {
-      Optional<AgentUnit> agent = Optional
-          .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
-      agent.ifPresent(
-          agentObservingGame -> masFacade.removeAgentFromSystem(agentObservingGame, true));
-      onUnitCreate(unit);
+    try {
+
+      if (self.getID() == unit.getPlayer().getID()) {
+        Optional<AgentUnit> agent = Optional
+            .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
+        agent.ifPresent(
+            agentObservingGame -> masFacade.removeAgentFromSystem(agentObservingGame, true));
+        onUnitCreate(unit);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
@@ -190,8 +208,12 @@ public class BotFacade extends DefaultBWListener {
 
   @Override
   public void onEnd(boolean b) {
-    agentsWithGameRepresentation.clear();
-    masFacade.terminate();
+    try {
+      agentsWithGameRepresentation.clear();
+      masFacade.terminate();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Override

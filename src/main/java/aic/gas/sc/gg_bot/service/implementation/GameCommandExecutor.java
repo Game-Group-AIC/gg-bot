@@ -18,7 +18,6 @@ import java.util.Map;
  * Service let queued instances of commands be executed on frame. Only one action is executed at
  * time. Service watch for execution time to manage executions of actions based on priority in queue
  * and remaining time - it make maximum to make sure that limit is not overstep.
- * 28-Dec-16.
  */
 public class GameCommandExecutor implements CommandManager<ActCommand<?>>,
     ObservingCommandManager<Game, ObservingCommand<Game>> {

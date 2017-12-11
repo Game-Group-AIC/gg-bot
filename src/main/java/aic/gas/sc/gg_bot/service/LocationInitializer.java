@@ -6,8 +6,7 @@ import bwta.BaseLocation;
 import java.util.Optional;
 
 /**
- * Interface to be implemented by user to create agent representing location - base/region. Created
- * by Jan on 05-Apr-17.
+ * Interface to be implemented by user to create agent representing location - base/region.
  */
 public interface LocationInitializer {
 
