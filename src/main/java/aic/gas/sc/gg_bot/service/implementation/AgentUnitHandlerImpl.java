@@ -22,7 +22,6 @@ import aic.gas.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.abstract_bot.model.game.wrappers.WrapperTypeFactory;
-import aic.gas.mas.utils.MyLogger;
 import aic.gas.sc.gg_bot.model.AgentsUnitTypes;
 import aic.gas.sc.gg_bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.model.agent.types.AgentTypeUnit;
@@ -31,10 +30,12 @@ import bwapi.Unit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Factory to create agent for given unit
  */
+@Slf4j
 public class AgentUnitHandlerImpl implements AgentUnitHandler {
 
   private final Map<AUnitTypeWrapper, AgentTypeUnit> agentConfigurationForUnitType = new HashMap<>();
@@ -67,7 +68,7 @@ public class AgentUnitHandlerImpl implements AgentUnitHandler {
       Optional<AUnitWithCommands> wrappedUnit = Optional.ofNullable(
           UnitWrapperFactory.getCurrentWrappedUnitToCommand(unit, frameCount, false));
       if (!wrappedUnit.isPresent()) {
-        MyLogger.getLogger().warning("Could not initiate unit " + unit.getType());
+        log.error("Could not initiate unit " + unit.getType());
         throw new RuntimeException("Could not initiate unit " + unit.getType());
       }
       AgentUnit agent = new AgentUnit(agentTypeUnit.get(), botFacade, wrappedUnit.get());

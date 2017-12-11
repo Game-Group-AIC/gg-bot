@@ -16,3 +16,6 @@ hs_err_pid*
 storage/
 irl_demos/
 target/
+
+# StarCraft .dll files
+*.dll

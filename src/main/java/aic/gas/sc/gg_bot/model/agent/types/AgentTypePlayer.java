@@ -11,7 +11,6 @@ import aic.gas.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.mas.model.metadata.DesireKey;
 import aic.gas.mas.model.metadata.FactKey;
 import aic.gas.mas.model.planing.command.ObservingCommand;
-import aic.gas.mas.utils.MyLogger;
 import bwapi.Game;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -20,17 +19,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Type definition - agent type for player
  */
+@Slf4j
 public class AgentTypePlayer extends AgentTypeMakingObservations<Game> {
 
   //single definition of command to observe to be used by all agents of this type
   private static final ObservingCommand<Game> OBSERVING_COMMAND = (memory, environment) -> {
     Optional<APlayer> aPlayer = memory.returnFactValueForGivenKey(IS_PLAYER);
     if (!aPlayer.isPresent()) {
-      MyLogger.getLogger().warning("Trying to access player but it is not present.");
+      log.error("Trying to access player but it is not present.");
       throw new RuntimeException("Trying to access player but it is not present.");
     }
 

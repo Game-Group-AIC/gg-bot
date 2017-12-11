@@ -4,12 +4,13 @@ import aic.gas.mas.model.ResponseReceiverInterface;
 import aic.gas.mas.model.knowledge.WorkingMemory;
 import aic.gas.mas.model.metadata.AgentType;
 import aic.gas.mas.model.planing.command.ObservingCommand;
-import aic.gas.mas.utils.MyLogger;
 import bwapi.Game;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Extra class to handle additional requests to observe game
  */
+@Slf4j
 public class AdditionalCommandToObserveGameProcessor {
 
   private final GameCommandExecutor commandExecutor;
@@ -44,8 +45,7 @@ public class AdditionalCommandToObserveGameProcessor {
           try {
             lockMonitor.wait();
           } catch (InterruptedException e) {
-            MyLogger.getLogger()
-                .warning(this.getClass().getSimpleName() + ": " + e.getLocalizedMessage());
+            log.error(this.getClass().getSimpleName() + ": " + e.getLocalizedMessage());
           }
         }
       }
@@ -57,8 +57,7 @@ public class AdditionalCommandToObserveGameProcessor {
       //notify waiting method
       synchronized (lockMonitor) {
         if (!response) {
-          MyLogger.getLogger()
-              .warning(this.getClass().getSimpleName() + " could not execute command");
+          log.error(this.getClass().getSimpleName() + " could not execute command");
         }
         lockMonitor.notify();
       }

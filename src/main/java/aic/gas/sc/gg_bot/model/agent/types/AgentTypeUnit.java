@@ -29,7 +29,6 @@ import aic.gas.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.mas.model.planing.command.ObservingCommand;
 import aic.gas.mas.model.planing.command.ReasoningCommand;
-import aic.gas.mas.utils.MyLogger;
 import bwapi.Game;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,10 +38,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Type definition - agent type for unit observing game
  */
+@Slf4j
 public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
   //single definition of reasoning command to update beliefs about surrounding units and location
@@ -154,7 +155,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
   private static final ObservingCommand<Game> OBSERVING_COMMAND = (memory, environment) -> {
     Optional<AUnitWithCommands> unitWithCommands = memory.returnFactValueForGivenKey(IS_UNIT);
     if (!unitWithCommands.isPresent()) {
-      MyLogger.getLogger().warning("Trying to access commendable unit but it is not present.");
+      log.error("Trying to access commendable unit but it is not present.");
       throw new RuntimeException("Trying to access commendable unit but it is not present.");
     }
 

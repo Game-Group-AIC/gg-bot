@@ -1,246 +1,252 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>aic.gas.sc.gg_bot</groupId>
-    <artifactId>gg-bot</artifactId>
-    <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
+  <groupId>aic.gas.sc.gg_bot</groupId>
+  <artifactId>gg-bot</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
 
-    <name>gg-bot</name>
-    <description>
-        Main goal of this project is to use players' replays to develop
-        fully adaptive bot matching human level expertise in RTS game Starcraft: Brood War
-    </description>
+  <name>gg-bot</name>
+  <description>
+    Main goal of this project is to use players' replays to develop
+    fully adaptive bot matching human level expertise in RTS game Starcraft: Brood War
+  </description>
 
-    <properties>
-        <mas-framework.version>0.1</mas-framework.version>
-        <abstract-bot.version>0.1</abstract-bot.version>
-        <replay-parser.version>0.1</replay-parser.version>
+  <properties>
+    <mas-framework.version>0.11</mas-framework.version>
+    <abstract-bot.version>0.105</abstract-bot.version>
 
-        <bwmirror.version>2.6</bwmirror.version>
-        <lombok-maven-plugin.version>1.16.10.0</lombok-maven-plugin.version>
-        <lombok.version>1.16.10</lombok.version>
-        <annotations.version>13.0</annotations.version>
-        <slf4j.version>1.7.21</slf4j.version>
-        <cloning.version>1.9.3</cloning.version>
-        <burlap.version>3.0.1</burlap.version>
-        <mapdb.version>3.0.3</mapdb.version>
-        <commons-io.version>2.5</commons-io.version>
-        <commons-lang3.version>3.5</commons-lang3.version>
-        <jsat.version>0.0.7</jsat.version>
-        <guava.version>21.0</guava.version>
+    <bwmirror.version>2.6</bwmirror.version>
 
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
+    <lombok-maven-plugin.version>1.16.18.1</lombok-maven-plugin.version>
+    <lombok.version>1.16.18</lombok.version>
+    <annotations.version>15.0</annotations.version>
+    <junit.version>4.12</junit.version>
+    <slf4j.version>1.7.25</slf4j.version>
+    <cloning.version>1.9.8</cloning.version>
+    <commons-io.version>2.6</commons-io.version>
+    <jsat.version>0.0.9</jsat.version>
+    <commons-lang3.version>3.7</commons-lang3.version>
+    <guava.version>23.5-jre</guava.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
 
 
-    <build>
-        <finalName>gg-bot</finalName>
-        <plugins>
+  <build>
+    <finalName>gg-bot</finalName>
+    <plugins>
 
-            <!-- download source code in Eclipse, best practice -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <version>2.9</version>
-                <configuration>
-                    <downloadSources>true</downloadSources>
-                    <downloadJavadocs>false</downloadJavadocs>
-                </configuration>
-            </plugin>
+      <!-- download source code in Eclipse, best practice -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.9</version>
+        <configuration>
+          <downloadSources>true</downloadSources>
+          <downloadJavadocs>false</downloadJavadocs>
+        </configuration>
+      </plugin>
 
-            <!-- Set a compiler level -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
-                <configuration>
-                    <compilerArgument>-J -Xss512M</compilerArgument>
-                </configuration>
-            </plugin>
+      <!-- Set a compiler level -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <compilerArgument>-J -Xss512M</compilerArgument>
+        </configuration>
+      </plugin>
 
-            <!-- Make this jar executable -->
-            <!-- include dependencies -->
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>aic.gas.sc.gg_bot.main.SimpleBot</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-maven-plugin</artifactId>
-            </plugin>
-            <!--<plugin>-->
-            <!--<groupId>org.springframework.boot</groupId>-->
-            <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
-            <!--</plugin>-->
-        </plugins>
+      <!-- Make this jar executable -->
+      <!-- include dependencies -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>aic.gas.sc.gg_bot.main.SimpleBot</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok-maven-plugin</artifactId>
+      </plugin>
+      <!--<plugin>-->
+      <!--<groupId>org.springframework.boot</groupId>-->
+      <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
+      <!--</plugin>-->
+    </plugins>
 
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.projectlombok</groupId>
-                    <artifactId>lombok-maven-plugin</artifactId>
-                    <version>${lombok-maven-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>delombok</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <encoding>UTF-8</encoding>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <compilerVersion>1.8</compilerVersion>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.projectlombok</groupId>
+          <artifactId>lombok-maven-plugin</artifactId>
+          <version>${lombok-maven-plugin.version}</version>
+          <executions>
+            <execution>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>delombok</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <encoding>UTF-8</encoding>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <compilerVersion>1.8</compilerVersion>
+            <source>1.8</source>
+            <target>1.8</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
-    <dependencyManagement>
-        <dependencies>
-
-            <!--
-                BWMirror
-                In order to make this dependency work, run this command before building project:
-                mvn install:install-file -Dfile=<PATH TO BWMIRROR JAR> -DgroupId=bwmirror -DartifactId=bwmirror -Dversion=2.6 -Dpackaging=jar
-            -->
-            <dependency>
-                <groupId>bwmirror</groupId>
-                <artifactId>bwmirror</artifactId>
-                <version>${bwmirror.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>aic.gas.mas</groupId>
-                <artifactId>mas-framework</artifactId>
-                <version>${mas-framework.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>aic.gas.abstract_bot</groupId>
-                <artifactId>abstract-bot</artifactId>
-                <version>${abstract-bot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>aic.gas.sc.replay_parser</groupId>
-                <artifactId>replay-parser</artifactId>
-                <version>${replay-parser.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.mapdb</groupId>
-                <artifactId>mapdb</artifactId>
-                <version>${mapdb.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>edu.brown.cs.burlap</groupId>
-                <artifactId>burlap</artifactId>
-                <version>${burlap.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>uk.com.robust-it</groupId>
-                <artifactId>cloning</artifactId>
-                <version>${cloning.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>${annotations.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.edwardraff</groupId>
-                <artifactId>JSAT</artifactId>
-                <version>${jsat.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-
-        </dependencies>
-
-    </dependencyManagement>
-
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
 
-        <dependency>
-            <groupId>aic.gas.mas</groupId>
-            <artifactId>mas-framework</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>aic.gas.abstract_bot</groupId>
-            <artifactId>abstract-bot</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>aic.gas.sc.replay_parser</groupId>
-            <artifactId>replay-parser</artifactId>
-        </dependency>
+      <!--
+          BWMirror
+          In order to make this dependency work, run this command before building project:
+          mvn install:install-file -Dfile=<PATH TO BWMIRROR JAR> -DgroupId=bwmirror -DartifactId=bwmirror -Dversion=2.6 -Dpackaging=jar
+      -->
+      <dependency>
+        <groupId>bwmirror</groupId>
+        <artifactId>bwmirror</artifactId>
+        <version>${bwmirror.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>aic.gas.mas</groupId>
+        <artifactId>mas-framework</artifactId>
+        <version>${mas-framework.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>aic.gas.abstract_bot</groupId>
+        <artifactId>abstract-bot</artifactId>
+        <version>${abstract-bot.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${annotations.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>uk.com.robust-it</groupId>
+        <artifactId>cloning</artifactId>
+        <version>${cloning.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.edwardraff</groupId>
+        <artifactId>JSAT</artifactId>
+        <version>${jsat.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
     </dependencies>
+
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>uk.com.robust-it</groupId>
+      <artifactId>cloning</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>bwmirror</groupId>
+      <artifactId>bwmirror</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>aic.gas.mas</groupId>
+      <artifactId>mas-framework</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>aic.gas.abstract_bot</groupId>
+      <artifactId>abstract-bot</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.edwardraff</groupId>
+      <artifactId>JSAT</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+  </dependencies>
 
 </project>

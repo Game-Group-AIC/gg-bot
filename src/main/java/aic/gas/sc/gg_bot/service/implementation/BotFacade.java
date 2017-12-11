@@ -6,7 +6,6 @@ import aic.gas.abstract_bot.model.game.wrappers.AbstractPositionWrapper;
 import aic.gas.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.mas.service.MASFacade;
-import aic.gas.mas.utils.MyLogger;
 import aic.gas.sc.gg_bot.model.agent.AgentPlayer;
 import aic.gas.sc.gg_bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.service.AbstractAgentsInitializer;
@@ -23,15 +22,16 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Facade for bot.
  */
 @Getter
+@Slf4j
 public class BotFacade extends DefaultBWListener {
 
   //TODO !!!THIS IS HACK DO NOT USE INSIDE OTHER COMMAND INTERACTING WITH GAME!!!
@@ -58,10 +58,10 @@ public class BotFacade extends DefaultBWListener {
   private final LocationInitializerCreationStrategy locationInitializerCreationStrategy;
   //to init abstract agents at the beginning of each game
   private final AbstractAgentsInitializer abstractAgentsInitializer = new AbstractAgentsInitializerImpl();
-  //facade for MAS
-  private MASFacade masFacade;
   //executor of game commands
   private GameCommandExecutor gameCommandExecutor;
+  //facade for MAS
+  private MASFacade masFacade;
   //this is created with new game
   private AgentUnitHandler agentUnitFactory;
   private PlayerInitializer playerInitializer;
@@ -84,7 +84,7 @@ public class BotFacade extends DefaultBWListener {
     this.agentUnitFactoryCreationStrategy = agentUnitFactoryCreationStrategy;
     this.playerInitializerCreationStrategy = playerInitializerCreationStrategy;
     this.locationInitializerCreationStrategy = locationInitializerCreationStrategy;
-    MyLogger.setLoggingLevel(Level.WARNING);
+    this.masFacade = new MASFacade(() -> gameCommandExecutor.getCountOfPassedFrames());
   }
 
   @Override
@@ -100,7 +100,6 @@ public class BotFacade extends DefaultBWListener {
 
       //initialize command executor
       gameCommandExecutor = new GameCommandExecutor(game);
-      masFacade = new MASFacade(() -> gameCommandExecutor.getCountOfPassedFrames());
       ADDITIONAL_OBSERVATIONS_PROCESSOR = new AdditionalCommandToObserveGameProcessor(
           gameCommandExecutor);
       playerInitializer = playerInitializerCreationStrategy.createFactory();
@@ -109,11 +108,11 @@ public class BotFacade extends DefaultBWListener {
 
       //Use BWTA to analyze map
       //This may take a few minutes if the map is processed first time!
-      MyLogger.getLogger().info("Analyzing map");
+      log.info("Analyzing map");
       BWTA.readMap();
       BWTA.analyze();
 
-      MyLogger.getLogger().info("Map data ready");
+      log.info("Map data ready");
 
       //init annotation
       annotator = new Annotator(game.getPlayers().stream()
@@ -123,7 +122,7 @@ public class BotFacade extends DefaultBWListener {
       //init player as another agent
       Optional<APlayer> player = APlayer.wrapPlayer(self);
       if (!player.isPresent()) {
-        MyLogger.getLogger().warning("Could not initiate player.");
+        log.error("Could not initiate player.");
         throw new RuntimeException("Could not initiate player.");
       }
       AgentPlayer agentPlayer = playerInitializer
@@ -144,7 +143,7 @@ public class BotFacade extends DefaultBWListener {
       //speed up game to setup value
       game.setLocalSpeed(getGameDefaultSpeed());
 
-      MyLogger.getLogger().info("Local game speed set to " + getGameDefaultSpeed());
+      log.info("Local game speed set to " + getGameDefaultSpeed());
 
       //load decision points
       DecisionLoadingServiceImpl.getInstance();

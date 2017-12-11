@@ -20,7 +20,6 @@ import aic.gas.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.mas.model.metadata.DesireKey;
 import aic.gas.mas.model.metadata.FactKey;
 import aic.gas.mas.model.planing.command.ObservingCommand;
-import aic.gas.mas.utils.MyLogger;
 import bwapi.Game;
 import bwta.BaseLocation;
 import java.util.Arrays;
@@ -30,10 +29,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Type definition - agent type for base location <p>
  */
+@Slf4j
 public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
 
   //single definition of command to observe to be used by all agents of this type
@@ -41,7 +42,7 @@ public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
     Optional<ABaseLocationWrapper> baseLocation = memory
         .returnFactValueForGivenKey(IS_BASE_LOCATION);
     if (!baseLocation.isPresent()) {
-      MyLogger.getLogger().warning("Trying to access commendable unit but it is not present.");
+      log.error("Trying to access commendable unit but it is not present.");
       throw new RuntimeException("Trying to access commendable unit but it is not present.");
     }
     updateKnowledgeAboutResources(baseLocation.get().getWrappedPosition(), memory,
