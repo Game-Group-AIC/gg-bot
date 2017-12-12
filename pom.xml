@@ -6,8 +6,13 @@
 
   <groupId>aic.gas.sc.gg_bot</groupId>
   <artifactId>gg-bot</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <version>0.1</version>
+  <modules>
+    <module>bot</module>
+    <module>replayparser</module>
+    <module>abstractbot</module>
+  </modules>
 
   <name>gg-bot</name>
   <description>
@@ -17,10 +22,7 @@
 
   <properties>
     <mas-framework.version>0.11</mas-framework.version>
-    <abstract-bot.version>0.105</abstract-bot.version>
-
     <bwmirror.version>2.6</bwmirror.version>
-
     <lombok-maven-plugin.version>1.16.18.1</lombok-maven-plugin.version>
     <lombok.version>1.16.18</lombok.version>
     <annotations.version>15.0</annotations.version>
@@ -31,7 +33,9 @@
     <jsat.version>0.0.9</jsat.version>
     <commons-lang3.version>3.7</commons-lang3.version>
     <guava.version>23.5-jre</guava.version>
-
+    <burlap.version>3.0.1</burlap.version>
+    <mapdb.version>3.0.5</mapdb.version>
+    <rabbitmq.version>5.0.0</rabbitmq.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -79,7 +83,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>aic.gas.sc.gg_bot.main.SimpleBot</mainClass>
+              <mainClass>aic.gas.sc.gg_bot.bot.SimpleBot</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
@@ -147,11 +151,6 @@
         <artifactId>mas-framework</artifactId>
         <version>${mas-framework.version}</version>
       </dependency>
-      <dependency>
-        <groupId>aic.gas.abstract_bot</groupId>
-        <artifactId>abstract-bot</artifactId>
-        <version>${abstract-bot.version}</version>
-      </dependency>
 
       <dependency>
         <groupId>org.projectlombok</groupId>
@@ -198,6 +197,21 @@
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.mapdb</groupId>
+        <artifactId>mapdb</artifactId>
+        <version>${mapdb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>edu.brown.cs.burlap</groupId>
+        <artifactId>burlap</artifactId>
+        <version>${burlap.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.rabbitmq</groupId>
+        <artifactId>amqp-client</artifactId>
+        <version>${rabbitmq.version}</version>
+      </dependency>
     </dependencies>
 
   </dependencyManagement>
@@ -228,10 +242,6 @@
       <artifactId>mas-framework</artifactId>
     </dependency>
     <dependency>
-      <groupId>aic.gas.abstract_bot</groupId>
-      <artifactId>abstract-bot</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
@@ -246,6 +256,14 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mapdb</groupId>
+      <artifactId>mapdb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>edu.brown.cs.burlap</groupId>
+      <artifactId>burlap</artifactId>
     </dependency>
   </dependencies>
 
