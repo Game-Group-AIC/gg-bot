@@ -100,8 +100,8 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
 //                    .filter(stateWithTransition -> stateWithTransition.getNextAction().commit())
 //                    .count() + "/" + decisionPoint.getStates().size());
 
-    } catch (Exception ignored) {
-      ignored.printStackTrace();
+    } catch (Exception e) {
+      log.error(e.getLocalizedMessage());
     }
   }
 
