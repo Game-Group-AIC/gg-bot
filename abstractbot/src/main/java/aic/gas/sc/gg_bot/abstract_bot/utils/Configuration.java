@@ -4,7 +4,9 @@ import aic.gas.mas.model.metadata.AgentTypeID;
 import aic.gas.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -33,7 +35,7 @@ public class Configuration {
       List<FeatureNormalizer> normalizers) {
     double[] normalizeFeatureVector = new double[featureVector.length];
     for (int i = 0; i < featureVector.length; i++) {
-      double normalizedValue = normalizers.get(i).zScoreNormalization(featureVector[i]);
+      Double normalizedValue = normalizers.get(i).rescaling(featureVector[i]);
 
       //nasty hack. due to division by zero when all values of this feature are same...
       if (Double.isNaN(normalizedValue)) {
@@ -48,8 +50,9 @@ public class Configuration {
   /**
    * Map static fields of agentTypeId from AgentTypes to folders in storage
    */
-  public static Set<AgentTypeID> getParsedAgentTypesContainedInStorage(String folder) {
-    File directory = new File(folder);
+  public static Set<AgentTypeID> getParsedAgentTypesContainedInStorage(String folder,
+      MapSizeEnums mapSize, ARace race) {
+    File directory = new File(folder + "/" + mapSize.name() + "/" + race.name());
     Set<String> foldersInParsingDirectory = Arrays.stream(directory.listFiles())
         .filter(File::isDirectory)
         .map(File::getName)
@@ -75,8 +78,9 @@ public class Configuration {
    * Map static fields of desireKeyID from DesireKeys to folders in storage
    */
   public static Set<DesireKeyID> getParsedDesireTypesForAgentTypeContainedInStorage(
-      AgentTypeID agentTypeID, String folder) {
-    File directory = new File(folder + "/" + agentTypeID.getName());
+      AgentTypeID agentTypeID, String folder, MapSizeEnums mapSize, ARace race) {
+    File directory = new File(
+        folder + "/" + mapSize.name() + "/" + race.name() + "/" + agentTypeID.getName());
     Set<String> filesInParsingDirectory = Arrays.stream(directory.listFiles())
         .filter(File::isFile)
         .map(File::getName)

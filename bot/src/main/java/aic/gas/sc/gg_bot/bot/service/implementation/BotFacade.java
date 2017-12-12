@@ -1,6 +1,8 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
 import aic.gas.mas.service.MASFacade;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Annotator;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractPositionWrapper;
@@ -18,6 +20,7 @@ import bwapi.Mirror;
 import bwapi.Player;
 import bwapi.Unit;
 import bwta.BWTA;
+import bwta.BaseLocation;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -111,8 +114,16 @@ public class BotFacade extends DefaultBWListener {
       log.info("Analyzing map");
       BWTA.readMap();
       BWTA.analyze();
-
       log.info("Map data ready");
+
+      //set map size
+      int mapSize = (int) BWTA.getBaseLocations().stream()
+          .filter(BaseLocation::isStartLocation)
+          .count();
+      DecisionConfiguration.setMapSize(MapSizeEnums.getByStartBases(mapSize));
+
+      //try to setup race
+      DecisionConfiguration.setupRace(self, game.getPlayers());
 
       //init annotation
       annotator = new Annotator(game.getPlayers().stream()
@@ -203,6 +214,11 @@ public class BotFacade extends DefaultBWListener {
   public void run() throws IOException, InterruptedException {
     mirror.getModule().setEventListener(this);
     mirror.startGame();
+  }
+
+  @Override
+  public void onUnitShow(Unit unit) {
+    DecisionConfiguration.setupEnemyRace(self, unit);
   }
 
   @Override

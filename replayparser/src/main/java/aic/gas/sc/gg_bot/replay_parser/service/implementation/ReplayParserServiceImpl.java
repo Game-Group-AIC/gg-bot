@@ -1,5 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractPositionWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
@@ -24,6 +26,7 @@ import bwapi.Player;
 import bwapi.Race;
 import bwapi.Unit;
 import bwta.BWTA;
+import bwta.BaseLocation;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,14 +46,14 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
 
   private static final String chaosluncherPath = "c:\\Users\\Jan\\Desktop\\Chaosluncher Run With Full Privileges.lnk";
   private static final StorageService storageService = StorageServiceImp.getInstance();
-  private ReplayLoaderService replayLoaderService = new RabbitMQReplayLoaderServiceImpl(
-      System.getenv("RABBITMQ_BROKER_HOST"),
-      System.getenv("RABBITMQ_DEFAULT_USER"),
-      System.getenv("RABBITMQ_DEFAULT_PASS"),
-      Integer.parseInt(System.getenv("RABBITMQ_BROKER_PORT"))
-  );
+  //  private ReplayLoaderService replayLoaderService = new RabbitMQReplayLoaderServiceImpl(
+//      System.getenv("RABBITMQ_BROKER_HOST"),
+//      System.getenv("RABBITMQ_DEFAULT_USER"),
+//      System.getenv("RABBITMQ_DEFAULT_PASS"),
+//      Integer.parseInt(System.getenv("RABBITMQ_BROKER_PORT"))
+//  );
   // Alternatively use this loader:
-  //  private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
+  private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
   private WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl.getInstance();
   private Optional<Replay> replay;
 
@@ -166,6 +169,12 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
           BWTA.analyze();
           log.info("Map data ready");
 
+          //set map size
+          int mapSize = (int) BWTA.getBaseLocations().stream()
+              .filter(BaseLocation::isStartLocation)
+              .count();
+          DecisionConfiguration.setMapSize(MapSizeEnums.getByStartBases(mapSize));
+
           //set player to parse
           Set<Integer> playersToParse = currentGame.getPlayers().stream()
               .filter(p -> p.getRace().equals(Race.Zerg))
@@ -178,6 +187,9 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
               .filter(p -> playersToParse.contains(p.getID()))
               .findFirst()
               .get();
+
+          //try to setup race
+          DecisionConfiguration.setupRace(parsingPlayer, currentGame.getPlayers());
 
           WatcherPlayer watcherPlayer = new WatcherPlayer(parsingPlayer);
           agentsWithObservations.add(watcherPlayer);
@@ -200,6 +212,11 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
           e.printStackTrace();
         }
       }
+    }
+
+    @Override
+    public void onUnitShow(Unit unit) {
+      DecisionConfiguration.setupEnemyRace(parsingPlayer, unit);
     }
 
     @Override

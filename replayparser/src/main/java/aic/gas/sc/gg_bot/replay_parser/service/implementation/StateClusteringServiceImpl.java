@@ -10,7 +10,6 @@ import aic.gas.sc.gg_bot.replay_parser.service.StateClusteringService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import jsat.SimpleDataSet;
@@ -60,11 +59,11 @@ public class StateClusteringServiceImpl implements StateClusteringService {
     List<FeatureNormalizer> normalizers = new ArrayList<>();
     for (int i = 0; i < cardinality; i++) {
       final int index = i;
-      Set<Double> possibleValues = states.stream()
+      List<Double> possibleValues = states.stream()
           .map(State::getFeatureVector)
           .mapToDouble(doubles -> doubles[index])
           .boxed()
-          .collect(Collectors.toSet());
+          .collect(Collectors.toList());
       normalizers.add(new FeatureNormalizer(possibleValues));
     }
     return normalizers;

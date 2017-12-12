@@ -1,8 +1,8 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.features;
 
 import java.io.Serializable;
-import java.util.Set;
-import java.util.stream.DoubleStream;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 /**
@@ -11,28 +11,33 @@ import lombok.Getter;
 @Getter
 public class FeatureNormalizer implements Serializable {
 
-  private final double mean;
-  private final double std;
+  private final double max;
+  private final double min;
 
-  public FeatureNormalizer(Set<Double> possibleValues) {
-    this.mean = computeMean(possibleValues.stream().mapToDouble(value -> value));
-    this.std = computeStandardDeviation(possibleValues.stream().mapToDouble(value -> value),
-        this.mean, possibleValues.size());
-  }
-
-  private double computeMean(DoubleStream doubles) {
-    return doubles.average().orElseGet(null);
-  }
-
-  private double computeStandardDeviation(DoubleStream doubles, double mean, double count) {
-    return Math.sqrt(doubles.map(d -> Math.pow(d - mean, 2)).sum() / count);
+  public FeatureNormalizer(List<Double> values) {
+    int tenth = values.size() / 10;
+    List<Double> valuesSorted = values.stream()
+        .sorted().collect(Collectors.toList());
+    valuesSorted = valuesSorted.subList(tenth, values.size() - tenth);
+    this.max = valuesSorted.get(valuesSorted.size() - 1);
+    this.min = valuesSorted.get(0);
   }
 
   /**
    * Transform value to z-score
    */
-  public double zScoreNormalization(double value) {
-    return (value - mean) / std;
+  public Double rescaling(double value) {
+    double valueToScale;
+    if (value > max) {
+      valueToScale = max;
+    } else {
+      if (value < min) {
+        valueToScale = min;
+      } else {
+        valueToScale = value;
+      }
+    }
+    return (valueToScale - min) / (max - min);
   }
 
 }

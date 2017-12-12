@@ -5,7 +5,10 @@ import static aic.gas.sc.gg_bot.abstract_bot.utils.Configuration.getParsedDesire
 
 import aic.gas.mas.model.metadata.AgentTypeID;
 import aic.gas.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPointDataStructure;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
@@ -13,6 +16,7 @@ import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,11 +44,30 @@ public class StorageServiceImp implements StorageService {
   //Serializers
   public final Serializer<Replay> replaySerializer = new Replay.ReplaySerializer();
 
+  //subdirectories
+  public static final List<String> subdirectories = Stream.of(MapSizeEnums.values())
+      .flatMap(size -> Stream.of(ARace.values())
+          .map(race -> size.name() + "/" + race.name()))
+      .collect(Collectors.toList());
+
   private StorageServiceImp() {
     //singleton
     createDirectoryIfItDoesNotExist(storageFolder);
     createDirectoryIfItDoesNotExist(parsingFolder);
     createDirectoryIfItDoesNotExist(outputFolder);
+
+    //create map folders
+    Stream.of(MapSizeEnums.values()).map(Enum::name)
+        .forEach(s -> {
+          createDirectoryIfItDoesNotExist(parsingFolder + "/" + s);
+          createDirectoryIfItDoesNotExist(outputFolder + "/" + s);
+        });
+
+    //create subdirectories
+    subdirectories.forEach(s -> {
+      createDirectoryIfItDoesNotExist(parsingFolder + "/" + s);
+      createDirectoryIfItDoesNotExist(outputFolder + "/" + s);
+    });
   }
 
   static StorageService getInstance() {
@@ -99,13 +122,17 @@ public class StorageServiceImp implements StorageService {
   @Override
   public void saveTrajectory(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
       List<Trajectory> trajectories) {
-    createDirectoryIfItDoesNotExist(agentTypeID.getName(), parsingFolder);
-    int freeIndex = getNextAvailableOrderNumberForAgentTypeOfGivenDesire(agentTypeID, desireKeyID);
+    createDirectoryIfItDoesNotExist(agentTypeID.getName(),
+        parsingFolder + "/" + DecisionConfiguration.getMapSize().name() + "/"
+            + DecisionConfiguration.getRace().name());
+    int freeIndex = getNextAvailableOrderNumberForAgentTypeOfGivenDesire(agentTypeID, desireKeyID,
+        DecisionConfiguration.getMapSize(), DecisionConfiguration.getRace());
     String path =
-        parsingFolder + "/" + agentTypeID.getName() + "/" + desireKeyID.getName() + "_" + freeIndex
+        parsingFolder + "/" + DecisionConfiguration.getMapSize().name() + "/"
+            + DecisionConfiguration.getRace().name() + "/" + agentTypeID.getName() + "/"
+            + desireKeyID.getName() + "_" + freeIndex
             + ".db";
-    ArrayList<Trajectory> savedTrajectories = new ArrayList<>();
-    savedTrajectories.addAll(trajectories);
+    ArrayList<Trajectory> savedTrajectories = new ArrayList<>(trajectories);
     try {
       SerializationUtil.serialize(savedTrajectories, path);
     } catch (Exception e) {
@@ -114,16 +141,24 @@ public class StorageServiceImp implements StorageService {
   }
 
   @Override
-  public Map<AgentTypeID, Set<DesireKeyID>> getParsedAgentTypesWithDesiresTypesContainedInStorage() {
-    return getParsedAgentTypesContainedInStorage(parsingFolder).stream()
+  public Map<AgentTypeID, Set<DesireKeyID>> getParsedAgentTypesWithDesiresTypesContainedInStorage(
+      MapSizeEnums mapSize, ARace race) {
+    return getParsedAgentTypesContainedInStorage(parsingFolder, mapSize, race).stream()
+        .filter(DecisionConfiguration.decisionsToLoad::containsKey)
         .collect(Collectors.toMap(Function.identity(),
-            t -> getParsedDesireTypesForAgentTypeContainedInStorage(t, parsingFolder)));
+            t -> getParsedDesireTypesForAgentTypeContainedInStorage(t, parsingFolder, mapSize, race)
+                .stream()
+                .filter(desireKeyID -> DecisionConfiguration.decisionsToLoad
+                    .getOrDefault(t, new HashSet<>()).contains(desireKeyID))
+                .collect(Collectors.toSet())
+        ));
   }
 
   @Override
   public List<Trajectory> getRandomListOfTrajectories(AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID, int limit) {
-    List<File> files = new ArrayList<>(getFilesForAgentTypeOfGivenDesire(agentTypeID, desireKeyID));
+      DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race, int limit) {
+    List<File> files = new ArrayList<>(
+        getFilesForAgentTypeOfGivenDesire(agentTypeID, desireKeyID, mapSize, race));
     Collections.shuffle(files);
 
     //unlimited
@@ -148,8 +183,8 @@ public class StorageServiceImp implements StorageService {
    * Get next available index to store file
    */
   private int getNextAvailableOrderNumberForAgentTypeOfGivenDesire(AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID) {
-    return getFilesForAgentTypeOfGivenDesire(agentTypeID, desireKeyID).stream()
+      DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) {
+    return getFilesForAgentTypeOfGivenDesire(agentTypeID, desireKeyID, mapSize, race).stream()
         .map(File::getName)
         .map(s -> s.replace(".db", ""))
         .map(s -> s.split("_"))
@@ -163,8 +198,10 @@ public class StorageServiceImp implements StorageService {
    * Get files for AgentType Of given desire
    */
   private Set<File> getFilesForAgentTypeOfGivenDesire(AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID) {
-    return SerializationUtil.getAllFilesInFolder(parsingFolder + "/" + agentTypeID.getName(), "db")
+      DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) {
+    return SerializationUtil
+        .getAllFilesInFolder(parsingFolder + "/" + mapSize.name() + "/"
+            + "/" + race.name() + "/" + agentTypeID.getName(), "db")
         .stream()
         .filter(file -> file.getName().contains(desireKeyID.getName()))
         .collect(Collectors.toSet());
@@ -173,9 +210,11 @@ public class StorageServiceImp implements StorageService {
 
   @Override
   public void storeLearntDecision(DecisionPointDataStructure structure, AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID) throws Exception {
-    createDirectoryIfItDoesNotExist(agentTypeID.getName(), outputFolder);
-    String path = outputFolder + "/" + agentTypeID.getName() + "/" + desireKeyID.getName() + ".db";
+      DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) throws Exception {
+    createDirectoryIfItDoesNotExist(agentTypeID.getName(), outputFolder + "/" + mapSize.name() + "/"
+        + "/" + race.name());
+    String path = outputFolder + "/" + mapSize.name() + "/"
+        + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID.getName() + ".db";
     SerializationUtil.serialize(structure, path);
   }
 
