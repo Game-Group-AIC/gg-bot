@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.mas.service.MASFacade;
+import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Annotator;
@@ -8,6 +8,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractPositionWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
+import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentPlayer;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.bot.service.AbstractAgentsInitializer;
@@ -213,6 +214,7 @@ public class BotFacade extends DefaultBWListener {
 
   public void run() throws IOException, InterruptedException {
     mirror.getModule().setEventListener(this);
+    DecisionLoadingServiceImpl.getInstance();
     mirror.startGame();
   }
 

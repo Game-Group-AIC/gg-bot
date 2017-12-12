@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
-import aic.gas.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 
 /**
  * Enumeration of all IDs for desires as static classes

@@ -1,9 +1,9 @@
 package aic.gas.sc.gg_bot.replay_parser.service;
 
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValueSets;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSets;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
 import java.util.stream.Stream;
 

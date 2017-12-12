@@ -11,4 +11,12 @@
 
   <artifactId>abstract-bot</artifactId>
 
+  <dependencies>
+    <dependency>
+      <groupId>aic.gas.sc.gg_bot</groupId>
+      <artifactId>mas</artifactId>
+      <version>0.1</version>
+    </dependency>
+  </dependencies>
+
 </project>

@@ -1,10 +1,10 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
-import aic.gas.mas.model.knowledge.Fact;
-import aic.gas.mas.model.knowledge.FactSet;
-import aic.gas.mas.model.metadata.FactKey;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValue;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValueSet;
+import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
+import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;

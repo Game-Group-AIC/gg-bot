@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.abstract_bot.utils;
 
-import aic.gas.mas.model.metadata.AgentTypeID;
-import aic.gas.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;

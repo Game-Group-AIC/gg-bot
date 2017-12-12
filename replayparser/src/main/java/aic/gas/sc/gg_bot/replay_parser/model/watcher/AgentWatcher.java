@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
-import aic.gas.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
 import java.util.List;

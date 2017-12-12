@@ -1,9 +1,9 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.mas.model.ResponseReceiverInterface;
-import aic.gas.mas.model.knowledge.WorkingMemory;
-import aic.gas.mas.model.metadata.AgentType;
-import aic.gas.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
 import bwapi.Game;
 import lombok.extern.slf4j.Slf4j;
 

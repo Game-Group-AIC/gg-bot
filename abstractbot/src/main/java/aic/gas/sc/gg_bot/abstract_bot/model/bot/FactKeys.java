@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
-import aic.gas.mas.model.metadata.FactKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.abstract_bot.model.TypeWrapperStrategy;
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.UpgradeTypeStatus;

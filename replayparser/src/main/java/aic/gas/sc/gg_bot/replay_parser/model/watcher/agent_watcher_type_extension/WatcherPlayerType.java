@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension;
 
-import aic.gas.mas.model.metadata.AgentTypeID;
-import aic.gas.mas.model.metadata.FactKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.PlayerEnvironmentObservation;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;

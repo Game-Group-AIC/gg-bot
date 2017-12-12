@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
-import aic.gas.mas.model.metadata.AgentTypeID;
-import aic.gas.mas.model.metadata.FactKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
 import java.util.HashSet;
 import java.util.List;

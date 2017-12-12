@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.mas.model.metadata.AgentTypeID;
-import aic.gas.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPoint;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DecisionLoadingServiceImpl implements DecisionLoadingService {
 
-  private static DecisionLoadingServiceImpl instance = null;
+  private static DecisionLoadingServiceImpl instance = new DecisionLoadingServiceImpl();
   private final Map<MapSizeEnums, Map<ARace, Map<AgentTypeID, Map<DesireKeyID, DecisionPoint>>>> cache = new ConcurrentHashMap<>();
 
   /**
@@ -38,7 +38,7 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
   /**
    * Only one instance
    */
-  public static DecisionLoadingService getInstance() {
+  public synchronized static DecisionLoadingService getInstance() {
     if (instance == null) {
       instance = new DecisionLoadingServiceImpl();
     }
@@ -60,7 +60,9 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
           .computeIfAbsent(race, id -> new HashMap<>())
           .computeIfAbsent(agentTypeID, id -> new HashMap<>()).put(desireKeyID, decisionPoint);
     } catch (Exception e) {
-      log.error(e.getLocalizedMessage());
+      log.error(e.getMessage() + " for combination " + DecisionConfiguration.getMapSize().name()
+          + ", " + DecisionConfiguration.getRace().name() + ", " + agentTypeID.getName()
+          + ", " + desireKeyID.getName() + " when loading decision.");
     }
   }
 
@@ -73,7 +75,7 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
       log.error(e.getLocalizedMessage());
       throw new RuntimeException(
           "No models of decision for combination " + DecisionConfiguration.getMapSize().name()
-              + ", " + DecisionConfiguration.getRace().name() + ", " + agentTypeID.getName() + ", "
+              + ", " + DecisionConfiguration.getRace().name() + ", " + agentTypeID.getName()
               + ", " + desireKeyID.getName());
     }
   }

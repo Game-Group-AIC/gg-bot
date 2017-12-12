@@ -10,12 +10,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_TIME_SCOUTE
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION_IN_FRAME;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 
-import aic.gas.mas.model.knowledge.WorkingMemory;
-import aic.gas.mas.model.metadata.AgentType;
-import aic.gas.mas.model.metadata.AgentTypeMakingObservations;
-import aic.gas.mas.model.metadata.DesireKey;
-import aic.gas.mas.model.metadata.FactKey;
-import aic.gas.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;

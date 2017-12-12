@@ -57,12 +57,12 @@ import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.UPDATE_ENEMY_RACE;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.WORKER_SCOUT;
 import static aic.gas.sc.gg_bot.bot.service.implementation.AbstractAgentsInitializerImpl.FIND_MAIN_BASE;
 
-import aic.gas.mas.model.knowledge.WorkingMemory;
-import aic.gas.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
-import aic.gas.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
-import aic.gas.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
-import aic.gas.mas.model.planing.CommitmentDeciderInitializer;
-import aic.gas.mas.model.planing.command.ReasoningCommand;
+import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
+import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;

@@ -1,14 +1,14 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.features;
 
-import aic.gas.mas.model.knowledge.DataForDecision;
-import aic.gas.mas.model.metadata.DesireKeyID;
-import aic.gas.mas.model.metadata.FactConverterID;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValue;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValueSet;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValueSets;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSets;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

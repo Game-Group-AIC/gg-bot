@@ -1,10 +1,10 @@
 package aic.gas.sc.gg_bot.bot.model.agent;
 
-import aic.gas.mas.model.ResponseReceiverInterface;
-import aic.gas.mas.model.agents.Agent;
-import aic.gas.mas.model.metadata.AgentTypeMakingObservations;
-import aic.gas.mas.model.planing.command.ActCommand;
-import aic.gas.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.agents.Agent;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.bot.service.implementation.GameCommandExecutor;
 import bwapi.Game;

@@ -1,13 +1,13 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.mas.model.QueuedItemInterfaceWithResponse;
-import aic.gas.mas.model.ResponseReceiverInterface;
-import aic.gas.mas.model.knowledge.WorkingMemory;
-import aic.gas.mas.model.metadata.AgentType;
-import aic.gas.mas.model.planing.command.ActCommand;
-import aic.gas.mas.model.planing.command.ObservingCommand;
-import aic.gas.mas.service.CommandManager;
-import aic.gas.mas.service.ObservingCommandManager;
+import aic.gas.sc.gg_bot.mas.model.QueuedItemInterfaceWithResponse;
+import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.service.CommandManager;
+import aic.gas.sc.gg_bot.mas.service.ObservingCommandManager;
 import bwapi.Game;
 import java.util.ArrayList;
 import java.util.HashMap;

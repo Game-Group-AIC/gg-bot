@@ -9,8 +9,8 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL_TO_MINE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 
-import aic.gas.mas.model.knowledge.Fact;
-import aic.gas.mas.model.metadata.DesireKey;
+import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;

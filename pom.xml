@@ -12,6 +12,7 @@
     <module>bot</module>
     <module>replayparser</module>
     <module>abstractbot</module>
+    <module>mas</module>
   </modules>
 
   <name>gg-bot</name>
@@ -21,7 +22,6 @@
   </description>
 
   <properties>
-    <mas-framework.version>0.11</mas-framework.version>
     <bwmirror.version>2.6</bwmirror.version>
     <lombok-maven-plugin.version>1.16.18.1</lombok-maven-plugin.version>
     <lombok.version>1.16.18</lombok.version>
@@ -147,12 +147,6 @@
       </dependency>
 
       <dependency>
-        <groupId>aic.gas.mas</groupId>
-        <artifactId>mas-framework</artifactId>
-        <version>${mas-framework.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
@@ -236,10 +230,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>aic.gas.mas</groupId>
-      <artifactId>mas-framework</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>

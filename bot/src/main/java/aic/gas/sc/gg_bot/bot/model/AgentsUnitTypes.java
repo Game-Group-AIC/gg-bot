@@ -63,16 +63,16 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrappe
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SPORE_COLONY_TYPE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SUNKEN_COLONY_TYPE;
 
-import aic.gas.mas.model.knowledge.ReadOnlyMemory;
-import aic.gas.mas.model.knowledge.WorkingMemory;
-import aic.gas.mas.model.metadata.AgentType;
-import aic.gas.mas.model.metadata.DesireKey;
-import aic.gas.mas.model.metadata.FactKey;
-import aic.gas.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
-import aic.gas.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
-import aic.gas.mas.model.planing.CommitmentDeciderInitializer;
-import aic.gas.mas.model.planing.command.ActCommand;
-import aic.gas.mas.model.planing.command.ReasoningCommand;
+import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
+import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;

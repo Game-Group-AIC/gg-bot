@@ -3,12 +3,12 @@ package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.CREEP_COLONY_TYPE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.OVERLORD_TYPE;
 
-import aic.gas.mas.model.metadata.FactConverterID;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValue;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValueSet;
-import aic.gas.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;

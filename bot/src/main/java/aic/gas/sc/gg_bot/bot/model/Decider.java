@@ -1,8 +1,8 @@
 package aic.gas.sc.gg_bot.bot.model;
 
-import aic.gas.mas.model.knowledge.DataForDecision;
-import aic.gas.mas.model.metadata.AgentTypeID;
-import aic.gas.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
 import aic.gas.sc.gg_bot.bot.service.implementation.DecisionLoadingServiceImpl;

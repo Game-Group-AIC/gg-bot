@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
-import aic.gas.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 
 /**
  * Enumeration of all IDs for agents' types as static classes

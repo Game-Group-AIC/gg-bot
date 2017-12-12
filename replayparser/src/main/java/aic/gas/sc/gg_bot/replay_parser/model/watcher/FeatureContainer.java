@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
-import aic.gas.mas.model.metadata.FactConverterID;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
 import com.rits.cloning.Cloner;
