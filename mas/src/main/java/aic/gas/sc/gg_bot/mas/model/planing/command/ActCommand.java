@@ -1,6 +1,7 @@
 package aic.gas.sc.gg_bot.mas.model.planing.command;
 
 import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
+import lombok.Getter;
 
 /**
  * Template for command with action to execute
@@ -8,8 +9,13 @@ import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
 public abstract class ActCommand<T extends IntentionCommand<?, ? extends ActCommand<T>>> extends
     CommandForIntention<T> {
 
+  //TODO hack for debug - printing failing commands
+  @Getter
+  private final String desireName;
+
   private ActCommand(T intention) {
     super(intention);
+    this.desireName = intention.getDesireKey().getName();
   }
 
   /**

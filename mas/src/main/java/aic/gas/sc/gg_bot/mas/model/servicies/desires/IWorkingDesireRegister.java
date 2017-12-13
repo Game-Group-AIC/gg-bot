@@ -5,6 +5,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.SharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireInRegister;
 import aic.gas.sc.gg_bot.mas.model.servicies.WorkingRegister;
+import aic.gas.sc.gg_bot.mas.service.TerminableService;
 import java.util.Optional;
 
 /**

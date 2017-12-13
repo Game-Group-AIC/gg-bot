@@ -296,18 +296,6 @@ public class FactConverters {
           .mapToDouble(value -> value.mapToDouble(UnitTypeStatus::getCount).sum())
           .sum()
   );
-  public static final FactWithSetOfOptionalValuesForAgentType<Boolean> MAP_SIZE = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(35, FactKeys.IS_START_LOCATION),
-      optionalStream -> (double) optionalStream
-          .filter(Optional::isPresent)
-          .filter(Optional::get)
-          .count(), AgentTypes.BASE_LOCATION);
-  public static final FactWithSetOfOptionalValuesForAgentType<ARace> OPPONENTS_RACE = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(36, FactKeys.ENEMY_RACE), optionalStream -> (double) optionalStream
-      .filter(Optional::isPresent)
-      .map(Optional::get)
-      .map(Enum::ordinal)
-      .findAny().orElse(4), AgentTypes.PLAYER);
   public static final FactWithSetOfOptionalValuesForAgentType<ABaseLocationWrapper> AVAILABLE_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(37, FactKeys.IS_BASE_LOCATION),
       optionalStream -> (double) optionalStream.count(), AgentTypes.BASE_LOCATION);

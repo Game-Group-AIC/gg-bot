@@ -13,10 +13,12 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * DesireRegister contains desires received from agents
  */
+@Slf4j
 public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInRegister>> implements
     IWorkingDesireRegister {
 
@@ -75,6 +77,8 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
         SharedDesireInRegister desire = dataByOriginator
             .get(desireForOthersHeWantsToCommitTo.getOriginatedFromAgent())
             .getOrDefault(desireForOthersHeWantsToCommitTo, null);
+
+        //desire commitment is not locked
         if (desire != null) {
 
           //try to commit agent and return copy of current instance
@@ -98,7 +102,9 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
             .get(desireHeWantsToRemoveCommitmentTo.getOriginatedFromAgent())
             .getOrDefault(desireHeWantsToRemoveCommitmentTo, null);
         if (desire != null) {
-          return desire.removeCommitment(agentWhoWantsToRemoveCommitment);
+
+          //lock desire for few cycles
+          return (desire.removeCommitment(agentWhoWantsToRemoveCommitment));
         }
       }
       return true;
@@ -138,5 +144,4 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
       lock.readLock().unlock();
     }
   }
-
 }

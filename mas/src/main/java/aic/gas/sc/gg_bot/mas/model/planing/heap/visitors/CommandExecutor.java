@@ -26,6 +26,9 @@ public class CommandExecutor implements TreeVisitorInterface, ResponseReceiverIn
   private final HeapOfTrees heapOfTrees;
   private final Agent<?> agent;
 
+  //TODO hack for debug - printing failing commands
+  private String lastCommandName = "";
+
   public CommandExecutor(HeapOfTrees heapOfTrees, Agent<?> agent) {
     this.heapOfTrees = heapOfTrees;
     this.agent = agent;
@@ -62,6 +65,7 @@ public class CommandExecutor implements TreeVisitorInterface, ResponseReceiverIn
 
   private void sendActingCommandForExecution(ActCommand<?> command) {
     synchronized (lockMonitor) {
+      lastCommandName = command.getDesireName();
       if (agent.sendCommandToExecute(command, this)) {
         try {
           lockMonitor.wait();
@@ -103,14 +107,14 @@ public class CommandExecutor implements TreeVisitorInterface, ResponseReceiverIn
     sendActingCommandForExecution(node.getCommand());
   }
 
-  //TODO catch command
   @Override
   public void receiveResponse(Boolean response) {
 
     //notify waiting method
     synchronized (lockMonitor) {
       if (!response) {
-        log.info(this.getClass().getSimpleName() + " could not execute acting command");
+        log.info(this.agent.getAgentType().getName() + " could not execute acting command "
+            + lastCommandName);
       }
       lockMonitor.notify();
     }

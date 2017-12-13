@@ -12,12 +12,14 @@ import aic.gas.sc.gg_bot.mas.model.servicies.desires.IWorkingDesireRegister;
 import aic.gas.sc.gg_bot.mas.service.AMediatorTemplate;
 import java.util.Optional;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * DesireMediator instance enables agents to propose desires for other agents to commit to. It keeps
  * status what is available and which agent is committed to what. This information are available
  * then to other agents. Class defines method to access queue. <p>
  */
+@Slf4j
 public class DesireMediator extends
     AMediatorTemplate<IReadOnlyDesireRegister, IWorkingDesireRegister> {
 
@@ -160,5 +162,4 @@ public class DesireMediator extends
       }
     });
   }
-
 }

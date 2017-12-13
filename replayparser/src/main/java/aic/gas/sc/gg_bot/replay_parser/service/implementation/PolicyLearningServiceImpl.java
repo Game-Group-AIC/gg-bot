@@ -27,7 +27,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
 
   private static final double beta = 10;
   private static final boolean doNotPrintDebug = false;
-  private static final int steps = 10;
+  private static final int steps = 100;
 
   @Override
   public Policy learnPolicy(SADomain domain, List<Episode> episodes, int numberOfStates,
@@ -59,7 +59,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
     request.setBoltzmannBeta(beta);
 
     //run MLIRL on it
-    MLIRL irl = new MLIRLWithGuard(request, 0.1, 0.1, steps);
+    MLIRL irl = new MLIRLWithGuard(request, 0.01, 0.01, steps);
     irl.performIRL();
 
     return new GreedyQPolicy((QProvider) request.getPlanner());

@@ -14,8 +14,8 @@ public class FeatureContainerHeaders {
   public static final FeatureContainerHeader BUILDING_EXTRACTOR = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefs(new HashSet<>(Collections.singleton(
           FactConverters.COUNT_OF_WORKERS)))
-      .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
-          FactConverters.COUNT_OF_BASES, FactConverters.OPPONENTS_RACE)))
+      .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Collections.singletonList(
+          FactConverters.COUNT_OF_BASES)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
@@ -55,7 +55,7 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefs(new HashSet<>(Collections.singleton(
           FactConverters.COUNT_OF_WORKERS)))
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
-          FactConverters.COUNT_OF_BASES, FactConverters.OPPONENTS_RACE)))
+          FactConverters.COUNT_OF_BASES)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
@@ -80,8 +80,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_WORKERS)))
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -109,7 +109,7 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_WORKERS)))
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES, FactConverters.COUNT_OF_ENEMY_BASES,
-          FactConverters.MAP_SIZE, FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -133,8 +133,8 @@ public class FeatureContainerHeaders {
   public static final FeatureContainerHeader UPGRADING_TO_LAIR = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -158,8 +158,8 @@ public class FeatureContainerHeaders {
   public static final FeatureContainerHeader BUILDING_SPIRE = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -184,8 +184,8 @@ public class FeatureContainerHeaders {
       .builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -210,8 +210,8 @@ public class FeatureContainerHeaders {
       .builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -237,8 +237,8 @@ public class FeatureContainerHeaders {
   public static final FeatureContainerHeader BOOSTING_AIR = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -262,8 +262,8 @@ public class FeatureContainerHeaders {
       .builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -287,8 +287,8 @@ public class FeatureContainerHeaders {
       .builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES,
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION, FactConverters.MAX_POPULATION)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -313,8 +313,8 @@ public class FeatureContainerHeaders {
   public static final FeatureContainerHeader HOLDING = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES)))
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.SUM_OF_ENEMY_AIR_DMG,
           FactConverters.SUM_OF_ENEMY_GROUND_DMG, FactConverters.SUM_OF_ENEMY_AIR_HP,
@@ -355,8 +355,8 @@ public class FeatureContainerHeaders {
   public static final FeatureContainerHeader DEFENSE = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
-          FactConverters.COUNT_OF_ENEMY_BASES, FactConverters.MAP_SIZE,
-          FactConverters.OPPONENTS_RACE, FactConverters.AVAILABLE_BASES)))
+          FactConverters.COUNT_OF_ENEMY_BASES,
+          FactConverters.AVAILABLE_BASES)))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.SUM_OF_ENEMY_AIR_DMG,
           FactConverters.SUM_OF_ENEMY_GROUND_DMG, FactConverters.SUM_OF_ENEMY_AIR_HP,
