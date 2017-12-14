@@ -17,11 +17,8 @@ public class AUnitCommand {
 
   //to keep track of types with target
   private static Set<UnitCommandType> typesWithTarget = new HashSet<>(
-      Arrays.asList(new UnitCommandType[]{
-          UnitCommandType.Gather, UnitCommandType.Attack_Unit, UnitCommandType.Follow,
-          UnitCommandType.Repair,
-          UnitCommandType.Load, UnitCommandType.Unload
-      }));
+      Arrays.asList(UnitCommandType.Gather, UnitCommandType.Attack_Unit, UnitCommandType.Follow,
+          UnitCommandType.Repair, UnitCommandType.Load, UnitCommandType.Unload));
   private final int slot;
   private final Optional<Unit> target;
   private final Optional<Unit> unit;

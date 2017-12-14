@@ -9,11 +9,11 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL_TO_MINE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 
-import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
+import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -266,17 +266,6 @@ public class DesiresKeys {
       .build();
   public static final DesireKey ATTACK = DesireKey.builder()
       .id(DesireKeys.ATTACK)
-      .build();
-
-  //5 pool hack
-  public static final DesireKey DO_5_POOL = DesireKey.builder()
-      .id(DesireKeys.DO_5_POOL)
-      .build();
-  public static final DesireKey REASON_ABOUT_TRANSITION = DesireKey.builder()
-      .id(DesireKeys.REASON_ABOUT_TRANSITION)
-      .build();
-  public static final DesireKey FIND_ENEMY_BASE = DesireKey.builder()
-      .id(DesireKeys.FIND_ENEMY_BASE)
       .build();
 
 }

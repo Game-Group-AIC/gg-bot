@@ -5,7 +5,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNDER_ATTACK;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
@@ -110,20 +110,20 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         }
       })
       .reactionOnChangeStrategy((memory, desireParameters) -> {
-        memory.updateFact(IS_BEING_CONSTRUCT, true);
+        memory.updateFact(IS_BEING_CONSTRUCTED, true);
       })
       .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
-        memory.updateFact(IS_BEING_CONSTRUCT, false);
+        memory.updateFact(IS_BEING_CONSTRUCTED, false);
       })
       .decisionInDesire(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BEING_CONSTRUCT) == 1)
-          .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BEING_CONSTRUCT)))
+              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BEING_CONSTRUCTED) == 1)
+          .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BEING_CONSTRUCTED)))
           .build())
       .decisionInIntention(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BEING_CONSTRUCT) == 0)
-          .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BEING_CONSTRUCT)))
+              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BEING_CONSTRUCTED) == 0)
+          .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BEING_CONSTRUCTED)))
           .build())
       .build();
 
@@ -157,7 +157,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
       .decisionInIntention(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
               dataForDecision.getFeatureValueBeliefs(FactConverters.IS_TRAINING_QUEUE_EMPTY) == 1
-                  || dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 0)
+                  && dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 0)
           .beliefTypes(new HashSet<>(
               Arrays.asList(FactConverters.IS_TRAINING_QUEUE_EMPTY, FactConverters.IS_MORPHING)))
           .build())

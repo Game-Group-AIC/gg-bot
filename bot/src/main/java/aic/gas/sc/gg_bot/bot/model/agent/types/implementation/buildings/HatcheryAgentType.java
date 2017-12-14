@@ -2,7 +2,7 @@ package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings;
 
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.LAIR_TYPE;
@@ -59,7 +59,7 @@ public class HatcheryAgentType {
             .build();
         type.addConfiguration(DesiresKeys.UPGRADE_TO_LAIR, upgradeToLair);
       })
-      .usingTypesForFacts(new HashSet<>(Arrays.asList(IS_BEING_CONSTRUCT)))
+      .usingTypesForFacts(new HashSet<>(Arrays.asList(IS_BEING_CONSTRUCTED)))
       .desiresWithIntentionToReason(new HashSet<>(Collections.singletonList(
           DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION)))
       .build();

@@ -11,7 +11,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.ENABLE_GROUND_
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.ENABLE_GROUND_RANGED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.ENABLE_STATIC_ANTI_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.UPGRADE_TO_LAIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EVOLUTION_CHAMBER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_HYDRALISK_DEN;
@@ -63,7 +63,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                         .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                             .equals(SPAWNING_POOL.getName()))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }
@@ -86,7 +86,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                         .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                             .equals(LAIR.getName()))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }
@@ -117,7 +117,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                         .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                             .equals(SPIRE.getName()))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }
@@ -150,7 +150,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                         .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                             .equals(HYDRALISK_DEN.getName()))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }
@@ -183,7 +183,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                         .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                             .equals(EVOLUTION_CHAMBER.getName()))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }

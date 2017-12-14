@@ -78,6 +78,7 @@ public class LarvaAgentType {
             .build();
         type.addConfiguration(DesiresKeys.MORPH_TO_OVERLORD, morphToOverlord);
 
+
         //morph to zergling
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent morphToZergling = ConfigurationWithCommand.
             WithActingCommandDesiredByOtherAgent.builder()
@@ -113,6 +114,7 @@ public class LarvaAgentType {
                 .build())
             .build();
         type.addConfiguration(DesiresKeys.BOOST_GROUND_MELEE, morphToZergling);
+
 
         //morph to hydras
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent morphToHydra = ConfigurationWithCommand.
@@ -150,6 +152,7 @@ public class LarvaAgentType {
             .build();
         type.addConfiguration(DesiresKeys.BOOST_GROUND_RANGED, morphToHydra);
 
+
         //morph to mutalisk
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent morphToMutalisk = ConfigurationWithCommand.
             WithActingCommandDesiredByOtherAgent.builder()
@@ -185,6 +188,7 @@ public class LarvaAgentType {
                 .build())
             .build();
         type.addConfiguration(DesiresKeys.BOOST_AIR, morphToMutalisk);
+
 
         //morph
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent mine = ConfigurationWithCommand.

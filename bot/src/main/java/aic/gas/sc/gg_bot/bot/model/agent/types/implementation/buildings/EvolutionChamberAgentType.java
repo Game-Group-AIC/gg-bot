@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
@@ -17,7 +17,7 @@ public class EvolutionChamberAgentType {
         type.addConfiguration(
             DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION, AgentTypeUnit.beliefsAboutConstruction);
       })
-      .usingTypesForFacts(new HashSet<>(Arrays.asList(IS_BEING_CONSTRUCT)))
+      .usingTypesForFacts(new HashSet<>(Arrays.asList(IS_BEING_CONSTRUCTED)))
       .desiresWithIntentionToReason(new HashSet<>(Collections.singletonList(
           DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION)))
       .build();

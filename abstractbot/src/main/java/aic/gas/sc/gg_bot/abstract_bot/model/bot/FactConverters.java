@@ -3,19 +3,18 @@ package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.CREEP_COLONY_TYPE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.OVERLORD_TYPE;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
-import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import bwapi.Order;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -548,7 +547,7 @@ public class FactConverters {
   );
 
   //building
-  public static final FactWithOptionalValue<AUnitOfPlayer> IS_BEING_CONSTRUCT = new FactWithOptionalValue<>(
+  public static final FactWithOptionalValue<AUnitOfPlayer> IS_BEING_CONSTRUCTED = new FactWithOptionalValue<>(
       new FactConverterID<>(401, FactKeys.REPRESENTS_UNIT),
       aUnit -> aUnit.get().isBeingConstructed() ? 1.0 : 0.0);
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_POOLS = new FactWithSetOfOptionalValuesForAgentType<>(
@@ -585,7 +584,7 @@ public class FactConverters {
               aUnitOfPlayer -> !aUnitOfPlayer.isBeingConstructed() && !aUnitOfPlayer.isMorphing())
           .count(), AgentTypes.HATCHERY);
   public static final FactWithSetOfOptionalValuesForAgentType<Boolean> COUNT_OF_HATCHERIES_BEING_CONSTRUCT = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(408, FactKeys.IS_BEING_CONSTRUCT),
+      new FactConverterID<>(408, FactKeys.IS_BEING_CONSTRUCTED),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .filter(Optional::get)
           .count(), AgentTypes.HATCHERY);
@@ -734,10 +733,4 @@ public class FactConverters {
       || aUnit.get().isMorphing()
       || !aUnit.get().getTrainingQueue().isEmpty() ? 1.0 : 0.0
   );
-
-  ////5 pool hack
-  public static final FactWithSetOfOptionalValues<Boolean> CAN_TRANSIT_FROM_5_POOL = new FactWithSetOfOptionalValues<>(
-      new FactConverterID<>(801, FactKeys.TRANSIT_FROM_5_POOL), optionalStream -> optionalStream
-      .filter(Optional::isPresent)
-      .anyMatch(Optional::get) ? 1.0 : 0.0);
 }

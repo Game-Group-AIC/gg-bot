@@ -1,7 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.PLAYER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CAN_TRANSIT_FROM_5_POOL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HATCHERIES;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HATCHERIES_BEGINNING_CONSTRUCTION;
@@ -70,9 +69,8 @@ public class EcoManagerAgentType {
             .sharedDesireKey(MORPH_TO_DRONE)
             .counts(1)
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) ->
-                    dataForDecision.getFeatureValueGlobalBeliefs(CAN_TRANSIT_FROM_5_POOL) != 0
-                        && (Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_WORKER,
+                .decisionStrategy((dataForDecision, memory) -> (
+                    Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_WORKER,
                         dataForDecision, TRAINING_WORKER)
                         //or we are idle and there is still room for drone
                         || (!dataForDecision.madeDecisionToAny()
@@ -93,7 +91,7 @@ public class EcoManagerAgentType {
                     Collectors.toSet()))
                 .globalBeliefTypes(
                     Stream.concat(TRAINING_WORKER.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(COUNT_OF_WORKERS, CAN_TRANSIT_FROM_5_POOL)).collect(
+                        Stream.of(COUNT_OF_WORKERS)).collect(
                         Collectors.toSet()))
                 .desiresToConsider(
                     new HashSet<>(Arrays.asList(INCREASE_CAPACITY, EXPAND, BUILD_EXTRACTOR)))
@@ -130,7 +128,7 @@ public class EcoManagerAgentType {
                     INCREASING_CAPACITY.getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .globalBeliefTypes(Stream.concat(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(COUNT_OF_MORPHING_OVERLORDS, CAN_TRANSIT_FROM_5_POOL)).collect(
+                    Stream.of(COUNT_OF_MORPHING_OVERLORDS)).collect(
                     Collectors.toSet()))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -146,7 +144,7 @@ public class EcoManagerAgentType {
                     INCREASING_CAPACITY.getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .globalBeliefTypes(Stream.concat(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(COUNT_OF_MORPHING_OVERLORDS, CAN_TRANSIT_FROM_5_POOL)).collect(
+                    Stream.of(COUNT_OF_MORPHING_OVERLORDS)).collect(
                     Collectors.toSet()))
                 .build())
             .build();
@@ -210,8 +208,6 @@ public class EcoManagerAgentType {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_HATCHERIES_IN_CONSTRUCTION) == 0
                         && dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_HATCHERIES_BEING_CONSTRUCT) == 0
@@ -228,8 +224,7 @@ public class EcoManagerAgentType {
                 )
                 .globalBeliefTypes(
                     Stream.concat(EXPANDING.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(COUNT_OF_HATCHERIES_IN_CONSTRUCTION,
-                            CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                        Stream.of(COUNT_OF_HATCHERIES_IN_CONSTRUCTION)).collect(Collectors.toSet()))
                 .globalBeliefTypesByAgentType(Stream.concat(
                     EXPANDING.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                     Stream.of(COUNT_OF_HATCHERIES_BEING_CONSTRUCT, COUNT_OF_HETCH,
@@ -251,8 +246,7 @@ public class EcoManagerAgentType {
                 )
                 .globalBeliefTypes(
                     Stream.concat(EXPANDING.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(COUNT_OF_HATCHERIES_IN_CONSTRUCTION,
-                            CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                        Stream.of(COUNT_OF_HATCHERIES_IN_CONSTRUCTION)).collect(Collectors.toSet()))
                 .globalBeliefTypesByAgentType(Stream.concat(
                     EXPANDING.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                     Stream.of(COUNT_OF_HATCHERIES_BEING_CONSTRUCT, COUNT_OF_HETCH,
@@ -316,9 +310,7 @@ public class EcoManagerAgentType {
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && !dataForDecision.madeDecisionToAny()
+                    (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                         && (memory.returnFactValueForGivenKey(LAST_TIME_EXTRACTOR_BUILD).orElse(
                         0) + 100
                         < memory.getReadOnlyMemoriesForAgentType(PLAYER)
@@ -327,9 +319,7 @@ public class EcoManagerAgentType {
                         .max().orElse(0))
                         && Decider.getDecision(AgentTypes.ECO_MANAGER,
                         DesireKeys.BUILD_EXTRACTOR, dataForDecision, BUILDING_EXTRACTOR))
-                .globalBeliefTypes(Stream.concat(
-                    BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                .globalBeliefTypes(BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
                     BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(

@@ -1,6 +1,5 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CAN_TRANSIT_FROM_5_POOL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EVOLUTION_CHAMBERS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EVOLUTION_CHAMBERS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS;
@@ -64,13 +63,12 @@ public class BuildingOrderManager {
                 (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) == 0
-                        && dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_POOLS_IN_CONSTRUCTION) == 0
-                        && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
-                        DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL)
+                    (dataForDecision, memory) ->
+                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) == 0
+                            && dataForDecision.getFeatureValueGlobalBeliefs(
+                            COUNT_OF_POOLS_IN_CONSTRUCTION) == 0
+                            && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
+                            DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL)
 //                                                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) > 200)
                 )
                 .globalBeliefTypesByAgentType(Stream.concat(
@@ -79,9 +77,7 @@ public class BuildingOrderManager {
                         COUNT_OF_MINERALS)).collect(Collectors.toSet()))
                 .globalBeliefSetTypesByAgentType(
                     BUILDING_POOL.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .globalBeliefTypes(
-                    Stream.concat(BUILDING_POOL.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                .globalBeliefTypes(BUILDING_POOL.getConvertersForFactsForGlobalBeliefs())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
@@ -186,9 +182,7 @@ public class BuildingOrderManager {
         ConfigurationWithAbstractPlan buildHydraliskDen = ConfigurationWithAbstractPlan.builder()
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && !dataForDecision.madeDecisionToAny()
+                    (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                         && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
                         DesireKeys.ENABLE_GROUND_RANGED, dataForDecision,
                         BUILDING_HYDRALISK_DEN)
@@ -205,9 +199,7 @@ public class BuildingOrderManager {
                         COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION)).collect(Collectors.toSet()))
                 .globalBeliefSetTypesByAgentType(
                     BUILDING_HYDRALISK_DEN.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .globalBeliefTypes(Stream.concat(
-                    BUILDING_HYDRALISK_DEN.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                .globalBeliefTypes(BUILDING_HYDRALISK_DEN.getConvertersForFactsForGlobalBeliefs())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
@@ -246,9 +238,7 @@ public class BuildingOrderManager {
             .builder()
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && !dataForDecision.madeDecisionToAny()
+                    (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                         && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
                         DesireKeys.UPGRADE_TO_LAIR, dataForDecision, UPGRADING_TO_LAIR)
                         && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_LAIRS) == 0
@@ -260,9 +250,7 @@ public class BuildingOrderManager {
                     Collectors.toSet()))
                 .globalBeliefSetTypesByAgentType(
                     UPGRADING_TO_LAIR.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .globalBeliefTypes(Stream.concat(
-                    UPGRADING_TO_LAIR.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                .globalBeliefTypes(UPGRADING_TO_LAIR.getConvertersForFactsForGlobalBeliefs())
                 .desiresToConsider(new HashSet<>(Collections.singleton(UPGRADE_TO_LAIR)))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -284,9 +272,7 @@ public class BuildingOrderManager {
         ConfigurationWithAbstractPlan buildSpire = ConfigurationWithAbstractPlan.builder()
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && !dataForDecision.madeDecisionToAny()
+                    (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                         && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
                         DesireKeys.ENABLE_AIR, dataForDecision, BUILDING_SPIRE)
                         && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_SPIRES) == 0
@@ -298,9 +284,7 @@ public class BuildingOrderManager {
                     Collectors.toSet()))
                 .globalBeliefSetTypesByAgentType(
                     BUILDING_SPIRE.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .globalBeliefTypes(
-                    Stream.concat(BUILDING_SPIRE.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                .globalBeliefTypes(BUILDING_SPIRE.getConvertersForFactsForGlobalBeliefs())
                 .desiresToConsider(new HashSet<>(Collections.singleton(ENABLE_AIR)))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -340,9 +324,7 @@ public class BuildingOrderManager {
             .sharedDesireKey(MORPH_TO_EVOLUTION_CHAMBER)
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && !dataForDecision.madeDecisionToAny() &&
+                    (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny() &&
                         dataForDecision.getFeatureValueGlobalBeliefs(
                             COUNT_OF_EVOLUTION_CHAMBERS) == 0
                         && dataForDecision.getFeatureValueGlobalBeliefs(
@@ -360,9 +342,8 @@ public class BuildingOrderManager {
                 .globalBeliefSetTypesByAgentType(
                     BUILDING_EVOLUTION_CHAMBER
                         .getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .globalBeliefTypes(Stream.concat(
-                    BUILDING_EVOLUTION_CHAMBER.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                .globalBeliefTypes(
+                    BUILDING_EVOLUTION_CHAMBER.getConvertersForFactsForGlobalBeliefs())
                 .desiresToConsider(new HashSet<>(Collections.singleton(ENABLE_STATIC_ANTI_AIR)))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()

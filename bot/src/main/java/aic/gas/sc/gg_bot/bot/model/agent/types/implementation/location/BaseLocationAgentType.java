@@ -4,7 +4,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.HATCHERY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.LAIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.PLAYER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.BASE_IS_COMPLETED;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CAN_TRANSIT_FROM_5_POOL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_CREEP_COLONIES_AT_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS_ON_BASE;
@@ -468,20 +467,18 @@ public class BaseLocationAgentType {
             .counts(2)
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 1
-                        && dataForDecision.getFeatureValueDesireBeliefSets(
-                        COUNT_OF_EXTRACTORS_ON_BASE) > 0
-                        && memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(
-                        Stream.empty())
-                        .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isGasBuilding())
-                        .anyMatch(
-                            aUnitOfPlayer -> !aUnitOfPlayer.isBeingConstructed() && !aUnitOfPlayer
-                                .isMorphing()))
+                    (dataForDecision, memory) ->
+                        dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 1
+                            && dataForDecision.getFeatureValueDesireBeliefSets(
+                            COUNT_OF_EXTRACTORS_ON_BASE) > 0
+                            && memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(
+                            Stream.empty())
+                            .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isGasBuilding())
+                            .anyMatch(
+                                aUnitOfPlayer -> !aUnitOfPlayer.isBeingConstructed()
+                                    && !aUnitOfPlayer
+                                    .isMorphing()))
                 .beliefTypes(new HashSet<>(Collections.singletonList(FactConverters.IS_BASE)))
-                .globalBeliefTypes(
-                    new HashSet<>(Collections.singletonList(CAN_TRANSIT_FROM_5_POOL)))
                 .parameterValueSetTypes(
                     new HashSet<>(Collections.singletonList(COUNT_OF_EXTRACTORS_ON_BASE)))
                 .build())
@@ -525,24 +522,21 @@ public class BaseLocationAgentType {
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                        && (memory.returnFactValueForGivenKey(
-                        LAST_CREEP_COLONY_BUILDING_TIME).orElse(0) + 100
-                        < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
-                        0))
-                        && (dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                        + dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_CREEP_COLONIES_AT_BASE)) == 0
-                        && !dataForDecision.madeDecisionToAny()
-                        && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
-                        && Decider.getDecision(AgentTypes.BASE_LOCATION,
-                        DesireKeys.BUILD_CREEP_COLONY, dataForDecision, DEFENSE))
-                .globalBeliefTypes(
-                    Stream.concat(DEFENSE.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                    (dataForDecision, memory) ->
+                        dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                            && (memory.returnFactValueForGivenKey(
+                            LAST_CREEP_COLONY_BUILDING_TIME).orElse(0) + 100
+                            < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
+                            0))
+                            && (dataForDecision.getFeatureValueBeliefSets(
+                            COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION)
+                            + dataForDecision.getFeatureValueBeliefSets(
+                            COUNT_OF_CREEP_COLONIES_AT_BASE)) == 0
+                            && !dataForDecision.madeDecisionToAny()
+                            && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
+                            && Decider.getDecision(AgentTypes.BASE_LOCATION,
+                            DesireKeys.BUILD_CREEP_COLONY, dataForDecision, DEFENSE))
+                .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(Stream.concat(
                     DEFENSE.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
@@ -630,22 +624,19 @@ public class BaseLocationAgentType {
                     memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(null)))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                        && (memory.returnFactValueForGivenKey(
-                        LAST_SUNKEN_COLONY_BUILDING_TIME).orElse(0) + 100
-                        < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
-                        0))
-                        && (dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                        + dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_SUNKEN_COLONIES_AT_BASE)) <= 4
-                        && Decider.getDecision(AgentTypes.BASE_LOCATION,
-                        DesireKeys.BUILD_SUNKEN_COLONY, dataForDecision, DEFENSE))
-                .globalBeliefTypes(
-                    Stream.concat(DEFENSE.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                    (dataForDecision, memory) ->
+                        dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                            && (memory.returnFactValueForGivenKey(
+                            LAST_SUNKEN_COLONY_BUILDING_TIME).orElse(0) + 100
+                            < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
+                            0))
+                            && (dataForDecision.getFeatureValueBeliefSets(
+                            COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION)
+                            + dataForDecision.getFeatureValueBeliefSets(
+                            COUNT_OF_SUNKEN_COLONIES_AT_BASE)) <= 4
+                            && Decider.getDecision(AgentTypes.BASE_LOCATION,
+                            DesireKeys.BUILD_SUNKEN_COLONY, dataForDecision, DEFENSE))
+                .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
                     DEFENSE.getConvertersForFactsForGlobalBeliefsByAgentType())
@@ -714,22 +705,19 @@ public class BaseLocationAgentType {
                     memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(null)))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                        && (memory.returnFactValueForGivenKey(
-                        LAST_SPORE_COLONY_BUILDING_TIME).orElse(0) + 100
-                        < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
-                        0))
-                        && (dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                        + dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_SPORE_COLONIES_AT_BASE)) <= 4
-                        && Decider.getDecision(AgentTypes.BASE_LOCATION,
-                        DesireKeys.BUILD_SPORE_COLONY, dataForDecision, DEFENSE))
-                .globalBeliefTypes(
-                    Stream.concat(DEFENSE.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                    (dataForDecision, memory) ->
+                        dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                            && (memory.returnFactValueForGivenKey(
+                            LAST_SPORE_COLONY_BUILDING_TIME).orElse(0) + 100
+                            < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
+                            0))
+                            && (dataForDecision.getFeatureValueBeliefSets(
+                            COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION)
+                            + dataForDecision.getFeatureValueBeliefSets(
+                            COUNT_OF_SPORE_COLONIES_AT_BASE)) <= 4
+                            && Decider.getDecision(AgentTypes.BASE_LOCATION,
+                            DesireKeys.BUILD_SPORE_COLONY, dataForDecision, DEFENSE))
+                .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
                     DEFENSE.getConvertersForFactsForGlobalBeliefsByAgentType())
@@ -787,13 +775,10 @@ public class BaseLocationAgentType {
                         .findAny().orElse(null)))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    dataForDecision.getFeatureValueGlobalBeliefs(CAN_TRANSIT_FROM_5_POOL) != 0
-                        && memory.returnFactValueForGivenKey(IS_ENEMY_BASE).get()
+                    memory.returnFactValueForGivenKey(IS_ENEMY_BASE).get()
                         && Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
                         dataForDecision, HOLDING))
-                .globalBeliefTypes(
-                    Stream.concat(HOLDING.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
                     HOLDING.getConvertersForFactsForGlobalBeliefsByAgentType())

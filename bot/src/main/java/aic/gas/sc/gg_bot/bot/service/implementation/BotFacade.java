@@ -1,6 +1,5 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Annotator;
@@ -8,13 +7,13 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractPositionWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
-import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentPlayer;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.bot.service.AbstractAgentsInitializer;
 import aic.gas.sc.gg_bot.bot.service.AgentUnitHandler;
 import aic.gas.sc.gg_bot.bot.service.LocationInitializer;
 import aic.gas.sc.gg_bot.bot.service.PlayerInitializer;
+import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import bwapi.DefaultBWListener;
 import bwapi.Game;
 import bwapi.Mirror;
@@ -171,6 +170,8 @@ public class BotFacade extends DefaultBWListener {
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = agentUnitFactory
             .createAgentForUnit(unit, this, game.getFrameCount());
+        log.info("Creating " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
+            .orElse("null"));
         agent.ifPresent(agentObservingGame -> {
           agentsWithGameRepresentation.put(unit.getID(), agentObservingGame);
           masFacade.addAgentToSystem(agentObservingGame);
@@ -187,6 +188,8 @@ public class BotFacade extends DefaultBWListener {
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = Optional
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
+        log.info("Destroying " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
+            .orElse("null"));
         agent.ifPresent(agentObservingGame -> masFacade.removeAgentFromSystem(agentObservingGame,
             unit.getType().isBuilding()));
       }
@@ -199,12 +202,15 @@ public class BotFacade extends DefaultBWListener {
   @Override
   public void onUnitMorph(Unit unit) {
     try {
-
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = Optional
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
         agent.ifPresent(
             agentObservingGame -> masFacade.removeAgentFromSystem(agentObservingGame, true));
+
+        log.info("Morphing from " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
+            .orElse("null")
+            + " to " + unit.getType().toString());
         onUnitCreate(unit);
       }
     } catch (Exception e) {

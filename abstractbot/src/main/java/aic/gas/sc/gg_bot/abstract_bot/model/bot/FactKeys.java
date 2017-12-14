@@ -286,8 +286,8 @@ public class FactKeys {
   };
 
   //for buildings
-  public static final FactKey<Boolean> IS_BEING_CONSTRUCT = new FactKey<Boolean>(
-      "IS_BEING_CONSTRUCT", false) {
+  public static final FactKey<Boolean> IS_BEING_CONSTRUCTED = new FactKey<Boolean>(
+      "IS_BEING_CONSTRUCTED", false) {
     @Override
     public Boolean getInitValue() {
       return false;
