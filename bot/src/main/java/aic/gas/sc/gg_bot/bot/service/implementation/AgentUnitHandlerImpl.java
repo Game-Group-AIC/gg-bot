@@ -22,9 +22,25 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
-import aic.gas.sc.gg_bot.bot.model.AgentsUnitTypes;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeUnit;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.CreepColonyAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.EvolutionChamberAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.ExtractorAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.HatcheryAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.HydraliskDenAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.LairAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.SpawningPoolAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.SpireAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.SporeColonyAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings.SunkenColonyAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.DroneAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.EggAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.HydraliskAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.LarvaAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.MutaliskAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.OverlordAgentType;
+import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.ZerglingAgentType;
 import aic.gas.sc.gg_bot.bot.service.AgentUnitHandler;
 import bwapi.Unit;
 import java.util.HashMap;
@@ -41,23 +57,24 @@ public class AgentUnitHandlerImpl implements AgentUnitHandler {
   private final Map<AUnitTypeWrapper, AgentTypeUnit> agentConfigurationForUnitType = new HashMap<>();
 
   {
-    agentConfigurationForUnitType.put(DRONE_TYPE, AgentsUnitTypes.DRONE);
-    agentConfigurationForUnitType.put(HATCHERY_TYPE, AgentsUnitTypes.HATCHERY);
-    agentConfigurationForUnitType.put(LARVA_TYPE, AgentsUnitTypes.LARVA);
-    agentConfigurationForUnitType.put(EGG_TYPE, AgentsUnitTypes.EGG);
-    agentConfigurationForUnitType.put(SPAWNING_POOL_TYPE, AgentsUnitTypes.SPAWNING_POOL);
-    agentConfigurationForUnitType.put(OVERLORD_TYPE, AgentsUnitTypes.OVERLORD);
-    agentConfigurationForUnitType.put(ZERGLING_TYPE, AgentsUnitTypes.ZERGLING);
-    agentConfigurationForUnitType.put(EXTRACTOR_TYPE, AgentsUnitTypes.EXTRACTOR);
-    agentConfigurationForUnitType.put(LAIR_TYPE, AgentsUnitTypes.LAIR);
-    agentConfigurationForUnitType.put(SPIRE_TYPE, AgentsUnitTypes.SPIRE);
-    agentConfigurationForUnitType.put(EVOLUTION_CHAMBER_TYPE, AgentsUnitTypes.EVOLUTION_CHAMBER);
-    agentConfigurationForUnitType.put(HYDRALISK_DEN_TYPE, AgentsUnitTypes.HYDRALISK_DEN);
-    agentConfigurationForUnitType.put(SUNKEN_COLONY_TYPE, AgentsUnitTypes.SUNKEN_COLONY);
-    agentConfigurationForUnitType.put(CREEP_COLONY_TYPE, AgentsUnitTypes.CREEP_COLONY);
-    agentConfigurationForUnitType.put(SPORE_COLONY_TYPE, AgentsUnitTypes.SPORE_COLONY);
-    agentConfigurationForUnitType.put(MUTALISK_TYPE, AgentsUnitTypes.MUTALISK);
-    agentConfigurationForUnitType.put(HYDRALISK_TYPE, AgentsUnitTypes.HYDRALISK);
+    agentConfigurationForUnitType.put(DRONE_TYPE, DroneAgentType.DRONE);
+    agentConfigurationForUnitType.put(HATCHERY_TYPE, HatcheryAgentType.HATCHERY);
+    agentConfigurationForUnitType.put(LARVA_TYPE, LarvaAgentType.LARVA);
+    agentConfigurationForUnitType.put(EGG_TYPE, EggAgentType.EGG);
+    agentConfigurationForUnitType.put(SPAWNING_POOL_TYPE, SpawningPoolAgentType.SPAWNING_POOL);
+    agentConfigurationForUnitType.put(OVERLORD_TYPE, OverlordAgentType.OVERLORD);
+    agentConfigurationForUnitType.put(ZERGLING_TYPE, ZerglingAgentType.ZERGLING);
+    agentConfigurationForUnitType.put(EXTRACTOR_TYPE, ExtractorAgentType.EXTRACTOR);
+    agentConfigurationForUnitType.put(LAIR_TYPE, LairAgentType.LAIR);
+    agentConfigurationForUnitType.put(SPIRE_TYPE, SpireAgentType.SPIRE);
+    agentConfigurationForUnitType
+        .put(EVOLUTION_CHAMBER_TYPE, EvolutionChamberAgentType.EVOLUTION_CHAMBER);
+    agentConfigurationForUnitType.put(HYDRALISK_DEN_TYPE, HydraliskDenAgentType.HYDRALISK_DEN);
+    agentConfigurationForUnitType.put(SUNKEN_COLONY_TYPE, SunkenColonyAgentType.SUNKEN_COLONY);
+    agentConfigurationForUnitType.put(CREEP_COLONY_TYPE, CreepColonyAgentType.CREEP_COLONY);
+    agentConfigurationForUnitType.put(SPORE_COLONY_TYPE, SporeColonyAgentType.SPORE_COLONY);
+    agentConfigurationForUnitType.put(MUTALISK_TYPE, MutaliskAgentType.MUTALISK);
+    agentConfigurationForUnitType.put(HYDRALISK_TYPE, HydraliskAgentType.HYDRALISK);
   }
 
   @Override

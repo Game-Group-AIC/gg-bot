@@ -3,6 +3,8 @@ package aic.gas.sc.gg_bot.bot.model.agent.types;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNDER_ATTACK;
@@ -16,22 +18,32 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_TO_REACH;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
+import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
+import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import bwapi.Game;
+import bwapi.Position;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -194,6 +206,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         initializationStrategy, OBSERVING_COMMAND, skipTurnsToMakeObservation);
   }
 
+
+
   //builder with default fields
   public static class AgentTypeUnitBuilder extends AgentTypeMakingObservationsBuilder {
 
@@ -204,5 +218,169 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
     private Set<FactKey<?>> usingTypesForFacts = new HashSet<>();
     private Set<FactKey<?>> usingTypesForFactSets = new HashSet<>();
     private int skipTurnsToMakeObservation = 5;
+  }
+
+  public static void initAttackPlan(AgentType type, DesireKey desireKey,
+      boolean isScaredOfAntiAir) {
+
+    //attack
+    ConfigurationWithAbstractPlan attackPlan = ConfigurationWithAbstractPlan.builder()
+        .reactionOnChangeStrategy((memory, desireParameters) -> {
+          memory.updateFact(PLACE_TO_REACH,
+              desireParameters.returnFactValueForGivenKey(IS_BASE_LOCATION).get().getPosition());
+        })
+        .reactionOnChangeStrategyInIntention(
+            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(PLACE_TO_REACH))
+        .decisionInDesire(CommitmentDeciderInitializer.builder()
+            .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
+            .desiresToConsider(new HashSet<>(Arrays.asList(desireKey, DesiresKeys.DEFEND)))
+            .build()
+        )
+        .decisionInIntention(CommitmentDeciderInitializer.builder()
+            .decisionStrategy((dataForDecision, memory) -> false)
+            .build()
+        )
+        .desiresWithIntentionToAct(new HashSet<>(Arrays.asList(
+            DesiresKeys.MOVE_AWAY_FROM_DANGER, DesiresKeys.MOVE_TO_POSITION, DesiresKeys.ATTACK)))
+        .build();
+    type.addConfiguration(desireKey, attackPlan, false);
+
+    //if is in danger - select the closest unit (based on type) and move away from it
+    ConfigurationWithCommand.WithActingCommandDesiredBySelf flee = ConfigurationWithCommand.WithActingCommandDesiredBySelf
+        .builder()
+        .decisionInDesire(CommitmentDeciderInitializer.builder()
+            .decisionStrategy((dataForDecision, memory) -> {
+              AUnitOfPlayer me = memory.returnFactValueForGivenKey(IS_UNIT).get();
+              return me.isUnderAttack() && me.getHPPercent() < 0.4;
+            })
+            .build()
+        )
+        .decisionInIntention(CommitmentDeciderInitializer.builder()
+            .decisionStrategy((dataForDecision, memory) -> true)
+            .build())
+        .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+          @Override
+          public boolean act(WorkingMemory memory) {
+            AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
+            Optional<Enemy> enemyToFleeFrom = me.getEnemyUnitsInRadiusOfSight().stream()
+                .filter(enemy -> isScaredOfAntiAir ? enemy.getType().canAttackAirUnits()
+                    : enemy.getType().canAttackGroundUnits())
+                .min(Comparator.comparingDouble(
+                    value -> value.getPosition().distanceTo(me.getPosition())));
+            if (enemyToFleeFrom.isPresent()) {
+              return me.move(positionToMove(me.getPosition(), enemyToFleeFrom.get().getPosition()));
+            } else {
+              Optional<AUnit.Enemy> enemy = me.getEnemyUnitsInRadiusOfSight().stream()
+                  .min(Comparator.comparingDouble(
+                      value -> value.getPosition().distanceTo(me.getPosition())));
+              if (enemy.isPresent()) {
+                return me.move(positionToMove(me.getPosition(), enemy.get().getPosition()));
+              }
+            }
+            return true;
+          }
+        })
+        .build();
+    type.addConfiguration(DesiresKeys.MOVE_AWAY_FROM_DANGER, desireKey, flee);
+
+    //if is not in danger - continue to position
+    ConfigurationWithCommand.WithActingCommandDesiredBySelf moveOnPosition = ConfigurationWithCommand.WithActingCommandDesiredBySelf
+        .builder()
+        .decisionInDesire(CommitmentDeciderInitializer.builder()
+            .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                && memory.returnFactValueForGivenKey(IS_UNIT).isPresent()
+                && memory.returnFactValueForGivenKey(PLACE_TO_REACH).isPresent()
+                && !memory.returnFactValueForGivenKey(IS_UNIT).get().isUnderAttack()
+                && memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().distanceTo(
+                memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get().getPosition()) > 10
+            )
+            .desiresToConsider(new HashSet<>(Collections.singleton(DesiresKeys.ATTACK)))
+            .build()
+        )
+        .decisionInIntention(CommitmentDeciderInitializer.builder()
+            .decisionStrategy((dataForDecision, memory) -> true)
+            .build())
+        .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+          @Override
+          public boolean act(WorkingMemory memory) {
+            return memory.returnFactValueForGivenKey(IS_UNIT).get().attack(
+                memory.returnFactValueForGivenKey(PLACE_TO_REACH).get());
+          }
+        })
+        .build();
+    type.addConfiguration(DesiresKeys.MOVE_TO_POSITION, desireKey, moveOnPosition);
+
+    //attack on position
+    ConfigurationWithCommand.WithActingCommandDesiredBySelf attack = ConfigurationWithCommand.WithActingCommandDesiredBySelf
+        .builder()
+        .decisionInDesire(CommitmentDeciderInitializer.builder()
+            .decisionStrategy((dataForDecision, memory) ->
+                memory.returnFactValueForGivenKey(IS_UNIT).isPresent()
+                    && !memory.returnFactValueForGivenKey(IS_UNIT).get().isUnderAttack()
+            )
+            .build()
+        )
+        .decisionInIntention(CommitmentDeciderInitializer.builder()
+            .decisionStrategy((dataForDecision, memory) -> true)
+            .build())
+        .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+          @Override
+          public boolean act(WorkingMemory memory) {
+            //select closest enemy
+            AUnitWithCommands unitOfPlayer = memory.returnFactValueForGivenKey(IS_UNIT).get();
+
+            Optional<AUnit.Enemy> enemy = unitOfPlayer.getEnemyUnitsInRadiusOfSight().stream()
+                .filter(AUnit::isAttacking)
+                .min(Comparator.comparingDouble(
+                    value -> value.getPosition().distanceTo(unitOfPlayer.getPosition())));
+            if (enemy.isPresent()) {
+              unitOfPlayer.attack(enemy.get());
+            } else {
+
+              //attack units on position
+              Optional<ReadOnlyMemory> base = memory.getReadOnlyMemoriesForAgentType(
+                  AgentTypes.BASE_LOCATION)
+                  .min(Comparator.comparingDouble(value -> value.returnFactValueForGivenKey(
+                      IS_BASE_LOCATION).get().distanceTo(unitOfPlayer.getPosition())));
+              if (base.isPresent()) {
+                enemy = base.get().returnFactSetValueForGivenKey(ENEMY_UNIT).orElse(Stream.empty())
+                    .filter(AUnit::isAttacking)
+                    .min(Comparator.comparingDouble(
+                        value -> value.getPosition().distanceTo(unitOfPlayer.getPosition())));
+                if (enemy.isPresent()) {
+                  unitOfPlayer.attack(enemy.get());
+                } else {
+                  enemy = base.get().returnFactSetValueForGivenKey(ENEMY_UNIT)
+                      .orElse(Stream.empty())
+                      .min(Comparator.comparingDouble(value -> value.getPosition().distanceTo(
+                          unitOfPlayer.getPosition())));
+                  enemy.ifPresent(unitOfPlayer::attack);
+                }
+              }
+            }
+            return true;
+          }
+        })
+        .build();
+    type.addConfiguration(DesiresKeys.ATTACK, desireKey, attack);
+
+  }
+
+  public static APosition positionToMove(APosition myPosition, APosition dangerPosition) {
+    int difX = (myPosition.getX() - dangerPosition.getY()) * 4, difY =
+        (myPosition.getY() - dangerPosition.getY()) * 4;
+    if (difX > 0) {
+      if (difY > 0) {
+        return APosition.wrap(new Position(myPosition.getX() - difX, myPosition.getY() - difY));
+      } else {
+        return APosition.wrap(new Position(myPosition.getX() - difX, myPosition.getY() + difY));
+      }
+    } else {
+      if (difY > 0) {
+        return APosition.wrap(new Position(myPosition.getX() + difX, myPosition.getY() - difY));
+      } else {
+        return APosition.wrap(new Position(myPosition.getX() + difX, myPosition.getY() + difY));
+      }
+    }
   }
 }
