@@ -1,77 +1,65 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
-import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
-import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractPositionWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
-import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BaseWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BuildOrderManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.EcoManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitOrderManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.WatcherPlayer;
-import aic.gas.sc.gg_bot.replay_parser.service.AgentUnitHandler;
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayParserService;
-import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
 import bwapi.DefaultBWListener;
 import bwapi.Game;
 import bwapi.Mirror;
 import bwapi.Player;
-import bwapi.Race;
-import bwapi.Unit;
-import bwta.BWTA;
-import bwta.BaseLocation;
+import com.google.common.io.Files;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Concrete implementation of service to parse replays
  */
-@Slf4j
 public class ReplayParserServiceImpl extends DefaultBWListener implements ReplayParserService {
 
-  private static final String chaosluncherPath = "c:\\Users\\Jan\\Desktop\\Chaosluncher Run With Full Privileges.lnk";
-  private static final StorageService storageService = StorageServiceImp.getInstance();
-  //  private ReplayLoaderService replayLoaderService = new RabbitMQReplayLoaderServiceImpl(
-//      System.getenv("RABBITMQ_BROKER_HOST"),
-//      System.getenv("RABBITMQ_DEFAULT_USER"),
-//      System.getenv("RABBITMQ_DEFAULT_PASS"),
-//      Integer.parseInt(System.getenv("RABBITMQ_BROKER_PORT"))
-//  );
+  private static final Pattern lineWithMatchPattern = Pattern.compile("^map\\s*=\\s*.+$");
+  //paths
+  private static final String bwapiIniPath = "c:\\sc\\bwapi-data\\bwapi.ini";
+  private static final String starcraftPath = "c:\\sc";
+  //files
+  private static final File bwapiIni = new File(bwapiIniPath);
+  private static final File starcraftFolder = new File(starcraftPath);
+  private ReplayLoaderService replayLoaderService;
   // Alternatively use this loader:
-  private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
-  private WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl.getInstance();
+  //  private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
   private Optional<Replay> replay;
+  private Set<Player> players;
+  private boolean shouldSkip = false;
+
+  public ReplayParserServiceImpl(ReplayLoaderService replayLoader) {
+    replayLoaderService = replayLoader;
+  }
 
   /**
    * Method to start Chaosluncher with predefined configuration. Sadly process can be only started,
    * not closed. See comment in method body to setup it appropriately
    */
-  private void startChaosluncher() throws IOException {
-    /*
-     * To fully automate process of lunching Starcraft:
-     * Lunch Chaosluncher with full privileges, guide to setup such a shortucut is on
-     * http://lifehacker.com/how-to-eliminate-uac-prompts-for-specific-applications-493128966.
-     *
-     * Also do not forget to set: Setting > Run Starcraft on Startup to initialize game based on configuration file.
-     */
-    log.info("Starting Chaosluncher...");
+  private void startGame() throws IOException {
+    // You might need to run this to be able to run linux cmd from wine:
+    // https://stackoverflow.com/a/45545068/1233675
+    //
+    // k='HKLM\System\CurrentControlSet\Control\Session Manager\Environment'
+    // pathext_orig=$( wine reg query "$k" /v PATHEXT | tr -d '\r' | awk '/^  /{ print $3 }' )
+    // echo "$pathext_orig" | grep -qE '(^|;)\.(;|$)' || wine reg add "$k" /v PATHEXT /f /d "${pathext_orig};."
+    System.err.println("Starting game...");
     Runtime rt = Runtime.getRuntime();
-    rt.exec("cmd /c start \"\" \"" + chaosluncherPath + "\"");
+    rt.exec("/usr/bin/launch_game --headful");
   }
 
   /**
@@ -87,225 +75,216 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
    */
   private void setNextReplay() {
     try {
+      System.err.println("setNextReplay");
       replay = Optional.of(getNextReplay());
+
+      System.err.println("setupReplayInConfigurationFile");
+      setupReplayInConfigurationFile(replay.get().getRawFile());
+
     } catch (Exception e) {
-      log.error(e.getLocalizedMessage());
+      e.printStackTrace();
 
       //terminate process
       System.exit(1);
     }
   }
 
+  /**
+   * Set up configuration bwapi.ini on given replay file
+   */
+  private void setupReplayInConfigurationFile(File replayFile) throws IOException {
+    Path pathToReplay = replayFile.toPath();
+    Path pathOfSC = starcraftFolder.toPath();
+    String pathToReplayRelativeToSCFolder = pathOfSC.relativize(pathToReplay)
+        .toString().replace("\\", "/");
+    System.err.println("setupReplayInConfigurationFile.pathToReplayRelativeToSCFolder "
+        + pathToReplayRelativeToSCFolder);
+
+    List<String> fileLines = Files.readLines(bwapiIni, StandardCharsets.UTF_8);
+    for (int i = 0; i < fileLines.size(); i++) {
+      Matcher matcher = lineWithMatchPattern.matcher(fileLines.get(i));
+      if (matcher.matches()) {
+        fileLines.set(i, "map = " + pathToReplayRelativeToSCFolder);
+        break;
+      }
+    }
+    String fileContent = fileLines.stream().map(Object::toString).collect(Collectors.joining("\n"));
+
+    System.err.println("setupReplayInConfigurationFile.writing to ini file");
+    try (FileOutputStream out = new FileOutputStream(bwapiIni)) {
+      java.nio.channels.FileLock lock = out.getChannel().lock();
+      System.err.println("setupReplayInConfigurationFile.lock received");
+      Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+      try {
+        writer.write(fileContent);
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        lock.release();
+      }
+      System.err.println("setupReplayInConfigurationFile.writing finished");
+      writer.close();
+    }
+//    Files.write(fileContent, bwapiIni, StandardCharsets.UTF_8);
+  }
+
+
   @Override
   public void parseReplays() {
 
-    //start game listener
+    // start game listener
     Thread gameListener = new Thread(new GameListener(), "GameListener");
-    gameListener.start();
 
-    //load all not parsed replays
+    // load all not parsed replays
+    System.err.println("load replays to parse");
     replayLoaderService.loadReplaysToParse();
+
     setNextReplay();
 
-//        //try to lunch chaosluncher
-//        try {
-//            startChaosluncher();
-//        } catch (IOException e) {
-//
-//            //terminate process
-//            log.error("Could not start Chaosluncher. " + e.getLocalizedMessage());
-//            System.exit(1);
-//        }
+    try {
+      gameListener.start();
+      startGame();
+    } catch (IOException e) {
+      //terminate process
+      System.err.println("Could not start game. " + e.getLocalizedMessage());
+      System.exit(1);
+    }
   }
 
   private class GameListener extends DefaultBWListener implements Runnable {
 
-    private final List<AgentMakingObservations> agentsWithObservations = new ArrayList<>();
-    //keep track of units watchers
-    private final Map<Integer, UnitWatcher> watchersOfUnits = new HashMap<>();
     private Mirror mirror = new Mirror();
     private Game currentGame;
-    private Player parsingPlayer;
-    private AgentUnitHandler agentUnitHandler = null;
-    private boolean track = false, shouldExit = false;
 
     @Override
     public void onStart() {
-      UnitWrapperFactory.clearCache();
-      WrapperTypeFactory.clearCache();
-      AbstractPositionWrapper.clearCache();
-
-      track = false;
-      log.info("New game from replay " + replay.get().getFile());
+      System.err.println("New game from replay " + replay.get().getFile().get());
       currentGame = mirror.getGame();
 
-      //speed up game to maximal possible, disable gui
       currentGame.setLocalSpeed(0);
-//            currentGame.setGUI(false);
+      currentGame.setGUI(false);
+      shouldSkip = false;
 
-      //kill no matter what to prevent crash (and rerun by outside script :))
-      if (shouldExit) {
-        System.exit(0);
+      int numStartLocations = currentGame.getStartLocations().size();
+      if (numStartLocations > 4) {
+        System.err.println("Skipping this game - too many start location " + numStartLocations);
+        currentGame.leaveGame();
+        shouldSkip = true;
+        return;
       }
 
-      if (!replay.get().isParsedMoreTimes()) {
-        track = true;
-        watchersOfUnits.clear();
+      players = currentGame.getPlayers().stream()
+          .filter(player -> !player.isNeutral())
+          .peek(player -> System.err.println(
+              player.getRace() + " id: " + player.getID() + " units: " + player.allUnitCount()))
+          .collect(Collectors.toSet());
 
-        //init types
-        if (agentUnitHandler == null) {
-          agentUnitHandler = new AgentUnitFactory();
-        }
-
-        //mark replay as loaded to skip it next time
-        storageService.markReplayAsParsed(replay.get());
-
-        try {
-
-          //Use BWTA to analyze map
-          //This may take a few minutes if the map is processed first time!
-          log.info("Analyzing map...");
-          BWTA.readMap();
-          BWTA.analyze();
-          log.info("Map data ready");
-
-          //set map size
-          int mapSize = (int) BWTA.getBaseLocations().stream()
-              .filter(BaseLocation::isStartLocation)
-              .count();
-          DecisionConfiguration.setMapSize(MapSizeEnums.getByStartBases(mapSize));
-
-          //set player to parse
-          Set<Integer> playersToParse = currentGame.getPlayers().stream()
-              .filter(p -> p.getRace().equals(Race.Zerg))
-              .filter(p -> p.allUnitCount() == 9)
-              .peek(player -> log.info(
-                  player.getRace() + " id: " + player.getID() + " units: " + player.allUnitCount()))
-              .map(Player::getID)
-              .collect(Collectors.toSet());
-          parsingPlayer = currentGame.getPlayers().stream()
-              .filter(p -> playersToParse.contains(p.getID()))
-              .findFirst()
-              .get();
-
-          //try to setup race
-          DecisionConfiguration.setupRace(parsingPlayer, currentGame.getPlayers());
-
-          WatcherPlayer watcherPlayer = new WatcherPlayer(parsingPlayer);
-          agentsWithObservations.add(watcherPlayer);
-          watcherMediatorService.addWatcher(watcherPlayer);
-
-          //init base agents
-          BWTA.getBaseLocations().forEach(baseLocation -> {
-            BaseWatcher baseWatcher = new BaseWatcher(ABaseLocationWrapper.wrap(baseLocation),
-                currentGame, new BaseWatcher.UpdateChecksStrategy());
-            agentsWithObservations.add(baseWatcher);
-            watcherMediatorService.addWatcher(baseWatcher);
-          });
-
-          //abstract managers
-          watcherMediatorService.addWatcher(new EcoManagerWatcher());
-          watcherMediatorService.addWatcher(new BuildOrderManagerWatcher());
-          watcherMediatorService.addWatcher(new UnitOrderManagerWatcher());
-
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
+      int numPlayers = players.size();
+      if (numPlayers != 2) {
+        System.err.println("Skipping this game - there aren't 2 players but " + numPlayers);
+        currentGame.leaveGame();
+        shouldSkip = true;
+        return;
       }
-    }
 
-    @Override
-    public void onUnitShow(Unit unit) {
-      DecisionConfiguration.setupEnemyRace(parsingPlayer, unit);
-    }
+      System.out.println("aic.gas: -------------------------------");
+      System.out.println("aic.gas: mapFileName " + currentGame.mapFileName());
+      System.out.println("aic.gas: mapName " + currentGame.mapName());
+      System.out.println("aic.gas: mapHash " + currentGame.mapHash());
+      System.out.println("aic.gas: mapWidth " + currentGame.mapWidth());
+      System.out.println("aic.gas: mapHeight " + currentGame.mapHeight());
+      System.out.println("aic.gas: getReplayFrameCount " + currentGame.getReplayFrameCount());
+      System.out.println("aic.gas: getStartLocations " + currentGame.getStartLocations().size());
+      System.out.println("aic.gas: numPlayers " + numPlayers);
 
-    @Override
-    public void onUnitCreate(Unit unit) {
-      if (track && parsingPlayer != null) {
-        try {
-          if (parsingPlayer.getID() == unit.getPlayer().getID()) {
-            Optional<UnitWatcher> unitWatcher = agentUnitHandler
-                .createAgentForUnit(unit, currentGame);
-            unitWatcher.ifPresent(watcher -> {
-              agentsWithObservations.add(watcher);
-              watcherMediatorService.addWatcher(watcher);
-              watchersOfUnits.put(unit.getID(), watcher);
-            });
-          }
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    }
-
-
-    @Override
-    public void onEnd(boolean b) {
-      try {
-        log.info("Game has finished. Processing data...");
-
-        //save trajectories and reset register
-        watcherMediatorService.clearAllAgentsAndSaveTheirTrajectories();
-
-        //if all players in queue were parsed, move to next replay
-        storageService.markReplayAsParsed(replay.get());
-//                setNextReplay();
-
-        //tell app to exit
-        shouldExit = true;
-
-        log.info("Data processed.");
-      } catch (Exception e) {
-        e.printStackTrace();
+      int i = 0;
+      for (Player player : players) {
+        System.out.println("aic.gas: race[" + player.getID() + "] " + player.getRace());
+        i++;
       }
     }
 
     @Override
     public void onFrame() {
-      if (track && parsingPlayer != null) {
-        try {
-
-          //make observations
-          agentsWithObservations.forEach(AgentMakingObservations::makeObservation);
-
-          //watch agents, update their additional beliefs and track theirs commitment
-          watcherMediatorService.tellAgentsToObserveSystemAndHandlePlans();
-
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
+      super.onFrame();
+      if (shouldSkip) {
+        return;
+      }
+      if (currentGame.getFrameCount() % 200 == 0) {
+        System.err.println(currentGame.getFrameCount() + " / " + currentGame.getReplayFrameCount());
       }
     }
 
     @Override
-    public void onUnitDestroy(Unit unit) {
-      if (track && parsingPlayer != null) {
-        try {
-          if (parsingPlayer.getID() == unit.getPlayer().getID()) {
-            Optional<UnitWatcher> watcher = Optional
-                .ofNullable(watchersOfUnits.remove(unit.getID()));
-            watcher.ifPresent(unitWatcher -> watcherMediatorService.removeWatcher(unitWatcher));
-          }
-          UnitWrapperFactory.unitDied(unit);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
+    public void onPlayerLeft(Player player) {
+      super.onPlayerLeft(player);
+      if (shouldSkip) {
+        return;
       }
+
+      System.err.println(player.getRace() + " id: " + player.getID() + " left the game.");
+      players.remove(player);
     }
 
     @Override
-    public void onUnitMorph(Unit unit) {
-      if (track && parsingPlayer != null) {
-        try {
-          if (parsingPlayer.getID() == unit.getPlayer().getID()) {
-            Optional<UnitWatcher> watcher = Optional
-                .ofNullable(watchersOfUnits.remove(unit.getID()));
-            watcher.ifPresent(unitWatcher -> watcherMediatorService.removeWatcher(unitWatcher));
-            onUnitCreate(unit);
+    public void onPlayerDropped(Player player) {
+      super.onPlayerDropped(player);
+      if (shouldSkip) {
+        return;
+      }
+
+      System.err.println(player.getRace() + " id: " + player.getID() + " dropped the game.");
+      players.remove(player);
+    }
+
+    @Override
+    public void onEnd(boolean b) {
+      try {
+        if (!shouldSkip) {
+
+          System.err.println("Game has finished. Processing data...");
+
+          System.out.println("aic.gas: numberOfStayedPlayers " + players.size());
+          // todo: add test for bots - winner is one that still has buildings
+          for (Player player : players) {
+            System.out.println("aic.gas: stayedPlayer " + player.getRace());
           }
-        } catch (Exception e) {
-          e.printStackTrace();
+
+          if (players.size() == 1) {
+            System.out.println("aic.gas: winningRace " + players.iterator().next().getRace());
+          } else {
+            PlayerWithCounts bestPlayer = players.stream().map(
+                player -> {
+                  PlayerWithCounts playerWithCounts = new PlayerWithCounts(
+                      player,
+                      player.getUnits().stream()
+                          .filter(unit -> unit.getType().isBuilding())
+                          .count());
+                  System.out.println("aic.gas: playerNumBuildings["
+                      + playerWithCounts.getPlayer().getID() + "] " +
+                      playerWithCounts.counts);
+
+                  return playerWithCounts;
+                }
+            ).max(new Comparator<PlayerWithCounts>() {
+                    @Override
+                    public int compare(PlayerWithCounts o1, PlayerWithCounts o2) {
+                      return Long.compare(o1.counts, o2.counts);
+                    }
+                  }
+            ).get();
+
+            System.out.println("aic.gas: bestPlayerNumBuildings " + bestPlayer.counts);
+            System.out.println("aic.gas: winningRace " + bestPlayer.getPlayer().getRace());
+          }
         }
+
+        replayLoaderService.finishedProcessing(replay.get().getRawFile());
+        setNextReplay();
+
+        System.out.println("Data processed.");
+      } catch (Exception e) {
+        e.printStackTrace();
       }
     }
 
@@ -313,6 +292,25 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     public void run() {
       mirror.getModule().setEventListener(this);
       mirror.startGame();
+    }
+  }
+
+  class PlayerWithCounts {
+
+    Player player;
+    long counts;
+
+    public PlayerWithCounts(Player player, long counts) {
+      this.player = player;
+      this.counts = counts;
+    }
+
+    public Player getPlayer() {
+      return player;
+    }
+
+    public long getCounts() {
+      return counts;
     }
   }
 

@@ -11,4 +11,6 @@ public interface ReplayLoaderService {
 
   File returnNextReplayToPlay() throws Exception;
 
+  void finishedProcessing(File replay);
+
 }

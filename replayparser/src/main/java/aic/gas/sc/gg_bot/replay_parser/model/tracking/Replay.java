@@ -69,6 +69,10 @@ public class Replay implements Serializable {
     return file.hashCode();
   }
 
+  public File getRawFile() {
+    return new File(file);
+  }
+
   public static class ReplaySerializer implements Serializer<Replay>, Serializable {
 
     @Override
