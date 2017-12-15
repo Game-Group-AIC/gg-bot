@@ -4,13 +4,13 @@ import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.player.Play
 
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentPlayer;
-import aic.gas.sc.gg_bot.bot.service.PlayerInitializer;
+import aic.gas.sc.gg_bot.bot.service.IPlayerInitializer;
 import bwapi.Race;
 
 /**
  * Strategy to initialize agent representing "player"
  */
-public class PlayerInitializerImpl implements PlayerInitializer {
+public class PlayerInitializer implements IPlayerInitializer {
 
   @Override
   public AgentPlayer createAgentForPlayer(APlayer player, BotFacade botFacade,

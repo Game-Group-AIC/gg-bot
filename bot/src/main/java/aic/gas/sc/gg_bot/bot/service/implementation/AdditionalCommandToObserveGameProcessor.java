@@ -41,7 +41,7 @@ public class AdditionalCommandToObserveGameProcessor {
     void requestObservation(ObservingCommand<Game> command, WorkingMemory memory,
         AgentType agentType) {
       synchronized (lockMonitor) {
-        if (commandExecutor.addCommandToObserve(command, memory, this, agentType)) {
+        if (commandExecutor.addCommandToObserve(command, memory, this)) {
           try {
             lockMonitor.wait();
           } catch (InterruptedException e) {

@@ -1,12 +1,12 @@
 package aic.gas.sc.gg_bot.bot.model.agent;
 
+import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
+import aic.gas.sc.gg_bot.bot.service.implementation.GameCommandExecutor;
 import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
-import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
-import aic.gas.sc.gg_bot.bot.service.implementation.GameCommandExecutor;
 import bwapi.Game;
 
 /**
@@ -25,13 +25,12 @@ class AgentObservingGame<K extends AgentTypeMakingObservations<Game>> extends
   @Override
   public boolean sendCommandToExecute(ActCommand<?> command,
       ResponseReceiverInterface<Boolean> responseReceiver) {
-    return gameCommandExecutor.addCommandToAct(command, beliefs, responseReceiver, agentType);
+    return gameCommandExecutor.addCommandToAct(command, beliefs, responseReceiver);
   }
 
   @Override
   protected boolean requestObservation(ObservingCommand<Game> observingCommand,
       ResponseReceiverInterface<Boolean> responseReceiver) {
-    return gameCommandExecutor
-        .addCommandToObserve(observingCommand, beliefs, responseReceiver, agentType);
+    return gameCommandExecutor.addCommandToObserve(observingCommand, beliefs, responseReceiver);
   }
 }

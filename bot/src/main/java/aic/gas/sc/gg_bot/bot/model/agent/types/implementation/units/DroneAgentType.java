@@ -13,7 +13,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_MINING_
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_WAITING_ON_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_WAITING_ON_MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.LAST_OBSERVATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.MADE_BUILDING_LAST_CHECK;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_SCOUT_BY_WORKER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BUILDING_LAST_CHECK;
@@ -61,6 +60,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeUnit;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
+import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
 import aic.gas.sc.gg_bot.bot.utils.Util;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
@@ -692,6 +692,8 @@ public class DroneAgentType {
                     && dataForDecision.getFeatureValueGlobalBeliefs(
                     COUNT_OF_GAS) >= (typeOfBuilding.getGasPrice() - 0.2 * typeOfBuilding
                     .getGasPrice())
+                    //is this type of building not locked
+                    && !BuildLockerService.getInstance().isLocked(typeOfBuilding)
             )
             .globalBeliefTypesByAgentType(
                 new HashSet<>(Arrays.asList(COUNT_OF_MINERALS, COUNT_OF_GAS, COUNT_OF_IDLE_DRONES)))
@@ -708,14 +710,11 @@ public class DroneAgentType {
                         && (dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_MINERALS) > typeOfBuilding.getMineralPrice()
                         && dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_GAS) > typeOfBuilding.getGasPrice()
-                        && dataForDecision.getFeatureValueBeliefs(
-                        MADE_BUILDING_LAST_CHECK) + 300 < dataForDecision.getFeatureValueBeliefs(
-                        LAST_OBSERVATION))
+                        COUNT_OF_GAS) > typeOfBuilding.getGasPrice())
             )
             .beliefTypes(new HashSet<>(
                 Arrays
-                    .asList(MADE_BUILDING_LAST_CHECK, LAST_OBSERVATION, IS_CONSTRUCTING_BUILDING)))
+                    .asList(LAST_OBSERVATION, IS_CONSTRUCTING_BUILDING)))
             .globalBeliefTypesByAgentType(
                 new HashSet<>(Arrays.asList(COUNT_OF_MINERALS, COUNT_OF_GAS, COUNT_OF_IDLE_DRONES)))
             .desiresToConsider(desiresToConsider)

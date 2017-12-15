@@ -9,7 +9,7 @@ import java.util.Optional;
  * Interface to be implemented by user to provide factory for creating agents for own units on their
  * creation
  */
-public interface AgentUnitHandler {
+public interface IAgentUnitHandler {
 
   /**
    * Method to create agent from unit

@@ -696,8 +696,6 @@ public class FactConverters {
     }
     return 0;
   });
-  public static final FactWithOptionalValue<Integer> MADE_BUILDING_LAST_CHECK = new FactWithOptionalValue<>(
-      new FactConverterID<>(704, FactKeys.BUILDING_LAST_CHECK), integer -> integer.orElse(-1));
   public static final FactWithOptionalValue<Integer> LAST_OBSERVATION = new FactWithOptionalValue<>(
       new FactConverterID<>(705, FactKeys.MADE_OBSERVATION_IN_FRAME),
       integer -> integer.orElse(-1));

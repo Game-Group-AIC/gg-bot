@@ -5,12 +5,14 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_M
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.HATCHERY_TYPE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.LAIR_TYPE;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeUnit;
+import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
@@ -20,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 public class HatcheryAgentType {
+
   public static final AgentTypeUnit HATCHERY = AgentTypeUnit.builder()
       .agentTypeID(AgentTypes.HATCHERY)
       .initializationStrategy(type -> {
@@ -47,7 +50,10 @@ public class HatcheryAgentType {
                         || memory.getReadOnlyMemoriesForAgentType(AgentTypes.HATCHERY)
                         .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
                             REPRESENTS_UNIT).get().getNearestBaseLocation().get())
-                        .noneMatch(ABaseLocationWrapper::isStartLocation))
+                        .noneMatch(ABaseLocationWrapper::isStartLocation)
+                        //lair has not been built recently
+                        && !BuildLockerService.getInstance().isLocked(HATCHERY_TYPE)
+                    )
                 )
                 .globalBeliefTypesByAgentType(
                     new HashSet<>(Arrays.asList(COUNT_OF_MINERALS, COUNT_OF_GAS)))
