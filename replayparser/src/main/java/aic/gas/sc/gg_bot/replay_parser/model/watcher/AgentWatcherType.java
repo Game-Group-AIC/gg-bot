@@ -15,10 +15,10 @@ import lombok.Getter;
 @Getter
 public class AgentWatcherType extends AgentTypeID {
 
-  private final Set<FactKey<?>> factKeys;
-  private final Set<FactKey<?>> factSetsKeys;
-  private final List<PlanWatcherInitializationStrategy> planWatchers;
-  private final Optional<Reasoning> reasoning;
+  private Set<FactKey<?>> factKeys;
+  private Set<FactKey<?>> factSetsKeys;
+  private List<PlanWatcherInitializationStrategy> planWatchers;
+  private Optional<Reasoning> reasoning;
 
   protected AgentWatcherType(AgentTypeID agentTypeID, Set<FactKey<?>> factKeys,
       Set<FactKey<?>> factSetsKeys,

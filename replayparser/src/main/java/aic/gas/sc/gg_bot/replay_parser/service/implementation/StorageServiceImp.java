@@ -41,8 +41,6 @@ public class StorageServiceImp implements StorageService {
   private static final String outputFolder = storageFolder + "/output";
   private static final String dbFileReplays = storageFolder + "/replays.db";
   private static StorageServiceImp instance = null;
-  //Serializers
-  public final Serializer<Replay> replaySerializer = new Replay.ReplaySerializer();
 
   //subdirectories
   public static final List<String> subdirectories = Stream.of(MapSizeEnums.values())
@@ -77,47 +75,6 @@ public class StorageServiceImp implements StorageService {
     return instance;
   }
 
-  /**
-   * Return database
-   */
-  private DB initDatabase(String databaseFile) {
-    return DBMaker.fileDB(databaseFile).make();
-  }
-
-  private Set<Replay> getReplays(DB db) {
-    return db.hashSet("replays")
-        .serializer(replaySerializer)
-        .createOrOpen();
-  }
-
-  @Override
-  public Set<File> filterNotPlayedReplays(Set<File> files) {
-    DB db = initDatabase(dbFileReplays);
-    Set<File> replays = getReplays(db).stream()
-        .filter(Replay::isParsedMoreTimes)
-        .map(Replay::getReplayFile)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.toSet());
-    db.close();
-    return files.stream()
-        .filter(file -> !replays.contains(file))
-        .collect(Collectors.toSet());
-  }
-
-  @Override
-  public void markReplayAsParsed(Replay replay) {
-    DB db = initDatabase(dbFileReplays);
-    Set<Replay> replays = getReplays(db);
-    if (replays.contains(replay)) {
-      log.info("Replay is already contained.");
-      replay.setParsedMoreTimes(true);
-      replays.remove(replay);
-    }
-    replays.add(replay);
-    db.commit();
-    db.close();
-  }
 
   @Override
   public void saveTrajectory(AgentTypeID agentTypeID, DesireKeyID desireKeyID,

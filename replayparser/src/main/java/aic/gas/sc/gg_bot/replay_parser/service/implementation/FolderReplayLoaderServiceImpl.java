@@ -1,7 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
-import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
@@ -15,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class FolderReplayLoaderServiceImpl implements ReplayLoaderService {
-
-  static final StorageService STORAGE_SERVICE = StorageServiceImp.getInstance();
   String replaySource = "c:\\sc\\Maps\\replays";
-
   Iterator<File> replayIterator = (new HashSet<File>()).iterator();
 
   public FolderReplayLoaderServiceImpl(String replaySource) throws IOException {
@@ -57,7 +53,6 @@ public class FolderReplayLoaderServiceImpl implements ReplayLoaderService {
   @Override
   public void loadReplaysToParse() {
     Set<File> replaysToParse = getAllFilesInFolder(replaySource);
-//    Set<File> replaysToParse = STORAGE_SERVICE.filterNotPlayedReplays(allReplays);
     log.info(replaysToParse.size() + " replays will be parsed.");
     replayIterator = replaysToParse.iterator();
   }

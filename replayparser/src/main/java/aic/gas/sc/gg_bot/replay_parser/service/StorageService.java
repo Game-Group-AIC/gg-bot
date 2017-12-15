@@ -17,15 +17,6 @@ import java.util.Set;
  */
 public interface StorageService {
 
-  /**
-   * Load replays associated with given files if exists
-   */
-  Set<File> filterNotPlayedReplays(Set<File> files);
-
-  /**
-   * Save or update given replay
-   */
-  void markReplayAsParsed(Replay replay);
 
   /**
    * Save trajectories of given agent type for desire id
