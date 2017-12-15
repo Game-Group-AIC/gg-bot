@@ -8,9 +8,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BaseWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.WatcherPlayer;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.*;
 import aic.gas.sc.gg_bot.replay_parser.service.AgentUnitHandler;
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayParserService;
@@ -50,7 +48,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
   //   private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
   private Optional<Replay> replay;
   private Set<Player> players;
-  private WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl.getInstance();
+  private final WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl.getInstance();
   private AgentUnitHandler agentUnitHandler;
 
   public ReplayParserServiceImpl(ReplayLoaderService replayLoader) {
@@ -136,7 +134,6 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
       log.info("setupReplayInConfigurationFile.writing finished");
       writer.close();
     }
-//     Files.write(fileContent, bwapiIni, StandardCharsets.UTF_8);
   }
 
 
@@ -231,22 +228,22 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
         DecisionConfiguration.setupRace(parsingPlayer, currentGame.getPlayers());
 
         WatcherPlayer watcherPlayer = new WatcherPlayer(parsingPlayer);
-//        agentsWithObservations.add(watcherPlayer);
-//        watcherMediatorService.addWatcher(watcherPlayer);
+        agentsWithObservations.add(watcherPlayer);
+        watcherMediatorService.addWatcher(watcherPlayer);
 
-//        // init base agents
-//        BWTA.getBaseLocations().forEach(baseLocation -> {
-//          BaseWatcher baseWatcher = new BaseWatcher(ABaseLocationWrapper.wrap(baseLocation),
-//              currentGame, new BaseWatcher.UpdateChecksStrategy());
-//          agentsWithObservations.add(baseWatcher);
-//          watcherMediatorService.addWatcher(baseWatcher);
-//        });
+        // init base agents
+        BWTA.getBaseLocations().forEach(baseLocation -> {
+          BaseWatcher baseWatcher = new BaseWatcher(ABaseLocationWrapper.wrap(baseLocation),
+              currentGame, new BaseWatcher.UpdateChecksStrategy());
+          agentsWithObservations.add(baseWatcher);
+          watcherMediatorService.addWatcher(baseWatcher);
+        });
 
         // abstract managers
-//        watcherMediatorService.addWatcher(new EcoManagerWatcher());
-//        watcherMediatorService.addWatcher(new BuildOrderManagerWatcher());
-//        watcherMediatorService.addWatcher(new UnitOrderManagerWatcher());
-//
+        watcherMediatorService.addWatcher(new EcoManagerWatcher());
+        watcherMediatorService.addWatcher(new BuildOrderManagerWatcher());
+        watcherMediatorService.addWatcher(new UnitOrderManagerWatcher());
+
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -255,7 +252,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     @Override
     public void onUnitShow(Unit unit) {
       try {
-//        DecisionConfiguration.setupEnemyRace(parsingPlayer, unit);
+        DecisionConfiguration.setupEnemyRace(parsingPlayer, unit);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -264,14 +261,14 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     @Override
     public void onUnitCreate(Unit unit) {
       try {
-//        if (parsingPlayer.getID() == unit.getPlayer().getID()) {
-//          Optional<UnitWatcher> unitWatcher = agentUnitHandler.createAgentForUnit(unit, currentGame);
-//          unitWatcher.ifPresent(watcher -> {
-//            agentsWithObservations.add(watcher);
-//            watcherMediatorService.addWatcher(watcher);
-//            watchersOfUnits.put(unit.getID(), watcher);
-//          });
-//        }
+        if (parsingPlayer.getID() == unit.getPlayer().getID()) {
+          Optional<UnitWatcher> unitWatcher = agentUnitHandler.createAgentForUnit(unit, currentGame);
+          unitWatcher.ifPresent(watcher -> {
+            agentsWithObservations.add(watcher);
+            watcherMediatorService.addWatcher(watcher);
+            watchersOfUnits.put(unit.getID(), watcher);
+          });
+        }
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -285,11 +282,6 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
         if (currentGame.getFrameCount() % 200 == 0) {
           log.info(currentGame.getFrameCount() + " / " + currentGame.getReplayFrameCount());
         }
-
-        if (currentGame.getFrameCount() == 200) {
-
-        }
-
       } catch (Exception e) {
         e.printStackTrace();
       }
