@@ -3,31 +3,21 @@ package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 import static aic.gas.sc.gg_bot.abstract_bot.utils.Configuration.getParsedAgentTypesContainedInStorage;
 import static aic.gas.sc.gg_bot.abstract_bot.utils.Configuration.getParsedDesireTypesForAgentTypeContainedInStorage;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPointDataStructure;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
-import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
 
 /**
  * StorageService implementation... as singleton
@@ -82,12 +72,11 @@ public class StorageServiceImp implements StorageService {
     createDirectoryIfItDoesNotExist(agentTypeID.getName(),
         parsingFolder + "/" + DecisionConfiguration.getMapSize().name() + "/"
             + DecisionConfiguration.getRace().name());
-    int freeIndex = getNextAvailableOrderNumberForAgentTypeOfGivenDesire(agentTypeID, desireKeyID,
-        DecisionConfiguration.getMapSize(), DecisionConfiguration.getRace());
+    String uuid = UUID.randomUUID().toString();
     String path =
         parsingFolder + "/" + DecisionConfiguration.getMapSize().name() + "/"
             + DecisionConfiguration.getRace().name() + "/" + agentTypeID.getName() + "/"
-            + desireKeyID.getName() + "_" + freeIndex
+            + desireKeyID.getName() + "_" + uuid
             + ".db";
     ArrayList<Trajectory> savedTrajectories = new ArrayList<>(trajectories);
     try {
@@ -134,21 +123,6 @@ public class StorageServiceImp implements StorageService {
           return Stream.empty();
         })
         .collect(Collectors.toList());
-  }
-
-  /**
-   * Get next available index to store file
-   */
-  private int getNextAvailableOrderNumberForAgentTypeOfGivenDesire(AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) {
-    return getFilesForAgentTypeOfGivenDesire(agentTypeID, desireKeyID, mapSize, race).stream()
-        .map(File::getName)
-        .map(s -> s.replace(".db", ""))
-        .map(s -> s.split("_"))
-        //get last word as it is number (should be)
-        .map(strings -> strings[strings.length - 1])
-        .mapToInt(Integer::parseInt)
-        .max().orElse(0) + 1;
   }
 
   /**
