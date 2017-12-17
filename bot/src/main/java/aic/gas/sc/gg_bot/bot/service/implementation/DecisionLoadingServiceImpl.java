@@ -28,8 +28,9 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
    * Initialize cache (loads models from resources)
    */
   private DecisionLoadingServiceImpl() {
-    Stream.of(MapSizeEnums.values()).forEach(mapSize -> Stream.of(ARace.values()).
-        forEach(race -> DecisionConfiguration.decisionsToLoad
+    Stream.of(MapSizeEnums.values()).forEach(mapSize -> Stream.of(ARace.values())
+        .filter(race -> !race.equals(ARace.UNKNOWN))
+        .forEach(race -> DecisionConfiguration.decisionsToLoad
             .forEach((agentTypeID, desireKeyIDS) -> desireKeyIDS
                 .forEach(
                     desireKeyID -> loadDecisionPoint(agentTypeID, desireKeyID, mapSize, race))))
