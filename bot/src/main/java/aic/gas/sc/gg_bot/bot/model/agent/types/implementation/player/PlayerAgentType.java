@@ -17,10 +17,8 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_START_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_TIME_SCOUTED;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LING;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MORPHED_WORKERS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING_STATUS;
@@ -31,10 +29,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION_LIMIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TECH_TO_RESEARCH;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_LAST_DRONE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TRANSIT_FROM_5_POOL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WERE_6_LINGS_MORPHED;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_OUR_FORCE;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.READ_PLAYERS_DATA;
@@ -68,10 +63,7 @@ public class PlayerAgentType {
       .agentTypeID(AgentTypes.PLAYER)
       .usingTypesForFacts(new HashSet<>(
           Arrays.asList(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT, POPULATION,
-              IS_PLAYER,
-              MORPHED_WORKERS, TRANSIT_FROM_5_POOL, WERE_6_LINGS_MORPHED, BASE_TO_MOVE,
-              IS_BASE_LOCATION,
-              TIME_OF_HOLD_COMMAND, TIME_OF_LAST_DRONE)))
+              IS_PLAYER, BASE_TO_MOVE, IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)))
       .usingTypesForFactSets(
           new HashSet<>(Arrays.asList(UPGRADE_STATUS, TECH_TO_RESEARCH, OUR_BASE, ENEMY_BASE,
               OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
@@ -80,7 +72,7 @@ public class PlayerAgentType {
               ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS, LOCKED_BUILDINGS,
               ENEMY_STATIC_AIR_FORCE_STATUS,
               ENEMY_STATIC_GROUND_FORCE_STATUS,
-              OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS, LING)))
+              OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS)))
       .initializationStrategy(type -> {
 
         //send worker to scout

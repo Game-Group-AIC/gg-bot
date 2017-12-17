@@ -38,6 +38,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.WatcherPlayerType;
+import bwapi.Game;
 import bwapi.Player;
 import bwapi.Race;
 import java.util.ArrayList;
@@ -53,9 +54,9 @@ import java.util.stream.Collectors;
 public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
     AgentMakingObservations {
 
-  private final APlayer player;
+  private APlayer player;
 
-  public WatcherPlayer(Player player) {
+  public WatcherPlayer(Player player, Game game) {
     super(WatcherPlayerType.builder()
         .factKeys(new HashSet<>(Arrays
             .asList(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT, POPULATION,
@@ -68,7 +69,7 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
                 ENEMY_STATIC_AIR_FORCE_STATUS, ENEMY_STATIC_GROUND_FORCE_STATUS,
                 OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS)))
         .playerEnvironmentObservation((aPlayer, beliefs) -> {
-          APlayer p = aPlayer.makeObservationOfEnvironment();
+          APlayer p = aPlayer.makeObservationOfEnvironment(game.getFrameCount());
           beliefs.updateFactSetByFacts(UPGRADE_STATUS, WrapperTypeFactory.upgrades().stream()
               .map(aUpgradeTypeWrapper -> new UpgradeTypeStatus(
                   p.getPlayer().getUpgradeLevel(aUpgradeTypeWrapper.getType()),
@@ -180,7 +181,7 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
         .planWatchers(new ArrayList<>())
         .build()
     );
-    this.player = APlayer.wrapPlayer(player).get();
+    this.player = APlayer.wrapPlayer(player, game.getFrameCount()).get();
     beliefs.updateFact(IS_PLAYER, this.player);
   }
 

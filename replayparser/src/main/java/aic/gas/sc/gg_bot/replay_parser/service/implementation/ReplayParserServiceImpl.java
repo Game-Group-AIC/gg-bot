@@ -191,7 +191,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
           //try to setup race
           DecisionConfiguration.setupRace(parsingPlayer, currentGame.getPlayers());
 
-          WatcherPlayer watcherPlayer = new WatcherPlayer(parsingPlayer);
+          WatcherPlayer watcherPlayer = new WatcherPlayer(parsingPlayer, currentGame);
           agentsWithObservations.add(watcherPlayer);
           watcherMediatorService.addWatcher(watcherPlayer);
 
