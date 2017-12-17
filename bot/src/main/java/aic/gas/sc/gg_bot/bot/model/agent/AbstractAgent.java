@@ -1,10 +1,10 @@
 package aic.gas.sc.gg_bot.bot.model.agent;
 
+import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
-import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import lombok.extern.slf4j.Slf4j;
 
 /**

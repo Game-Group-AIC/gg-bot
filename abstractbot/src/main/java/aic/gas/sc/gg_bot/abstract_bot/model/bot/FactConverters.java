@@ -4,7 +4,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrappe
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.OVERLORD_TYPE;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;

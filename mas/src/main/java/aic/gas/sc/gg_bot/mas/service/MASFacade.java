@@ -32,6 +32,9 @@ public class MASFacade implements TerminableService {
   public static int lengthOfIntervalBeforeUpdatingRegisterWithDesires = 100;
   @Setter
   public static int howManyCyclesStayAgentsMemoryInRegisterWithoutUpdate = 100;
+  //TODO hack
+  @Setter
+  public static int howManyCyclesIsDesireForOneAgentLocked = 3;
   @Setter
   @Getter
   public static int lengthOfIntervalBeforeUpdatingRegisterWithMemory = 100;

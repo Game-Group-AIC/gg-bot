@@ -34,8 +34,7 @@ public class UnitOrderManager {
 
   private static ConfigurationWithSharedDesire shareIntentionToTrainUnit(
       DesireKey boostingTypeDesire,
-      DesireKeyID boostingTypeDesireID,
-      FeatureContainerHeader featureContainerHeader) {
+      DesireKeyID boostingTypeDesireID, FeatureContainerHeader featureContainerHeader) {
     return ConfigurationWithSharedDesire.builder()
         .sharedDesireKey(boostingTypeDesire)
         .counts(1)
@@ -44,9 +43,6 @@ public class UnitOrderManager {
                 (dataForDecision, memory) ->
                     Decider.getDecision(AgentTypes.UNIT_ORDER_MANAGER, boostingTypeDesireID,
                         dataForDecision, featureContainerHeader)
-                        || (dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_MINERALS) >= 350 && dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_GAS) >= 100)
             )
             .globalBeliefTypesByAgentType(Stream.concat(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
@@ -88,12 +84,10 @@ public class UnitOrderManager {
         ConfigurationWithAbstractPlan groundPosition = ConfigurationWithAbstractPlan.builder()
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        (dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
-                            || dataForDecision.getFeatureValueGlobalBeliefs(
-                            COUNT_OF_HYDRALISK_DENS) > 0)
-                            && dataForDecision.getFeatureValueGlobalBeliefs(
-                            COUNT_OF_MINERALS) >= 300
+                    (dataForDecision, memory) -> (
+                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
+                            || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_HYDRALISK_DENS)
+                            > 0)
                 )
                 .globalBeliefTypesByAgentType(
                     new HashSet<>(Arrays.asList(COUNT_OF_POOLS, COUNT_OF_HYDRALISK_DENS,
@@ -111,6 +105,8 @@ public class UnitOrderManager {
             .desiresForOthers(new HashSet<>(Arrays.asList(BOOST_GROUND_MELEE, BOOST_GROUND_RANGED)))
             .build();
         type.addConfiguration(HOLD_GROUND, groundPosition, false);
+
+        //build lings
         ConfigurationWithSharedDesire buildLings = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(BOOST_GROUND_MELEE)
             .counts(1)
@@ -145,13 +141,12 @@ public class UnitOrderManager {
                 .build())
             .build();
         type.addConfiguration(BOOST_GROUND_RANGED, HOLD_GROUND, buildHydras);
-//
+
         //abstract plan to build units based on position requests
         ConfigurationWithAbstractPlan airPosition = ConfigurationWithAbstractPlan.builder()
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_SPIRES) > 0
-                )
+                    dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_SPIRES) > 0)
                 .globalBeliefTypesByAgentType(
                     new HashSet<>(Collections.singletonList(COUNT_OF_SPIRES)))
                 .build())

@@ -1,6 +1,8 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.decision;
 
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Enumeration of all possible commitments based on policy
@@ -37,6 +39,14 @@ public enum NextActionEnumerations implements Serializable, NextActionStrategy {
       return YES;
     }
     return NO;
+  }
+
+  //TODO nasty hack
+  public static Map<NextActionEnumerations, Double> getActionMap(String commitment,
+      double probability) {
+    NextActionEnumerations nextAction = returnNextAction(commitment);
+    return ImmutableMap
+        .of(nextAction, probability, nextAction.equals(YES) ? NO : YES, 1.0 - probability);
   }
 
 }

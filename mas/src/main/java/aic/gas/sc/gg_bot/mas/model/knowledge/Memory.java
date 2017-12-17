@@ -124,7 +124,8 @@ public abstract class Memory<V extends PlanningTreeInterface> implements FactCon
     if (factSet != null) {
       return Optional.ofNullable((S) factSet.getContent().stream());
     }
-    log.error(factKey.getName() + " is not present in " + agentType.getName() + " type definition.");
+    log.error(
+        factKey.getName() + " is not present in " + agentType.getName() + " type definition.");
     return Optional.empty();
   }
 

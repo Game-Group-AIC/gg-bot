@@ -17,6 +17,11 @@
       <artifactId>abstract-bot</artifactId>
       <version>0.1</version>
     </dependency>
+    <dependency>
+      <groupId>aic.gas.sc.gg_bot</groupId>
+      <artifactId>replay-parser</artifactId>
+      <version>0.1</version>
+    </dependency>
   </dependencies>
 
 </project>

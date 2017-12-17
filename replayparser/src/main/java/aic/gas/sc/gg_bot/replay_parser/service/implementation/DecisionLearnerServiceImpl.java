@@ -1,13 +1,13 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPointDataStructure;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumerations;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.Configuration;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionDomainGenerator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionModel;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionState;
@@ -264,14 +264,11 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
         .stream()
         .map(entry -> new DecisionPointDataStructure.StateWithTransition(
             entry.getValue().arrayCopy(),
-            NextActionEnumerations.returnNextAction(policy.action(entry.getKey()).actionName())))
+            NextActionEnumerations.getActionMap(policy.action(entry.getKey()).actionName(),
+                policy.actionProb(entry.getKey(), policy.action(entry.getKey())))))
         .collect(Collectors.toSet());
 
     //check if all actions are available
-    if (states.stream().map(DecisionPointDataStructure.StateWithTransition::getNextAction)
-        .distinct().count() < NextActionEnumerations.values().length) {
-      log.error("Not all actions are covered.");
-    }
     return new DecisionPointDataStructure(states, normalizers);
   }
 

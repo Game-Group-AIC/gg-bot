@@ -1,12 +1,12 @@
 package aic.gas.sc.gg_bot.abstract_bot.utils;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;

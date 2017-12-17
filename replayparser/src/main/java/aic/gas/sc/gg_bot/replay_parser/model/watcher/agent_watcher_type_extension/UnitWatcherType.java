@@ -9,10 +9,10 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.AgentEnvironmentObservation;

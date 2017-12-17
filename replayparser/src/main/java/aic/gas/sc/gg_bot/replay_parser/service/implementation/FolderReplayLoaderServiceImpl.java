@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class FolderReplayLoaderServiceImpl implements ReplayLoaderService {
+
   String replaySource = "c:\\sc\\Maps\\replays";
   Iterator<File> replayIterator = (new HashSet<File>()).iterator();
 
@@ -65,7 +66,8 @@ public class FolderReplayLoaderServiceImpl implements ReplayLoaderService {
     } else {
       File replayToParseNext = replayIterator.next();
       replayIterator.remove();
-      log.info("New replay was setup in configuration file. Replay file set to: " + replayToParseNext);
+      log.info(
+          "New replay was setup in configuration file. Replay file set to: " + replayToParseNext);
       return replayToParseNext;
     }
   }

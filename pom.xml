@@ -207,7 +207,6 @@
         <version>${rabbitmq.version}</version>
       </dependency>
     </dependencies>
-
   </dependencyManagement>
 
   <dependencies>

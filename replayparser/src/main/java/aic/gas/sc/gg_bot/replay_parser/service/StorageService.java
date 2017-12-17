@@ -1,13 +1,11 @@
 package aic.gas.sc.gg_bot.replay_parser.service;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPointDataStructure;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
-import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

@@ -81,10 +81,10 @@ public class BuildingOrderManager {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_POOLS) > 0
-                        || dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_POOLS_IN_CONSTRUCTION) > 0)
+                    (dataForDecision, memory) ->
+                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
+                            || dataForDecision
+                            .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0)
                 .globalBeliefTypesByAgentType(
                     new HashSet<>(Arrays.asList(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS)))
                 .build())
@@ -110,14 +110,15 @@ public class BuildingOrderManager {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_POOLS) > 0
-                        || dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_POOLS_IN_CONSTRUCTION) > 0)
+                    (dataForDecision, memory) ->
+                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0 ||
+                            dataForDecision
+                                .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0)
                 .globalBeliefTypesByAgentType(
                     new HashSet<>(Arrays.asList(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS)))
                 .build())
             .build();
+
         //tell system to build extractor if it is missing
         ConfigurationWithSharedDesire buildExtractorCommon = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(BUILD_EXTRACTOR)
@@ -135,6 +136,7 @@ public class BuildingOrderManager {
                 .globalBeliefSetTypesByAgentType(Collections.singleton(COUNT_OF_EXTRACTORS))
                 .build())
             .build();
+
         //common abstract plan to upgrade to spire
         ConfigurationWithAbstractPlan upgradeToLairAbstractCommon = ConfigurationWithAbstractPlan
             .builder()
@@ -161,10 +163,13 @@ public class BuildingOrderManager {
                 BUILD_EXTRACTOR)))
             .build();
         type.addConfiguration(UPGRADE_TO_LAIR, upgradeToLairAbstractCommon, false);
+
         //tell system to build pool if needed
         type.addConfiguration(ENABLE_GROUND_MELEE, UPGRADE_TO_LAIR, buildPoolCommon);
+
         //tell system to build extractor if it is missing
         type.addConfiguration(BUILD_EXTRACTOR, UPGRADE_TO_LAIR, buildExtractorCommon);
+
         //tell system to upgrade hatchery to lair
         ConfigurationWithSharedDesire upgradeToLair = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(UPGRADE_TO_LAIR)

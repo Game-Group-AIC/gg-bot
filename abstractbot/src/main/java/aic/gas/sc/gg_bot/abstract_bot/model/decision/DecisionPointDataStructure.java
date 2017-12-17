@@ -4,6 +4,8 @@ import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import jsat.linear.DenseVector;
 import jsat.linear.Vec;
@@ -32,13 +34,14 @@ public class DecisionPointDataStructure implements Serializable {
     final double[] featureVector;
 
     @Getter
-    final NextActionEnumerations nextAction;
+    final Map<NextActionEnumerations, Double> nextActions;
 
     /**
      * Create state with transition
      */
-    public StateWithTransition(double[] featureVector, NextActionEnumerations nextAction) {
-      this.nextAction = nextAction;
+    public StateWithTransition(double[] featureVector,
+        Map<NextActionEnumerations, Double> nextActions) {
+      this.nextActions = nextActions;
       this.featureVector = featureVector.clone();
     }
 
@@ -54,19 +57,16 @@ public class DecisionPointDataStructure implements Serializable {
       if (o == null || getClass() != o.getClass()) {
         return false;
       }
-
       StateWithTransition that = (StateWithTransition) o;
-
-      if (!Arrays.equals(featureVector, that.featureVector)) {
-        return false;
-      }
-      return nextAction == that.nextAction;
+      return Arrays.equals(featureVector, that.featureVector) &&
+          Objects.equals(nextActions, that.nextActions);
     }
 
     @Override
     public int hashCode() {
-      int result = Arrays.hashCode(featureVector);
-      result = 31 * result + nextAction.hashCode();
+
+      int result = Objects.hash(nextActions);
+      result = 31 * result + Arrays.hashCode(featureVector);
       return result;
     }
   }

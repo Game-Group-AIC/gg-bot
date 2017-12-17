@@ -2,15 +2,9 @@ package aic.gas.sc.gg_bot.replay_parser.model.tracking;
 
 import com.google.common.io.Files;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
 import lombok.Getter;
-import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
-import org.mapdb.DataInput2;
-import org.mapdb.DataOutput2;
-import org.mapdb.Serializer;
 
 /**
  * Replay class to mark status of particular replay

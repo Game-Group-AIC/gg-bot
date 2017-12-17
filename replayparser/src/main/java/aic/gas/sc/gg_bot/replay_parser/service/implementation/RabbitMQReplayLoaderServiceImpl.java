@@ -1,7 +1,13 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Consumer;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -125,6 +131,7 @@ public class RabbitMQReplayLoaderServiceImpl implements ReplayLoaderService {
   }
 
   public static class ProducerConsumer {
+
     // message shared by producer and consumer
     String message;
 
@@ -160,7 +167,7 @@ public class RabbitMQReplayLoaderServiceImpl implements ReplayLoaderService {
         int i = 0;
         while (!hasMessage) {
           System.err.print(".");
-          if(++i % 30 == 0) {
+          if (++i % 30 == 0) {
             System.err.print("\n");
           }
           wait(100);

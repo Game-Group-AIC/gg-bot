@@ -19,9 +19,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
@@ -36,9 +39,6 @@ import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
-import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import bwapi.Game;
 import bwapi.Position;
 import java.util.Arrays;
@@ -205,7 +205,6 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
                 ENEMY_GROUND, OWN_BUILDING, OWN_AIR, OWN_GROUND})).collect(Collectors.toSet()),
         initializationStrategy, OBSERVING_COMMAND, skipTurnsToMakeObservation);
   }
-
 
 
   //builder with default fields

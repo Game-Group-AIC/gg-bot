@@ -1,13 +1,14 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPoint;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPointDataStructure;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,14 +55,15 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
       String fileName =
           "/" + mapSize.name() + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID
               .getName() + ".db";
-      DecisionPoint decisionPoint = new DecisionPoint(SerializationUtil.deserialize(
-          DecisionLoadingServiceImpl.class.getResourceAsStream(fileName)));
+      DecisionPointDataStructure decisionPointDataStructure = SerializationUtil.deserialize(
+          DecisionLoadingServiceImpl.class.getResourceAsStream(fileName));
+      DecisionPoint decisionPoint = new DecisionPoint(decisionPointDataStructure);
       cache.computeIfAbsent(mapSize, id -> new HashMap<>())
           .computeIfAbsent(race, id -> new HashMap<>())
           .computeIfAbsent(agentTypeID, id -> new HashMap<>()).put(desireKeyID, decisionPoint);
     } catch (Exception e) {
-      log.error(e.getMessage() + " for combination " + DecisionConfiguration.getMapSize().name()
-          + ", " + DecisionConfiguration.getRace().name() + ", " + agentTypeID.getName()
+      log.error(e.getMessage() + " for combination " + mapSize.name()
+          + ", " + race.name() + ", " + agentTypeID.getName()
           + ", " + desireKeyID.getName() + " when loading decision.");
     }
   }

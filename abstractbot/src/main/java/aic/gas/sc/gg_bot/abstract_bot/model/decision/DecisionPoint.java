@@ -1,10 +1,14 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.decision;
 
+import static aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumerations.NO;
+import static aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumerations.YES;
+
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.utils.Configuration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 import jsat.linear.DenseVector;
 import jsat.linear.Vec;
@@ -41,7 +45,7 @@ public class DecisionPoint {
       log.error("No state is present.");
       return false;
     }
-    return closestState.get().nextAction.commit();
+    return closestState.get().commit();
   }
 
 
@@ -52,13 +56,30 @@ public class DecisionPoint {
   @Getter
   public static class StateWithTransition {
 
-    final NextActionEnumerations nextAction;
+    private final double probOfYes;
+    private final double probOfNo;
     private final Vec center;
+    private transient static final Random RANDOM = new Random();
 
     private StateWithTransition(
         DecisionPointDataStructure.StateWithTransition stateWithTransition) {
       this.center = stateWithTransition.getFeatureVector();
-      this.nextAction = stateWithTransition.nextAction;
+      this.probOfYes = stateWithTransition.getNextActions().getOrDefault(YES, 0.0);
+      this.probOfNo = stateWithTransition.getNextActions().getOrDefault(NO, 0.0);
+    }
+
+    boolean commit() {
+      if (RANDOM.nextBoolean()) {
+        if (RANDOM.nextDouble() <= probOfYes) {
+          return YES.commit();
+        }
+        return NO.commit();
+      } else {
+        if (RANDOM.nextDouble() <= probOfNo) {
+          return NO.commit();
+        }
+        return YES.commit();
+      }
     }
 
     /**

@@ -5,6 +5,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.SharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireInRegister;
 import aic.gas.sc.gg_bot.mas.model.servicies.Register;
+import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,6 +24,7 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
     IWorkingDesireRegister {
 
   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+  private final Map<SharedDesireInRegister, Integer> desireLock = new HashMap<>();
 
   public DesireRegister() {
     super(new HashMap<>());
@@ -79,7 +81,12 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
             .getOrDefault(desireForOthersHeWantsToCommitTo, null);
 
         //desire commitment is not locked
-        if (desire != null) {
+        if (desire != null && !desireLock.containsKey(desire)) {
+
+          //lock desire for one agent only for few cycles
+          if (desire.getLimitOnNumberOfAgentsToCommit() == 1) {
+            desireLock.put(desire, 0);
+          }
 
           //try to commit agent and return copy of current instance
           desire.commitToDesire(agentWhoWantsToCommitTo);
@@ -103,7 +110,11 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
             .getOrDefault(desireHeWantsToRemoveCommitmentTo, null);
         if (desire != null) {
 
-          //lock desire for few cycles
+          //lock desire for one agent only for few cycles
+          if (desire.getLimitOnNumberOfAgentsToCommit() == 1) {
+            desireLock.put(desire, 0);
+          }
+
           return (desire.removeCommitment(agentWhoWantsToRemoveCommitment));
         }
       }
@@ -147,6 +158,13 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
 
   @Override
   public void executeMaintenance() {
-    //TODO remove desires from lock
+    try {
+      lock.writeLock().lock();
+      desireLock.forEach((v, integer) -> desireLock.put(v, integer + 1));
+      desireLock.keySet()
+          .removeIf(v -> desireLock.get(v) >= MASFacade.howManyCyclesIsDesireForOneAgentLocked);
+    } finally {
+      lock.writeLock().unlock();
+    }
   }
 }

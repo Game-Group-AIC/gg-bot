@@ -24,7 +24,7 @@ public class Parser {
   private static ReplayLoaderService createReplayLoader(String[] args) throws IOException {
     ReplayLoaderService replayLoader;
 
-    if(args.length < 1 || args.length > 2) {
+    if (args.length < 1 || args.length > 2) {
       showHelp(args);
     }
 

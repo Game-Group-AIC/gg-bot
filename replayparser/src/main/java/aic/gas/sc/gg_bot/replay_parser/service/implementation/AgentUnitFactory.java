@@ -1,10 +1,55 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.*;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
-import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.*;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.BASE_LOCATION;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.CREEP_COLONY;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.DRONE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.EGG;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.EVOLUTION_CHAMBER;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.EXTRACTOR;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.HATCHERY;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.HYDRALISK;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.HYDRALISK_DEN;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.LAIR;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.LARVA;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.MUTALISK;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.OVERLORD;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.SPAWNING_POOL;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.SPIRE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.SPORE_COLONY;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.SUNKEN_COLONY;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.ZERGLING;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HOLD_LOCATION;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.CREEP_COLONY_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.DRONE_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.EGG_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.EXTRACTOR_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.HATCHERY_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.HYDRALISK_DEN_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.HYDRALISK_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.LAIR_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.LARVA_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.MUTALISK_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.OVERLORD_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SPAWNING_POOL_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SPIRE_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SPORE_COLONY_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SUNKEN_COLONY_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.ZERGLING_TYPE;
 
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.UnitWatcherType;
@@ -13,7 +58,14 @@ import aic.gas.sc.gg_bot.replay_parser.service.AgentUnitHandler;
 import bwapi.Game;
 import bwapi.Order;
 import bwapi.Unit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -207,7 +259,7 @@ public class AgentUnitFactory implements AgentUnitHandler {
 
   @Override
   public Optional<UnitWatcher> createAgentForUnit(Unit unit, Game game) {
-    if(agentConfigurationForUnitType.size() == 0) {
+    if (agentConfigurationForUnitType.size() == 0) {
       initConfig();
     }
 

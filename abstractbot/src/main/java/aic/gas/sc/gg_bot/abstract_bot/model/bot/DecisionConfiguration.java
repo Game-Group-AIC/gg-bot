@@ -1,8 +1,8 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import bwapi.Player;
 import bwapi.Unit;
 import com.google.common.collect.ImmutableSet;
@@ -23,17 +23,17 @@ public class DecisionConfiguration {
 
   static {
     decisionsToLoad.put(AgentTypes.BASE_LOCATION, ImmutableSet
-            .of(DesireKeys.BUILD_CREEP_COLONY, DesireKeys.BUILD_SPORE_COLONY,
-                DesireKeys.BUILD_SUNKEN_COLONY, DesireKeys.HOLD_AIR, DesireKeys.HOLD_GROUND));
+        .of(DesireKeys.BUILD_CREEP_COLONY, DesireKeys.BUILD_SPORE_COLONY,
+            DesireKeys.BUILD_SUNKEN_COLONY, DesireKeys.HOLD_AIR, DesireKeys.HOLD_GROUND));
     decisionsToLoad.put(AgentTypes.BUILDING_ORDER_MANAGER, ImmutableSet
-            .of(DesireKeys.ENABLE_AIR, DesireKeys.ENABLE_GROUND_MELEE,
-                DesireKeys.ENABLE_GROUND_RANGED, DesireKeys.ENABLE_STATIC_ANTI_AIR,
-                DesireKeys.UPGRADE_TO_LAIR));
+        .of(DesireKeys.ENABLE_AIR, DesireKeys.ENABLE_GROUND_MELEE,
+            DesireKeys.ENABLE_GROUND_RANGED, DesireKeys.ENABLE_STATIC_ANTI_AIR,
+            DesireKeys.UPGRADE_TO_LAIR));
     decisionsToLoad.put(AgentTypes.ECO_MANAGER, ImmutableSet
-            .of(DesireKeys.BUILD_EXTRACTOR, DesireKeys.BUILD_WORKER, DesireKeys.EXPAND,
-                DesireKeys.INCREASE_CAPACITY));
+        .of(DesireKeys.BUILD_EXTRACTOR, DesireKeys.BUILD_WORKER, DesireKeys.EXPAND,
+            DesireKeys.INCREASE_CAPACITY));
     decisionsToLoad.put(AgentTypes.UNIT_ORDER_MANAGER, ImmutableSet
-            .of(DesireKeys.BOOST_AIR, DesireKeys.BOOST_GROUND_MELEE, DesireKeys.BOOST_GROUND_RANGED));
+        .of(DesireKeys.BOOST_AIR, DesireKeys.BOOST_GROUND_MELEE, DesireKeys.BOOST_GROUND_RANGED));
   }
 
   @Getter
