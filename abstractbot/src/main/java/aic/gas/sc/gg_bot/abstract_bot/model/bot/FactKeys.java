@@ -508,20 +508,6 @@ public class FactKeys {
       return null;
     }
   };
-  public static final FactKey<Integer> BUILDING_LAST_CHECK = new FactKey<Integer>(
-      "BUILDING_LAST_CHECK", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Boolean> HAS_ENOUGH_RESOURCES = new FactKey<Boolean>(
-      "HAS_ENOUGH_RESOURCES", false) {
-    @Override
-    public Boolean getInitValue() {
-      return false;
-    }
-  };
 
   //scouting
   public static final FactKey<Integer> LAST_TIME_SCOUTED = new FactKey<Integer>("LAST_TIME_SCOUTED",

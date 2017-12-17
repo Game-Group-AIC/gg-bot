@@ -242,14 +242,8 @@ public class DesiresKeys {
   public static final DesireKey MINE_GAS = DesireKey.builder()
       .id(DesireKeys.MINE_GAS)
       .build();
-  public static final DesireKey REASON_ABOUT_RESOURCES = DesireKey.builder()
-      .id(DesireKeys.REASON_ABOUT_RESOURCES)
-      .build();
   public static final DesireKey BUILD = DesireKey.builder()
       .id(DesireKeys.BUILD)
-      .build();
-  public static final DesireKey RETURN_CARGO = DesireKey.builder()
-      .id(DesireKeys.RETURN_CARGO)
       .build();
 
   //for buildings
