@@ -1,5 +1,7 @@
 package aic.gas.sc.gg_bot.mas.model.agents;
 
+import aic.gas.sc.gg_bot.mas.model.CycleSynchronizationObtainingStrategy;
+import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
@@ -53,6 +55,12 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
   private boolean isAlive = true;
   private boolean removeAgentFromGlobalBeliefs = false;
 
+  //TODO hacks to prevent executing more cycles
+  private final InternalClockObtainingStrategy clockObtainingStrategy;
+  private final CycleSynchronizationObtainingStrategy cycleSynchronizationObtainingStrategy;
+  //sync cycle lock
+  private final Object cycleMonitor = new Object();
+
   protected Agent(E agentType, MASFacade masFacade) {
     this.id = masFacade.getAgentsRegister().getFreeId();
     this.desireMediator = masFacade.getDesireMediator();
@@ -63,6 +71,17 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
             .getReadOnlyMemoriesForAgentType(agentTypeID),
         agentId -> beliefMediator.getReadOnlyRegister().getReadOnlyMemoryForAgent(agentId),
         () -> beliefMediator.getReadOnlyRegister().getReadOnlyMemories());
+
+    this.clockObtainingStrategy = masFacade.getClockObtainingStrategy();
+    this.cycleSynchronizationObtainingStrategy = masFacade
+        .getCycleSynchronizationObtainingStrategy();
+  }
+
+  //TODO remove
+  public void notifyOnNextCycle() {
+    synchronized (cycleMonitor) {
+      cycleMonitor.notifyAll();
+    }
   }
 
   @Override
@@ -266,6 +285,7 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
    */
   class Worker extends Thread implements ResponseReceiverInterface<Boolean> {
 
+    //TODO refactor sync
     @Override
     public void run() {
 
@@ -273,7 +293,10 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
       doRoutine(this);
       heapOfTrees.initTopLevelDesires(desireMediator.getReadOnlyRegister());
 
+      int cycleStarted;
+
       while (true) {
+        cycleStarted = clockObtainingStrategy.internalClockCounter();
 
         //check if agent is still alive
         synchronized (isAliveLockMonitor) {
@@ -287,6 +310,20 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
         commitmentRemovalDecider.visitTree();
         doRoutine(this);
         heapOfTrees.updateDesires(desireMediator.getReadOnlyRegister());
+
+        if (cycleSynchronizationObtainingStrategy.areCyclesSynchronized()
+            && cycleStarted <= clockObtainingStrategy.internalClockCounter()) {
+          while (cycleStarted >= clockObtainingStrategy.internalClockCounter()) {
+            synchronized (cycleMonitor) {
+              try {
+                cycleMonitor.wait();
+//                log.info(this.getName() + " unlocked.");
+              } catch (InterruptedException e) {
+                log.error(e.getLocalizedMessage());
+              }
+            }
+          }
+        }
       }
 
       removeAgent(removeAgentFromGlobalBeliefs);

@@ -51,7 +51,7 @@ public class BotFacade extends DefaultBWListener {
 
   @Setter
   @Getter
-  private static boolean annotateMap = false;
+  private static boolean annotateMap = true;
 
   //TODO hack to prevent building same types
   private final BuildLockerService buildLockerService = BuildLockerService.getInstance();
@@ -90,7 +90,7 @@ public class BotFacade extends DefaultBWListener {
     this.agentUnitFactoryCreationStrategy = agentUnitFactoryCreationStrategy;
     this.playerInitializerCreationStrategy = playerInitializerCreationStrategy;
     this.locationInitializerCreationStrategy = locationInitializerCreationStrategy;
-    this.masFacade = new MASFacade(() -> gameCommandExecutor.getCountOfPassedFrames());
+    this.masFacade = new MASFacade(() -> gameCommandExecutor.getCountOfPassedFrames(), true);
   }
 
   @Override
@@ -262,6 +262,9 @@ public class BotFacade extends DefaultBWListener {
     if (annotateMap) {
       annotator.annotate();
     }
+
+    //TODO hack to ensure frame sync
+    masFacade.notifyAgentsAboutNextCycle();
   }
 
   //TODO handle more events - unit renegade, visibility

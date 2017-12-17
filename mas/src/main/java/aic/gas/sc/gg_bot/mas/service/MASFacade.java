@@ -1,5 +1,7 @@
 package aic.gas.sc.gg_bot.mas.service;
 
+import aic.gas.sc.gg_bot.mas.model.CycleSynchronizationObtainingStrategy;
+import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import aic.gas.sc.gg_bot.mas.service.implementation.AgentsRegister;
@@ -33,6 +35,8 @@ public class MASFacade implements TerminableService {
   @Setter
   @Getter
   public static int lengthOfIntervalBeforeUpdatingRegisterWithMemory = 100;
+
+  @Getter
   private final InternalClockObtainingStrategy clockObtainingStrategy;
 
   //register of agents - to assign ids to them
@@ -49,8 +53,22 @@ public class MASFacade implements TerminableService {
 
   private final Set<Agent> agentsInSystem = new HashSet<>();
 
-  public MASFacade(InternalClockObtainingStrategy clockObtainingStrategy) {
+  //TODO HACK - to prevent executing more agents' cycles per frame
+  @Getter
+  private final CycleSynchronizationObtainingStrategy cycleSynchronizationObtainingStrategy;
+
+  public MASFacade(InternalClockObtainingStrategy clockObtainingStrategy,
+      boolean cycleSynchronization) {
     this.clockObtainingStrategy = clockObtainingStrategy;
+    this.cycleSynchronizationObtainingStrategy = () -> cycleSynchronization;
+  }
+
+  public void notifyAgentsAboutNextCycle() {
+    if (cycleSynchronizationObtainingStrategy.areCyclesSynchronized()) {
+      synchronized (agentsInSystem) {
+        agentsInSystem.forEach(Agent::notifyOnNextCycle);
+      }
+    }
   }
 
   public int getInternalClockCounter() {
@@ -61,34 +79,33 @@ public class MASFacade implements TerminableService {
    * Register agent in system
    */
   public void addAgentToSystem(Agent agent) {
-    agentsInSystem.add(agent);
-    agent.run();
+    synchronized (agentsInSystem) {
+      agentsInSystem.add(agent);
+      agent.run();
+    }
   }
 
   /**
    * Unregister agent from system
    */
   public void removeAgentFromSystem(Agent agent, boolean removeAgentFromGlobalBeliefs) {
-    if (agentsInSystem.remove(agent)) {
-      agent.terminateAgent(removeAgentFromGlobalBeliefs);
-    } else {
-      log.error("Agent is not registered in system.");
-      throw new IllegalArgumentException("Agent is not registered in system.");
+    synchronized (agentsInSystem) {
+      if (agentsInSystem.remove(agent)) {
+        agent.terminateAgent(removeAgentFromGlobalBeliefs);
+      } else {
+        log.error("Agent is not registered in system.");
+        throw new IllegalArgumentException("Agent is not registered in system.");
+      }
     }
   }
 
   public void terminate() {
-    agentsInSystem.forEach(agent -> agent.terminateAgent(true));
+    synchronized (agentsInSystem) {
+      agentsInSystem.forEach(agent -> agent.terminateAgent(true));
+    }
+    notifyAgentsAboutNextCycle();
     desireMediator.terminate();
     beliefMediator.terminate();
-  }
-
-  /**
-   * Strategy to get internal clock of system
-   */
-  public interface InternalClockObtainingStrategy {
-
-    int internalClockCounter();
   }
 
 }
