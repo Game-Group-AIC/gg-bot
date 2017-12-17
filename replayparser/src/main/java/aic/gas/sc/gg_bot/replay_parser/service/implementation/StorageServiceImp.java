@@ -80,6 +80,7 @@ public class StorageServiceImp implements StorageService {
             + ".db";
     ArrayList<Trajectory> savedTrajectories = new ArrayList<>(trajectories);
     try {
+      log.info("Saving "+savedTrajectories.size()+" trajectories to "+path);
       SerializationUtil.serialize(savedTrajectories, path);
     } catch (Exception e) {
       log.error("Could not save list. Due to " + e.getLocalizedMessage());
