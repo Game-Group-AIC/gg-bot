@@ -298,6 +298,9 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
       } catch (Exception e) {
         e.printStackTrace();
       }
+      if (currentGame.getFrameCount() % 200 == 0) {
+        log.info(currentGame.getFrameCount() + " / " + currentGame.getReplayFrameCount());
+      }
     }
 
     @Override

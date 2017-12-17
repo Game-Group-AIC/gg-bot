@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Interface to be implemented by user to create agent representing location - base/region.
  */
-public interface LocationInitializer {
+public interface ILocationInitializer {
 
   /**
    * Method to create agent from base location

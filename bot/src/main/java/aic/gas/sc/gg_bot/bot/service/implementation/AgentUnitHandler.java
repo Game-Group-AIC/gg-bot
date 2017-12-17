@@ -41,7 +41,7 @@ import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.LarvaAgentTy
 import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.MutaliskAgentType;
 import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.OverlordAgentType;
 import aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units.ZerglingAgentType;
-import aic.gas.sc.gg_bot.bot.service.AgentUnitHandler;
+import aic.gas.sc.gg_bot.bot.service.IAgentUnitHandler;
 import bwapi.Unit;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
  * Factory to create agent for given unit
  */
 @Slf4j
-public class AgentUnitHandlerImpl implements AgentUnitHandler {
+public class AgentUnitHandler implements IAgentUnitHandler {
 
   private final Map<AUnitTypeWrapper, AgentTypeUnit> agentConfigurationForUnitType = new HashMap<>();
 

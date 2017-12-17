@@ -67,7 +67,7 @@ class PainterForUnits {
       String annotation =
           unit.getType().toString() + ", hitPoints: " + unit.getHitPoints() + "/" + unit.getType()
               .maxHitPoints() + ", energyPoints: " + unit.getEnergy() + "/" + unit.getType()
-              .maxEnergy() + ", " + makeTextAnnotation(unit);
+              .maxEnergy() + ", " + makeTextAnnotation(unit) + ", idle: " + unit.isIdle();
       paintTextCentered(unit.getPosition(), annotation, bwapi);
     }
 

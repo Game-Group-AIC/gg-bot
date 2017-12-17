@@ -8,7 +8,7 @@ import java.util.List;
  * Interface to be implemented by user to create all additional abstract agents with no direct
  * representation in game
  */
-public interface AbstractAgentsInitializer {
+public interface IAbstractAgentsInitializer {
 
   /**
    * Method to create abstract agents

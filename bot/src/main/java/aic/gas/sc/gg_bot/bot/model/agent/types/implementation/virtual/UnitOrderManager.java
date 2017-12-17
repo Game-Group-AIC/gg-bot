@@ -1,6 +1,5 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CAN_TRANSIT_FROM_5_POOL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HYDRALISK_DENS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS;
@@ -42,20 +41,18 @@ public class UnitOrderManager {
         .counts(1)
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
-                (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                    CAN_TRANSIT_FROM_5_POOL) != 0
-                    && Decider.getDecision(AgentTypes.UNIT_ORDER_MANAGER, boostingTypeDesireID,
-                    dataForDecision, featureContainerHeader)
-                    || (dataForDecision.getFeatureValueGlobalBeliefs(
-                    COUNT_OF_MINERALS) >= 350 && dataForDecision.getFeatureValueGlobalBeliefs(
-                    COUNT_OF_GAS) >= 100)
+                (dataForDecision, memory) ->
+                    Decider.getDecision(AgentTypes.UNIT_ORDER_MANAGER, boostingTypeDesireID,
+                        dataForDecision, featureContainerHeader)
+                        || (dataForDecision.getFeatureValueGlobalBeliefs(
+                        COUNT_OF_MINERALS) >= 350 && dataForDecision.getFeatureValueGlobalBeliefs(
+                        COUNT_OF_GAS) >= 100)
             )
             .globalBeliefTypesByAgentType(Stream.concat(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                 Stream.of(COUNT_OF_MINERALS, COUNT_OF_GAS)).collect(Collectors.toSet()))
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-            .globalBeliefTypes(new HashSet<>(Collections.singletonList(CAN_TRANSIT_FROM_5_POOL)))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
@@ -91,19 +88,16 @@ public class UnitOrderManager {
         ConfigurationWithAbstractPlan groundPosition = ConfigurationWithAbstractPlan.builder()
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && (dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
-                        || dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_HYDRALISK_DENS) > 0)
-                        && dataForDecision.getFeatureValueGlobalBeliefs(
-                        COUNT_OF_MINERALS) >= 300
+                    (dataForDecision, memory) ->
+                        (dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
+                            || dataForDecision.getFeatureValueGlobalBeliefs(
+                            COUNT_OF_HYDRALISK_DENS) > 0)
+                            && dataForDecision.getFeatureValueGlobalBeliefs(
+                            COUNT_OF_MINERALS) >= 300
                 )
                 .globalBeliefTypesByAgentType(
                     new HashSet<>(Arrays.asList(COUNT_OF_POOLS, COUNT_OF_HYDRALISK_DENS,
                         COUNT_OF_MINERALS)))
-                .globalBeliefTypes(
-                    new HashSet<>(Collections.singletonList(CAN_TRANSIT_FROM_5_POOL)))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(

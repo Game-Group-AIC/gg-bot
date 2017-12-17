@@ -24,7 +24,7 @@ public class AgentUnitFactory implements AgentUnitHandler {
 
   private static final Reasoning BUILDING_REASONING = (beliefs, mediatorService) -> {
     AUnitOfPlayer me = beliefs.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
-    beliefs.updateFact(IS_BEING_CONSTRUCT, me.isBeingConstructed());
+    beliefs.updateFact(IS_BEING_CONSTRUCTED, me.isBeingConstructed());
   };
   private static final List<Order> ordersCheckForAttack = Arrays
       .asList(Order.AttackMove, Order.AttackTile,
@@ -87,53 +87,53 @@ public class AgentUnitFactory implements AgentUnitHandler {
     //buildings
     agentConfigurationForUnitType.put(HATCHERY_TYPE, UnitWatcherType.builder()
         .agentTypeID(HATCHERY)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     agentConfigurationForUnitType.put(SPAWNING_POOL_TYPE, UnitWatcherType.builder()
         .agentTypeID(SPAWNING_POOL)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     agentConfigurationForUnitType.put(EXTRACTOR_TYPE, UnitWatcherType.builder()
         .agentTypeID(EXTRACTOR)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     agentConfigurationForUnitType.put(LAIR_TYPE, UnitWatcherType.builder()
         .agentTypeID(LAIR)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     agentConfigurationForUnitType.put(SPIRE_TYPE, UnitWatcherType.builder()
         .agentTypeID(SPIRE)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     agentConfigurationForUnitType.put(EVOLUTION_CHAMBER_TYPE, UnitWatcherType.builder()
         .agentTypeID(EVOLUTION_CHAMBER)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     agentConfigurationForUnitType.put(HYDRALISK_DEN_TYPE, UnitWatcherType.builder()
         .agentTypeID(HYDRALISK_DEN)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     //static defense
     agentConfigurationForUnitType.put(SUNKEN_COLONY_TYPE, UnitWatcherType.builder()
         .agentTypeID(SUNKEN_COLONY)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     agentConfigurationForUnitType.put(CREEP_COLONY_TYPE, UnitWatcherType.builder()
         .agentTypeID(CREEP_COLONY)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
     agentConfigurationForUnitType.put(SPORE_COLONY_TYPE, UnitWatcherType.builder()
         .agentTypeID(SPORE_COLONY)
-        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCT)))
+        .factKeys(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(BUILDING_REASONING))
         .build());
 

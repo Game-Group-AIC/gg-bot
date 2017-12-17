@@ -9,7 +9,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_EXTRACTO
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_WORKER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.EXPAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.INCREASE_CAPACITY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.EXPANDING;
@@ -59,7 +59,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
                         .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                             .equals(EXTRACTOR.getName()))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }
@@ -123,7 +123,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
                         .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                             .equals(HATCHERY.getName()))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }

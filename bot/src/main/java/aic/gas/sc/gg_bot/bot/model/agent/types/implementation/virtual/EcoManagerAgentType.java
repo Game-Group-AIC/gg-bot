@@ -1,7 +1,5 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.PLAYER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CAN_TRANSIT_FROM_5_POOL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HATCHERIES;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HATCHERIES_BEGINNING_CONSTRUCTION;
@@ -21,14 +19,13 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_TIME_EXTRACTOR_BUILD;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_TIME_HATCHERY_BUILD;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION_IN_FRAME;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.EXPANDING;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.INCREASING_CAPACITY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.TRAINING_WORKER;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.EXTRACTOR_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.HATCHERY_TYPE;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.BUILD_EXTRACTOR;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.BUILD_WORKER;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.EXPAND;
@@ -43,6 +40,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.bot.model.Decider;
+import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
@@ -61,8 +59,7 @@ public class EcoManagerAgentType {
   public static final AgentType ECO_MANAGER = AgentType.builder()
       .agentTypeID(AgentTypes.ECO_MANAGER)
       .usingTypesForFacts(
-          new HashSet<>(
-              Arrays.asList(BASE_TO_MOVE, LAST_TIME_HATCHERY_BUILD, LAST_TIME_EXTRACTOR_BUILD)))
+          new HashSet<>(Collections.singletonList(BASE_TO_MOVE)))
       .initializationStrategy(type -> {
 
         //train drone
@@ -70,9 +67,8 @@ public class EcoManagerAgentType {
             .sharedDesireKey(MORPH_TO_DRONE)
             .counts(1)
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) ->
-                    dataForDecision.getFeatureValueGlobalBeliefs(CAN_TRANSIT_FROM_5_POOL) != 0
-                        && (Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_WORKER,
+                .decisionStrategy((dataForDecision, memory) -> (
+                    Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_WORKER,
                         dataForDecision, TRAINING_WORKER)
                         //or we are idle and there is still room for drone
                         || (!dataForDecision.madeDecisionToAny()
@@ -93,7 +89,7 @@ public class EcoManagerAgentType {
                     Collectors.toSet()))
                 .globalBeliefTypes(
                     Stream.concat(TRAINING_WORKER.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(COUNT_OF_WORKERS, CAN_TRANSIT_FROM_5_POOL)).collect(
+                        Stream.of(COUNT_OF_WORKERS)).collect(
                         Collectors.toSet()))
                 .desiresToConsider(
                     new HashSet<>(Arrays.asList(INCREASE_CAPACITY, EXPAND, BUILD_EXTRACTOR)))
@@ -130,7 +126,7 @@ public class EcoManagerAgentType {
                     INCREASING_CAPACITY.getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .globalBeliefTypes(Stream.concat(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(COUNT_OF_MORPHING_OVERLORDS, CAN_TRANSIT_FROM_5_POOL)).collect(
+                    Stream.of(COUNT_OF_MORPHING_OVERLORDS)).collect(
                     Collectors.toSet()))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -146,7 +142,7 @@ public class EcoManagerAgentType {
                     INCREASING_CAPACITY.getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .globalBeliefTypes(Stream.concat(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(COUNT_OF_MORPHING_OVERLORDS, CAN_TRANSIT_FROM_5_POOL)).collect(
+                    Stream.of(COUNT_OF_MORPHING_OVERLORDS)).collect(
                     Collectors.toSet()))
                 .build())
             .build();
@@ -201,26 +197,15 @@ public class EcoManagerAgentType {
             })
             .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
               memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
-              memory.updateFact(LAST_TIME_HATCHERY_BUILD,
-                  memory.getReadOnlyMemoriesForAgentType(PLAYER)
-                      .mapToInt(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                          MADE_OBSERVATION_IN_FRAME).orElse(0))
-                      .max().orElse(0));
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_HATCHERIES_IN_CONSTRUCTION) == 0
                         && dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_HATCHERIES_BEING_CONSTRUCT) == 0
-                        && (memory.returnFactValueForGivenKey(LAST_TIME_HATCHERY_BUILD).orElse(
-                        0) + 100
-                        < memory.getReadOnlyMemoriesForAgentType(PLAYER)
-                        .mapToInt(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                            MADE_OBSERVATION_IN_FRAME).orElse(0))
-                        .max().orElse(0))
+                        // Hatchery has not been built recently
+                        && !BuildLockerService.getInstance().isLocked(HATCHERY_TYPE)
                         && (Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
                         dataForDecision, EXPANDING))
 //                                        || (dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) > 350
@@ -228,8 +213,7 @@ public class EcoManagerAgentType {
                 )
                 .globalBeliefTypes(
                     Stream.concat(EXPANDING.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(COUNT_OF_HATCHERIES_IN_CONSTRUCTION,
-                            CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                        Stream.of(COUNT_OF_HATCHERIES_IN_CONSTRUCTION)).collect(Collectors.toSet()))
                 .globalBeliefTypesByAgentType(Stream.concat(
                     EXPANDING.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                     Stream.of(COUNT_OF_HATCHERIES_BEING_CONSTRUCT, COUNT_OF_HETCH,
@@ -239,8 +223,10 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND, dataForDecision,
-                        EXPANDING)
+                    BuildLockerService.getInstance().isLocked(HATCHERY_TYPE)
+                        || !Decider
+                        .getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND, dataForDecision,
+                            EXPANDING)
                         || !memory.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()
                         || dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_HATCHERIES_IN_CONSTRUCTION) > 0
@@ -251,8 +237,7 @@ public class EcoManagerAgentType {
                 )
                 .globalBeliefTypes(
                     Stream.concat(EXPANDING.getConvertersForFactsForGlobalBeliefs().stream(),
-                        Stream.of(COUNT_OF_HATCHERIES_IN_CONSTRUCTION,
-                            CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                        Stream.of(COUNT_OF_HATCHERIES_IN_CONSTRUCTION)).collect(Collectors.toSet()))
                 .globalBeliefTypesByAgentType(Stream.concat(
                     EXPANDING.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                     Stream.of(COUNT_OF_HATCHERIES_BEING_CONSTRUCT, COUNT_OF_HETCH,
@@ -308,28 +293,15 @@ public class EcoManagerAgentType {
             })
             .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
               memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
-              memory.updateFact(LAST_TIME_EXTRACTOR_BUILD,
-                  memory.getReadOnlyMemoriesForAgentType(PLAYER)
-                      .mapToInt(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                          MADE_OBSERVATION_IN_FRAME).orElse(0))
-                      .max().orElse(0));
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueGlobalBeliefs(
-                        CAN_TRANSIT_FROM_5_POOL) != 0
-                        && !dataForDecision.madeDecisionToAny()
-                        && (memory.returnFactValueForGivenKey(LAST_TIME_EXTRACTOR_BUILD).orElse(
-                        0) + 100
-                        < memory.getReadOnlyMemoriesForAgentType(PLAYER)
-                        .mapToInt(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                            MADE_OBSERVATION_IN_FRAME).orElse(0))
-                        .max().orElse(0))
-                        && Decider.getDecision(AgentTypes.ECO_MANAGER,
-                        DesireKeys.BUILD_EXTRACTOR, dataForDecision, BUILDING_EXTRACTOR))
-                .globalBeliefTypes(Stream.concat(
-                    BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefs().stream(),
-                    Stream.of(CAN_TRANSIT_FROM_5_POOL)).collect(Collectors.toSet()))
+                    (dataForDecision, memory) ->
+                        Decider.getDecision(AgentTypes.ECO_MANAGER,
+                            DesireKeys.BUILD_EXTRACTOR, dataForDecision, BUILDING_EXTRACTOR)
+                            && !BuildLockerService.getInstance().isLocked(EXTRACTOR_TYPE)
+                )
+                .globalBeliefTypes(BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
                     BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
@@ -340,7 +312,9 @@ public class EcoManagerAgentType {
                 .decisionStrategy((dataForDecision, memory) -> !memory.returnFactValueForGivenKey(
                     BASE_TO_MOVE).isPresent()
                     || !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_EXTRACTOR,
-                    dataForDecision, BUILDING_EXTRACTOR))
+                    dataForDecision, BUILDING_EXTRACTOR)
+                    || BuildLockerService.getInstance().isLocked(EXTRACTOR_TYPE)
+                )
                 .globalBeliefTypes(BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
                     BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefsByAgentType())

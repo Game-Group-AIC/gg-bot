@@ -5,15 +5,15 @@ import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual.Eco
 import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual.UnitOrderManager.UNIT_ORDER_MANAGER;
 
 import aic.gas.sc.gg_bot.bot.model.agent.AbstractAgent;
-import aic.gas.sc.gg_bot.bot.service.AbstractAgentsInitializer;
+import aic.gas.sc.gg_bot.bot.service.IAbstractAgentsInitializer;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Implementation of AbstractAgentsInitializer
+ * Implementation of IAbstractAgentsInitializer
  */
-public class AbstractAgentsInitializerImpl implements AbstractAgentsInitializer {
+public class AbstractAgentsInitializer implements IAbstractAgentsInitializer {
 
   @Override
   public List<AbstractAgent> initializeAbstractAgents(BotFacade botFacade) {

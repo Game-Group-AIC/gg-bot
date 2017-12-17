@@ -9,7 +9,7 @@ import bwapi.Race;
  * Interface to be implemented by user to create agent representing player. This agent make
  * observation of player stats
  */
-public interface PlayerInitializer {
+public interface IPlayerInitializer {
 
   /**
    * Method to create agent from player

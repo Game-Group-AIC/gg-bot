@@ -25,7 +25,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HOLD_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
@@ -358,7 +358,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                                 && agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
                                 .equals(me))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }
@@ -388,7 +388,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                                 && agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
                                 .equals(me))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }
@@ -418,7 +418,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                                 && agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
                                 .equals(me))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCT))
+                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
                         .filter(Optional::isPresent)
                         .anyMatch(Optional::get);
                   }

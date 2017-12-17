@@ -129,10 +129,4 @@ public class DesireKeys {
   public static final DesireKeyID MOVE_TO_POSITION = new DesireKeyID("MOVE_TO_POSITION", 403);
   public static final DesireKeyID ATTACK = new DesireKeyID("ATTACK", 404);
 
-  ////////HACK - 5 POOL
-  public static final DesireKeyID DO_5_POOL = new DesireKeyID("DO_5_POOL", 501);
-  public static final DesireKeyID REASON_ABOUT_TRANSITION = new DesireKeyID(
-      "REASON_ABOUT_TRANSITION", 502);
-  public static final DesireKeyID FIND_ENEMY_BASE = new DesireKeyID("FIND_ENEMY_BASE", 503);
-
 }

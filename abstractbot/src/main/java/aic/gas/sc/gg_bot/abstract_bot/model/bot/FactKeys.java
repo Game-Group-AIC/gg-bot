@@ -20,37 +20,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
  */
 public class FactKeys {
 
-  //for eco manager
-  public static final FactKey<Integer> LAST_TIME_EXTRACTOR_BUILD = new FactKey<Integer>(
-      "LAST_TIME_EXTRACTOR_BUILD", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Integer> LAST_TIME_HATCHERY_BUILD = new FactKey<Integer>(
-      "LAST_TIME_HATCHERY_BUILD", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Integer> LAST_TIME_OVERLORD_TRAINED = new FactKey<Integer>(
-      "LAST_TIME_OVERLORD_TRAINED", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
-
   //Facts for base
-  public static final FactKey<Integer> LAST_TIME_GAS_COMMAND = new FactKey<Integer>(
-      "LAST_TIME_GAS_COMMAND", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
   public static final FactKey<AUnitOfPlayer> WORKER_ON_BASE = new FactKey<AUnitOfPlayer>(
       "WORKER_ON_BASE", false) {
     @Override
@@ -286,8 +256,8 @@ public class FactKeys {
   };
 
   //for buildings
-  public static final FactKey<Boolean> IS_BEING_CONSTRUCT = new FactKey<Boolean>(
-      "IS_BEING_CONSTRUCT", false) {
+  public static final FactKey<Boolean> IS_BEING_CONSTRUCTED = new FactKey<Boolean>(
+      "IS_BEING_CONSTRUCTED", false) {
     @Override
     public Boolean getInitValue() {
       return false;
