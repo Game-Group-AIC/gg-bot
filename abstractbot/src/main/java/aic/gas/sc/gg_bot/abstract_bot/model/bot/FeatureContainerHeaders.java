@@ -49,7 +49,8 @@ public class FeatureContainerHeaders {
   public static final FeatureContainerHeader INCREASING_CAPACITY = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.SUM_OF_ENEMY_AIR_DMG,
@@ -81,7 +82,9 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_WORKERS
       )))
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
-          FactConverters.COUNT_OF_BASES
+          FactConverters.COUNT_OF_BASES,
+          FactConverters.GAME_PHASE
+
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -121,7 +124,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -163,7 +167,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -200,7 +205,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -237,7 +243,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -275,7 +282,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -313,7 +321,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -352,7 +361,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -389,7 +399,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -426,7 +437,8 @@ public class FeatureContainerHeaders {
           FactConverters.COUNT_OF_ENEMY_BASES,
           FactConverters.AVAILABLE_BASES,
           FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION
+          FactConverters.MAX_POPULATION,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
@@ -462,7 +474,8 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
           FactConverters.COUNT_OF_ENEMY_BASES,
-          FactConverters.AVAILABLE_BASES
+          FactConverters.AVAILABLE_BASES,
+          FactConverters.GAME_PHASE
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.SUM_OF_ENEMY_AIR_DMG,
@@ -524,7 +537,9 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.COUNT_OF_BASES,
           FactConverters.COUNT_OF_ENEMY_BASES,
-          FactConverters.AVAILABLE_BASES
+          FactConverters.AVAILABLE_BASES,
+          FactConverters.GAME_PHASE
+
       )))
       .convertersForFactSetsForGlobalBeliefsByAgentType(new HashSet<>(Arrays.asList(
           FactConverters.SUM_OF_ENEMY_AIR_DMG,

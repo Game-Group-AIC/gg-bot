@@ -4,12 +4,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrappe
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.OVERLORD_TYPE;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
@@ -27,13 +22,30 @@ public class FactConverters {
 
   //TODO change to intervals, call in FeatureContainerHeaders
   //current frame
-  public static final FactWithSetOfOptionalValuesForAgentType<APlayer> COUNT_OF_FRAMES = new FactWithSetOfOptionalValuesForAgentType<>(
+  public static final FactWithSetOfOptionalValuesForAgentType<APlayer> GAME_PHASE = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(0, FactKeys.IS_PLAYER),
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
           .mapToDouble(APlayer::getFrameCount)
-          .average().orElse(0.0), AgentTypes.PLAYER);
+          .map(frameCount -> {
+            // assuming 20 FPS
+            // intervals at 5, 10, 15, 20 mins
+            if (frameCount < 6000) {
+              return 0;
+            } else if (frameCount < 12000) {
+              return 1;
+            } else if (frameCount < 18000) {
+              return 2;
+            } else if (frameCount < 24000) {
+              return 3;
+            } else {
+              return 4;
+            }
+          })
+          .findFirst()
+          .orElse(0.0)
+      , AgentTypes.PLAYER);
 
   //converters for base
   public static final FactWithSetOfOptionalValues<AUnitOfPlayer> COUNT_OF_WORKERS = new FactWithSetOfOptionalValues<>(
