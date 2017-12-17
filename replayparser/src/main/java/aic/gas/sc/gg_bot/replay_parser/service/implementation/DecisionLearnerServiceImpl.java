@@ -20,15 +20,7 @@ import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.mdp.core.action.SimpleAction;
 import burlap.mdp.singleagent.SADomain;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,13 +35,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DecisionLearnerServiceImpl implements DecisionLearnerService {
 
-  private final StorageService storageService = StorageServiceImp.getInstance();
-  private final StateClusteringServiceImpl stateClusteringService = new StateClusteringServiceImpl();
-  private final PolicyLearningService policyLearningService = new PolicyLearningServiceImpl();
-
   private static final List<MapSizeEnums> MAP_SIZES = Stream.of(MapSizeEnums.values())
       .collect(Collectors.toList());
   private static final List<ARace> RACES = Stream.of(ARace.values()).collect(Collectors.toList());
+  private final StorageService storageService = StorageServiceImp.getInstance();
+  private final StateClusteringServiceImpl stateClusteringService = new StateClusteringServiceImpl();
+  private final PolicyLearningService policyLearningService = new PolicyLearningServiceImpl();
 
 //    public void test() {
 //        List<DecisionState> states = Arrays.asList(new DecisionState(0), new DecisionState(1), new DecisionState(2));
@@ -110,6 +101,8 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
   public void learnDecisionMakers() {
     MAP_SIZES.forEach(mapSize -> {
       RACES.forEach(race -> {
+        log.info("LEARN race " + race + " mapsize " + mapSize);
+
         Map<AgentTypeID, Set<DesireKeyID>> data = storageService
             .getParsedAgentTypesWithDesiresTypesContainedInStorage(mapSize, race);
         if (!data.isEmpty()) {
@@ -120,7 +113,7 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
 
                   List<Trajectory> trajectories = storageService
                       .getRandomListOfTrajectories(agentTypeID, desireKeyID, mapSize, race, -1);
-
+                  log.info("Number of trajectories: "+trajectories.size());
                   //get number of features for state
                   int numberOfFeatures = trajectories.get(0).getNumberOfFeatures();
 
@@ -129,6 +122,7 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
                       .map(Trajectory::getStates)
                       .flatMap(Collection::stream)
                       .collect(Collectors.toList());
+                  log.info("Number of states: "+states.size());
 
                   List<FeatureNormalizer> normalizers = stateClusteringService
                       .computeFeatureNormalizersBasedOnStates(states, numberOfFeatures);

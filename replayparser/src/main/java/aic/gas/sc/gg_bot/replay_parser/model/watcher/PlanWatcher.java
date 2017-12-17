@@ -7,10 +7,12 @@ import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class PlanWatcher track agent commitment to desire given beliefs
  */
+@Slf4j
 public abstract class PlanWatcher {
 
   private final FeatureContainer container;

@@ -8,22 +8,12 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BaseWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BuildOrderManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.EcoManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitOrderManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.WatcherPlayer;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.*;
 import aic.gas.sc.gg_bot.replay_parser.service.AgentUnitHandler;
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayParserService;
 import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
-import bwapi.DefaultBWListener;
-import bwapi.Game;
-import bwapi.Mirror;
-import bwapi.Player;
-import bwapi.Race;
-import bwapi.Unit;
+import bwapi.*;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import com.google.common.io.Files;
@@ -34,13 +24,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,13 +43,13 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
   // files
   private static final File bwapiIni = new File(bwapiIniPath);
   private static final File starcraftFolder = new File(starcraftPath);
+  private final WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl
+      .getInstance();
   private ReplayLoaderService replayLoaderService;
   //  Alternatively use this loader:
   //   private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
   private Optional<Replay> replay;
   private Set<Player> players;
-  private final WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl
-      .getInstance();
   private AgentUnitHandler agentUnitHandler;
 
   public ReplayParserServiceImpl(ReplayLoaderService replayLoader) {
@@ -293,47 +277,6 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     }
 
     @Override
-    public void onFrame() {
-      try {
-        super.onFrame();
-
-        if (currentGame.getFrameCount() % 200 == 0) {
-          log.info(currentGame.getFrameCount() + " / " + currentGame.getReplayFrameCount());
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-
-    @Override
-    public void onPlayerLeft(Player player) {
-      try {
-
-        super.onPlayerLeft(player);
-
-        log.info(player.getRace() + " id: " + player.getID() + " left the game.");
-        players.remove(player);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      if (currentGame.getFrameCount() % 200 == 0) {
-        log.info(currentGame.getFrameCount() + " / " + currentGame.getReplayFrameCount());
-      }
-    }
-
-    @Override
-    public void onPlayerDropped(Player player) {
-      try {
-        super.onPlayerDropped(player);
-
-        log.info(player.getRace() + " id: " + player.getID() + " dropped the game.");
-        players.remove(player);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-
-    @Override
     public void onEnd(boolean b) {
       try {
         log.info("Game has finished. Processing data...");
@@ -378,6 +321,86 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
         setNextReplay();
 
         System.out.println("Data processed.");
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    @Override
+    public void onFrame() {
+      try {
+        super.onFrame();
+        if (currentGame.getFrameCount() % 200 == 0) {
+          log.info(currentGame.getFrameCount() + " / " + currentGame.getReplayFrameCount());
+        }
+
+        try {
+          //make observations
+          agentsWithObservations.forEach(AgentMakingObservations::makeObservation);
+
+          //watch agents, update their additional beliefs and track theirs commitment
+          watcherMediatorService.tellAgentsToObserveSystemAndHandlePlans();
+
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    @Override
+    public void onUnitDestroy(Unit unit) {
+      try {
+        if (parsingPlayer.getID() == unit.getPlayer().getID()) {
+          Optional<UnitWatcher> watcher = Optional
+              .ofNullable(watchersOfUnits.remove(unit.getID()));
+          watcher.ifPresent(unitWatcher -> watcherMediatorService.removeWatcher(unitWatcher));
+        }
+        UnitWrapperFactory.unitDied(unit);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    @Override
+    public void onUnitMorph(Unit unit) {
+      try {
+        if (parsingPlayer.getID() == unit.getPlayer().getID()) {
+          Optional<UnitWatcher> watcher = Optional
+              .ofNullable(watchersOfUnits.remove(unit.getID()));
+          watcher.ifPresent(unitWatcher -> watcherMediatorService.removeWatcher(unitWatcher));
+          onUnitCreate(unit);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    @Override
+    public void onPlayerLeft(Player player) {
+      try {
+
+        super.onPlayerLeft(player);
+
+        log.info(player.getRace() + " id: " + player.getID() + " left the game.");
+        players.remove(player);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      if (currentGame.getFrameCount() % 200 == 0) {
+        log.info(currentGame.getFrameCount() + " / " + currentGame.getReplayFrameCount());
+      }
+    }
+
+    @Override
+    public void onPlayerDropped(Player player) {
+      try {
+        super.onPlayerDropped(player);
+
+        log.info(player.getRace() + " id: " + player.getID() + " dropped the game.");
+        players.remove(player);
       } catch (Exception e) {
         e.printStackTrace();
       }
