@@ -24,7 +24,7 @@ public class DesireMediator extends
     AMediatorTemplate<IReadOnlyDesireRegister, IWorkingDesireRegister> {
 
   public DesireMediator() {
-    super(new DesireRegister());
+    super(new DesireRegister(), 500);
   }
 
   /**

@@ -103,7 +103,6 @@ public class BotFacade extends DefaultBWListener {
       //initialize game related data
       game = mirror.getGame();
       self = game.self();
-      game.enableFlag(1);
 
       //initialize command executor
       gameCommandExecutor = new GameCommandExecutor(game);
@@ -135,7 +134,8 @@ public class BotFacade extends DefaultBWListener {
           .collect(Collectors.toList()), self, game);
 
       //init player as another agent
-      Optional<APlayer> player = APlayer.wrapPlayer(self);
+      Optional<APlayer> player = APlayer
+          .wrapPlayer(self, gameCommandExecutor.getCountOfPassedFrames());
       if (!player.isPresent()) {
         log.error("Could not initiate player.");
         throw new RuntimeException("Could not initiate player.");

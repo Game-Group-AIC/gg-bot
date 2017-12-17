@@ -144,4 +144,9 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
       lock.readLock().unlock();
     }
   }
+
+  @Override
+  public void executeMaintenance() {
+    //TODO remove desires from lock
+  }
 }

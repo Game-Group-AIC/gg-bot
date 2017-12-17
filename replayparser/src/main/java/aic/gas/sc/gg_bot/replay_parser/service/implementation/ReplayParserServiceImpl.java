@@ -62,7 +62,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
   private void startGame() throws IOException {
     //  You might need to run this to be able to run linux cmd from wine:
     //  https:// stackoverflow.com/a/45545068/1233675
-    // 
+    //
     //  k='HKLM\System\CurrentControlSet\Control\Session Manager\Environment'
     //  pathext_orig=$( wine reg query "$k" /v PATHEXT | tr -d '\r' | awk '/^  /{ print $3 }' )
     //  echo "$pathext_orig" | grep -qE '(^|;)\.(;|$)' || wine reg add "$k" /v PATHEXT /f /d "${pathext_orig};."
@@ -227,7 +227,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
         // try to setup race
         DecisionConfiguration.setupRace(parsingPlayer, currentGame.getPlayers());
 
-        WatcherPlayer watcherPlayer = new WatcherPlayer(parsingPlayer);
+        WatcherPlayer watcherPlayer = new WatcherPlayer(parsingPlayer, currentGame);
         agentsWithObservations.add(watcherPlayer);
         watcherMediatorService.addWatcher(watcherPlayer);
 

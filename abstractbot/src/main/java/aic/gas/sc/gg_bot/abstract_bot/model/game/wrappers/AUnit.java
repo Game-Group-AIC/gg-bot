@@ -243,7 +243,7 @@ public class AUnit {
     this.isBeingConstructed = unit.isBeingConstructed();
     this.isGatheringMinerals = unit.isGatheringMinerals();
     this.isCarryingMinerals = unit.isCarryingMinerals();
-    this.player = APlayer.wrapPlayer(unit.getPlayer());
+    this.player = APlayer.wrapPlayer(unit.getPlayer(), frameCount);
     unitId = unit.getID();
   }
 

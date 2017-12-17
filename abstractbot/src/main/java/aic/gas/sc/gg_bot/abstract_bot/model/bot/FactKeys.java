@@ -1,6 +1,5 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.abstract_bot.model.TypeWrapperStrategy;
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.UpgradeTypeStatus;
@@ -14,6 +13,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
+import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 
 /**
  * Basic fact keys - used in agent to relate them with representation
@@ -508,20 +508,6 @@ public class FactKeys {
       return null;
     }
   };
-  public static final FactKey<Integer> BUILDING_LAST_CHECK = new FactKey<Integer>(
-      "BUILDING_LAST_CHECK", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Boolean> HAS_ENOUGH_RESOURCES = new FactKey<Boolean>(
-      "HAS_ENOUGH_RESOURCES", false) {
-    @Override
-    public Boolean getInitValue() {
-      return false;
-    }
-  };
 
   //scouting
   public static final FactKey<Integer> LAST_TIME_SCOUTED = new FactKey<Integer>("LAST_TIME_SCOUTED",
@@ -589,43 +575,6 @@ public class FactKeys {
     @Override
     public AUnitWithCommands getInitValue() {
       return null;
-    }
-  };
-
-  ////////HACK - 5 POOL, this may help bot in some scenarios (but in most it is counter productive)
-  public static final FactKey<Integer> MORPHED_WORKERS = new FactKey<Integer>("MORPHED_WORKERS",
-      true) {
-    @Override
-    public Integer getInitValue() {
-      return 0;
-    }
-  };
-  public static final FactKey<Boolean> TRANSIT_FROM_5_POOL = new FactKey<Boolean>(
-      "TRANSIT_FROM_5_POOL", false) {
-    @Override
-    public Boolean getInitValue() {
-      //set true to turn off 5 pool
-      return true;
-    }
-  };
-  public static final FactKey<Boolean> WERE_6_LINGS_MORPHED = new FactKey<Boolean>(
-      "WERE_6_LINGS_MORPHED", true) {
-    @Override
-    public Boolean getInitValue() {
-      return false;
-    }
-  };
-  public static final FactKey<AUnitOfPlayer> LING = new FactKey<AUnitOfPlayer>("LING", true) {
-    @Override
-    public AUnitOfPlayer getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Integer> TIME_OF_LAST_DRONE = new FactKey<Integer>(
-      "TIME_OF_LAST_DRONE", true) {
-    @Override
-    public Integer getInitValue() {
-      return 0;
     }
   };
 

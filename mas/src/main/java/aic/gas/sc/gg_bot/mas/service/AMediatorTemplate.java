@@ -19,10 +19,11 @@ public abstract class AMediatorTemplate<V extends ReadOnlyRegister, T extends Wo
   protected final T workingRegister;
   private final BlockingQueue<QueuedItemInterfaceWithResponse<?>> queue = new LinkedBlockingDeque<>();
   private final Consumer consumer = new Consumer();
-  private static final long maintenance = 5000;
+  private final long maintenance;
 
-  protected AMediatorTemplate(T workingRegister) {
+  protected AMediatorTemplate(T workingRegister, long maintenance) {
     this.workingRegister = workingRegister;
+    this.maintenance = maintenance;
 
     //main code for mediator to handle queue and update shared register
     consumer.start();

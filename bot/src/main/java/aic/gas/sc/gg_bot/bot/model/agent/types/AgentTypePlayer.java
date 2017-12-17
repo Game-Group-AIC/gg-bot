@@ -4,13 +4,13 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_RACE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION_IN_FRAME;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import bwapi.Game;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,7 +36,7 @@ public class AgentTypePlayer extends AgentTypeMakingObservations<Game> {
     }
 
     //update fields by creating new instance
-    APlayer player = aPlayer.get().makeObservationOfEnvironment();
+    APlayer player = aPlayer.get().makeObservationOfEnvironment(environment.getFrameCount());
 
     //add updated version of itself to knowledge
     memory.updateFact(IS_PLAYER, player);

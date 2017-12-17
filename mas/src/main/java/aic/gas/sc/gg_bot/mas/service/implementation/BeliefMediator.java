@@ -17,7 +17,7 @@ public class BeliefMediator extends
     AMediatorTemplate<IReadOnlyMemoryRegister, IWorkingMemoryRegister> {
 
   public BeliefMediator() {
-    super(new MemoryRegister());
+    super(new MemoryRegister(), 5000);
   }
 
   /**

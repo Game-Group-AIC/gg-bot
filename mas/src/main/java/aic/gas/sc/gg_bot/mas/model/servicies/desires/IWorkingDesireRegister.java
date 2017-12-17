@@ -20,11 +20,6 @@ public interface IWorkingDesireRegister extends WorkingRegister<IReadOnlyDesireR
     return this;
   }
 
-  @Override
-  default void executeMaintenance() {
-    //EMPTY
-  }
-
   /**
    * Try to add desire to register. Returns true if desire is registered in register
    */

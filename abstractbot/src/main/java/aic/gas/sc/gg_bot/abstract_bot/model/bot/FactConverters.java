@@ -5,6 +5,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrappe
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
@@ -23,6 +24,16 @@ import java.util.stream.Stream;
  * Enumeration of all IDs for facts' types as static classes
  */
 public class FactConverters {
+
+  //TODO change to intervals, call in FeatureContainerHeaders
+  //current frame
+  public static final FactWithSetOfOptionalValuesForAgentType<APlayer> COUNT_OF_FRAMES = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(0, FactKeys.IS_PLAYER),
+      optionalStream -> (double) optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .mapToDouble(APlayer::getFrameCount)
+          .average().orElse(0.0), AgentTypes.PLAYER);
 
   //converters for base
   public static final FactWithSetOfOptionalValues<AUnitOfPlayer> COUNT_OF_WORKERS = new FactWithSetOfOptionalValues<>(

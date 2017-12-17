@@ -105,7 +105,10 @@ public class APlayer {
   @Getter
   private final int playerId;
 
-  private APlayer(Player player) {
+  @Getter
+  private int frameCount;
+
+  private APlayer(Player player, int frameCount) {
     this.player = player;
     this.playerId = player.getID();
     this.name = player.getName();
@@ -136,19 +139,20 @@ public class APlayer {
     this.razingScore = player.getRazingScore();
     this.customScore = player.getCustomScore();
     this.isObserver = player.isObserver();
+    this.frameCount = frameCount;
   }
 
   /**
    * Wrapped player is returned
    */
-  public static Optional<APlayer> wrapPlayer(Player player) {
+  public static Optional<APlayer> wrapPlayer(Player player, int frameCount) {
     if (player == null) {
       return Optional.empty();
     }
     if (instances.containsKey(player.getID())) {
       return Optional.of(instances.get(player.getID()));
     } else {
-      APlayer aPlayer = new APlayer(player);
+      APlayer aPlayer = new APlayer(player, frameCount);
       instances.put(player.getID(), aPlayer);
       return Optional.of(aPlayer);
     }
@@ -157,8 +161,8 @@ public class APlayer {
   /**
    * Method to refresh fields in wrapper for unit
    */
-  public APlayer makeObservationOfEnvironment() {
-    APlayer aPlayer = new APlayer(player);
+  public APlayer makeObservationOfEnvironment(int frameCount) {
+    APlayer aPlayer = new APlayer(player, frameCount);
     instances.put(player.getID(), aPlayer);
     return aPlayer;
   }
