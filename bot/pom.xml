@@ -24,4 +24,8 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <finalName>bot</finalName>
+  </build>
+
 </project>
