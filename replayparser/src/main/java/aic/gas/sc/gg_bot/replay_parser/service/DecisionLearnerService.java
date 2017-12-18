@@ -8,6 +8,6 @@ public interface DecisionLearnerService {
   /**
    * Method to learn decision makers and store them to storage
    */
-  void learnDecisionMakers();
+  void learnDecisionMakers(int parallelismLevel);
 
 }

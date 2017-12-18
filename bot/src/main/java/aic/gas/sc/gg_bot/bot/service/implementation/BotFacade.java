@@ -51,7 +51,7 @@ public class BotFacade extends DefaultBWListener {
 
   @Setter
   @Getter
-  private static boolean annotateMap = true;
+  private static boolean annotateMap = false;
 
   //TODO hack to prevent building same types
   private final BuildLockerService buildLockerService = BuildLockerService.getInstance();

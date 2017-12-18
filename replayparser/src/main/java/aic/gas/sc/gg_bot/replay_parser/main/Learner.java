@@ -11,9 +11,9 @@ public class Learner {
   public static void main(String[] args) throws Exception {
 
     //to speed things up when executing parallel stream
-    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "100");
+//    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "100");
 
-    learnerService.learnDecisionMakers();
+    learnerService.learnDecisionMakers(8);
   }
 
 }

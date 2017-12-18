@@ -208,8 +208,8 @@ public class EcoManagerAgentType {
                         && !BuildLockerService.getInstance().isLocked(HATCHERY_TYPE)
                         && (Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
                         dataForDecision, EXPANDING))
-//                                        || (dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) > 350
-//                                        && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_HATCHERIES) == 2))
+                        || (dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) > 400
+                        && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_HATCHERIES) == 2)
                 )
                 .globalBeliefTypes(
                     Stream.concat(EXPANDING.getConvertersForFactsForGlobalBeliefs().stream(),
