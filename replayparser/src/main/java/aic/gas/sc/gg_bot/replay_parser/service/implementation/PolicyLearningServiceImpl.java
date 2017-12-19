@@ -33,6 +33,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
   private static final double learningRate = 0.01;
   private static final double maxLikelihoodChange = 0.1;
   //set time budget to 30 minutes
+  //TODO increase
   private static final long timeBudget = 1000 * 60 * 30;
 
   @Override

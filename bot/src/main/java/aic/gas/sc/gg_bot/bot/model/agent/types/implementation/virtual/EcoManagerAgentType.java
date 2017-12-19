@@ -53,7 +53,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EcoManagerAgentType {
 
   public static final AgentType ECO_MANAGER = AgentType.builder()

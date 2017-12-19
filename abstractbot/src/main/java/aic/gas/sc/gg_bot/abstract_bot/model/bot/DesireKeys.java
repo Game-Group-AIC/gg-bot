@@ -93,6 +93,8 @@ public class DesireKeys {
   public static final DesireKeyID UPDATE_BELIEFS_ABOUT_WORKER_ACTIVITIES = new DesireKeyID(
       "UPDATE_BELIEFS_ABOUT_WORKER_ACTIVITIES", 201);
   public static final DesireKeyID GO_TO_BASE = new DesireKeyID("GO_TO_BASE", 202);
+  public static final DesireKeyID RETURN_TO_BASE = new DesireKeyID("RETURN_TO_BASE", 200);
+  public static final DesireKeyID STOP_BUILD = new DesireKeyID("STOP_BUILD", 199);
   public static final DesireKeyID FIND_PLACE_FOR_POOL = new DesireKeyID("FIND_PLACE_FOR_POOL", 203);
   public static final DesireKeyID FIND_PLACE_FOR_HATCHERY = new DesireKeyID(
       "FIND_PLACE_FOR_HATCHERY", 204);

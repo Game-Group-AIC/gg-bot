@@ -35,17 +35,11 @@ public class Util {
       return Optional.empty();
     }
 
-    //check current location first
-    if (game
-        .canBuildHere(currentTile.getWrappedPosition(), buildingType.getType(), worker.getUnit())
-        && canBuildHere(buildingType, currentTile, worker, game)) {
-      return Optional.of(currentTile);
-    }
-
     while (maxDist < stopDist) {
       for (int i = currentTile.getX() - maxDist; i <= currentTile.getX() + maxDist; i++) {
         for (int j = currentTile.getY() - maxDist; j <= currentTile.getY() + maxDist; j++) {
-          if (game.canBuildHere(new TilePosition(i, j), buildingType.getType(), worker.getUnit())) {
+          if (game.canBuildHere(new TilePosition(i, j), buildingType.getType(), worker.getUnit(),
+              false)) {
             ATilePosition position = ATilePosition.wrap(new TilePosition(i, j));
             if (canBuildHere(buildingType, position, worker, game)) {
               return Optional.ofNullable(position);

@@ -482,6 +482,13 @@ public class FactKeys {
       return null;
     }
   };
+  public static final FactKey<Boolean> HAS_SOMETHING_TO_BUILD = new FactKey<Boolean>(
+      "HAS_SOMETHING_TO_BUILD", true) {
+    @Override
+    public Boolean getInitValue() {
+      return false;
+    }
+  };
   public static final FactKey<ABaseLocationWrapper> BASE_TO_SCOUT_BY_WORKER = new FactKey<ABaseLocationWrapper>(
       "BASE_TO_SCOUT_BY_WORKER", true) {
     @Override

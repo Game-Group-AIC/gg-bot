@@ -365,6 +365,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
   }
 
+  //TODO improve
   public static APosition positionToMove(APosition myPosition, APosition dangerPosition) {
     int difX = (myPosition.getX() - dangerPosition.getY()) * 4, difY =
         (myPosition.getY() - dangerPosition.getY()) * 4;

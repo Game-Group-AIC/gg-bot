@@ -13,6 +13,7 @@ public class Learner {
     //to speed things up when executing parallel stream
 //    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "100");
 
+    //TODO increase
     learnerService.learnDecisionMakers(8);
   }
 
