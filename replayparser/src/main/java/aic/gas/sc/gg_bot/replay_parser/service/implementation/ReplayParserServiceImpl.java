@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Concrete implementation of service to parse replays
@@ -40,17 +41,20 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
   // paths
   private static final String bwapiIniPath = "c:\\sc\\bwapi-data\\bwapi.ini";
   private static final String starcraftPath = "c:\\sc";
+  private static final String chaosluncherPath = starcraftPath + "\\Chaoslauncher.lnk";
   // files
   private static final File bwapiIni = new File(bwapiIniPath);
   private static final File starcraftFolder = new File(starcraftPath);
   private final WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl
-      .getInstance();
+          .getInstance();
   private ReplayLoaderService replayLoaderService;
   //  Alternatively use this loader:
   //   private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
   private Optional<Replay> replay;
   private Set<Player> players;
   private AgentUnitHandler agentUnitHandler;
+  private final String externalDrive = "e:\\";
+  private boolean shouldExit = false;
 
   public ReplayParserServiceImpl(ReplayLoaderService replayLoader) {
     replayLoaderService = replayLoader;
@@ -69,7 +73,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     //  echo "$pathext_orig" | grep -qE '(^|;)\.(;|$)' || wine reg add "$k" /v PATHEXT /f /d "${pathext_orig};."
     log.info("Starting game...");
     Runtime rt = Runtime.getRuntime();
-    rt.exec("/usr/bin/launch_game --headful");
+    rt.exec("cmd /c start \"\" \"" + chaosluncherPath + "\"");
   }
 
   /**
@@ -77,6 +81,15 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
    */
   private Replay getNextReplay() throws Exception {
     File nextReplay = replayLoaderService.returnNextReplayToPlay();
+
+    File externalFile = new File(externalDrive + nextReplay.getPath()
+            .replace("c:\\sc\\maps\\replays\\data", "")
+    );
+
+    // copy from external storage
+    FileUtils.copyFile(externalFile, nextReplay);
+    log.info("Copied "+externalFile+" to "+nextReplay);
+
     return new Replay(nextReplay);
   }
 
@@ -106,9 +119,9 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     Path pathToReplay = replayFile.toPath();
     Path pathOfSC = starcraftFolder.toPath();
     String pathToReplayRelativeToSCFolder = pathOfSC.relativize(pathToReplay)
-        .toString().replace("\\", "/");
+            .toString().replace("\\", "/");
     log.info("setupReplayInConfigurationFile.pathToReplayRelativeToSCFolder "
-        + pathToReplayRelativeToSCFolder);
+            + pathToReplayRelativeToSCFolder);
 
     List<String> fileLines = Files.readLines(bwapiIni, StandardCharsets.UTF_8);
     for (int i = 0; i < fileLines.size(); i++) {
@@ -174,6 +187,12 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     @Override
     public void onStart() {
       try {
+        if(shouldExit) {
+          log.info("Going to shutdown!");
+          Thread.sleep(1000);
+          System.exit(0);
+        }
+
         log.info("New game from replay " + replay.get().getFile().get());
 
         UnitWrapperFactory.clearCache();
@@ -192,9 +211,9 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
         log_meta("getStartLocations", currentGame.getStartLocations().size());
 
         players = currentGame.getPlayers().stream()
-            .filter(player -> !player.isNeutral())
-            .peek(player -> log_meta("race[" + player.getID() + "]", player.getRace()))
-            .collect(Collectors.toSet());
+                .filter(player -> !player.isNeutral())
+                .peek(player -> log_meta("race[" + player.getID() + "]", player.getRace()))
+                .collect(Collectors.toSet());
         int numPlayers = players.size();
         log_meta("numPlayers", numPlayers);
 
@@ -210,8 +229,8 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
 
         // set map size
         int mapSize = (int) BWTA.getBaseLocations().stream()
-            .filter(BaseLocation::isStartLocation)
-            .count();
+                .filter(BaseLocation::isStartLocation)
+                .count();
         DecisionConfiguration.setMapSize(MapSizeEnums.getByStartBases(mapSize));
 
         // set player to parse
@@ -235,7 +254,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
         // init base agents
         BWTA.getBaseLocations().forEach(baseLocation -> {
           BaseWatcher baseWatcher = new BaseWatcher(ABaseLocationWrapper.wrap(baseLocation),
-              currentGame, new BaseWatcher.UpdateChecksStrategy());
+                  currentGame, new BaseWatcher.UpdateChecksStrategy());
           agentsWithObservations.add(baseWatcher);
           watcherMediatorService.addWatcher(baseWatcher);
         });
@@ -264,7 +283,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
       try {
         if (parsingPlayer.getID() == unit.getPlayer().getID()) {
           Optional<UnitWatcher> unitWatcher = agentUnitHandler
-              .createAgentForUnit(unit, currentGame);
+                  .createAgentForUnit(unit, currentGame);
           unitWatcher.ifPresent(watcher -> {
             agentsWithObservations.add(watcher);
             watcherMediatorService.addWatcher(watcher);
@@ -291,17 +310,17 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
           log_meta("winningRace", players.iterator().next().getRace());
         } else {
           PlayerWithCounts bestPlayer = players.stream().map(
-              player -> {
-                PlayerWithCounts playerWithCounts = new PlayerWithCounts(
-                    player,
-                    player.getUnits().stream()
-                        .filter(unit -> unit.getType().isBuilding())
-                        .count());
-                log_meta("playerNumBuildings[" + playerWithCounts.getPlayer().getID() + "] ",
-                    playerWithCounts.counts);
+                  player -> {
+                    PlayerWithCounts playerWithCounts = new PlayerWithCounts(
+                            player,
+                            player.getUnits().stream()
+                                    .filter(unit -> unit.getType().isBuilding())
+                                    .count());
+                    log_meta("playerNumBuildings[" + playerWithCounts.getPlayer().getID() + "] ",
+                            playerWithCounts.counts);
 
-                return playerWithCounts;
-              }
+                    return playerWithCounts;
+                  }
           ).max(new Comparator<PlayerWithCounts>() {
                   @Override
                   public int compare(PlayerWithCounts o1, PlayerWithCounts o2) {
@@ -318,9 +337,11 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
         watcherMediatorService.clearAllAgentsAndSaveTheirTrajectories();
 
         replayLoaderService.finishedProcessing(replay.get().getRawFile());
-        setNextReplay();
+        //setNextReplay();
 
         System.out.println("Data processed.");
+        shouldExit = true;
+
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -355,7 +376,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
       try {
         if (parsingPlayer.getID() == unit.getPlayer().getID()) {
           Optional<UnitWatcher> watcher = Optional
-              .ofNullable(watchersOfUnits.remove(unit.getID()));
+                  .ofNullable(watchersOfUnits.remove(unit.getID()));
           watcher.ifPresent(unitWatcher -> watcherMediatorService.removeWatcher(unitWatcher));
         }
         UnitWrapperFactory.unitDied(unit);
@@ -369,7 +390,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
       try {
         if (parsingPlayer.getID() == unit.getPlayer().getID()) {
           Optional<UnitWatcher> watcher = Optional
-              .ofNullable(watchersOfUnits.remove(unit.getID()));
+                  .ofNullable(watchersOfUnits.remove(unit.getID()));
           watcher.ifPresent(unitWatcher -> watcherMediatorService.removeWatcher(unitWatcher));
           onUnitCreate(unit);
         }
