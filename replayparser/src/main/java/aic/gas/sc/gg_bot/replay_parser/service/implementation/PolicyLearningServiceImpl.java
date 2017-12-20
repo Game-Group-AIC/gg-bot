@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionState;
-import aic.gas.sc.gg_bot.replay_parser.model.irl.MLIRLWithGuard;
+import aic.gas.sc.gg_bot.replay_parser.model.irl.OurMLIRL;
 import aic.gas.sc.gg_bot.replay_parser.service.PolicyLearningService;
 import burlap.behavior.functionapproximation.dense.DenseStateFeatures;
 import burlap.behavior.policy.GreedyQPolicy;
@@ -28,6 +28,13 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
   private static final double beta = 10;
   private static final boolean doNotPrintDebug = false;
   private static final int steps = 100;
+  //set last "dummy state" to large negative number as we do not want to go there
+  private static final int minReward = -1, maxReward = 1;
+  private static final double learningRate = 0.01;
+  private static final double maxLikelihoodChange = 0.1;
+  //set time budget to 30 minutes
+  //TODO increase
+  private static final long timeBudget = 1000 * 60 * 30;
 
   @Override
   public Policy learnPolicy(SADomain domain, List<Episode> episodes, int numberOfStates,
@@ -42,8 +49,8 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
     for (int i = 0; i < rf.numParameters() - 1; i++) {
       rf.setParameter(i, RandomFactory.getMapped(0).nextDouble() * 0.2 - 0.1);
     }
-    //set last "dummy state" to large negative number as we do not want to go there
-    rf.setParameter(rf.numParameters() - 1, MLIRLWithGuard.minReward);
+
+    rf.setParameter(rf.numParameters() - 1, minReward);
 
     //use either DifferentiableVI or DifferentiableSparseSampling for planning. The latter enables receding horizon IRL,
     //but you will probably want to use a fairly large horizon for this kind of reward function.
@@ -59,7 +66,8 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
     request.setBoltzmannBeta(beta);
 
     //run MLIRL on it
-    MLIRL irl = new MLIRLWithGuard(request, 0.01, 0.01, steps);
+    MLIRL irl = new OurMLIRL(request, learningRate, maxLikelihoodChange, steps, minReward,
+        maxReward, timeBudget);
     irl.performIRL();
 
     return new GreedyQPolicy((QProvider) request.getPlanner());

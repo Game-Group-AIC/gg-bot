@@ -207,6 +207,12 @@ public class DesiresKeys {
   public static final DesireKey GO_TO_BASE = DesireKey.builder()
       .id(DesireKeys.GO_TO_BASE)
       .build();
+  public static final DesireKey RETURN_TO_BASE = DesireKey.builder()
+      .id(DesireKeys.RETURN_TO_BASE)
+      .build();
+  public static final DesireKey STOP_BUILD = DesireKey.builder()
+      .id(DesireKeys.STOP_BUILD)
+      .build();
   public static final DesireKey FIND_PLACE_FOR_POOL = DesireKey.builder()
       .id(DesireKeys.FIND_PLACE_FOR_POOL)
       .build();

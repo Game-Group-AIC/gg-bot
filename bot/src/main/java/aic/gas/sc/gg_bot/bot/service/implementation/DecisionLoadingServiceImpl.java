@@ -23,17 +23,22 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
 
   private static DecisionLoadingServiceImpl instance = new DecisionLoadingServiceImpl();
   private final Map<MapSizeEnums, Map<ARace, Map<AgentTypeID, Map<DesireKeyID, DecisionPoint>>>> cache = new ConcurrentHashMap<>();
+  private Map<AgentTypeID, Map<DesireKeyID, DecisionPoint>> loaded = new HashMap<>();
 
   /**
    * Initialize cache (loads models from resources)
    */
   private DecisionLoadingServiceImpl() {
-    Stream.of(MapSizeEnums.values()).forEach(mapSize -> Stream.of(ARace.values()).
-        forEach(race -> DecisionConfiguration.decisionsToLoad
+    Stream.of(MapSizeEnums.values()).forEach(mapSize -> Stream.of(ARace.values())
+        .filter(race -> !race.equals(ARace.UNKNOWN))
+        .forEach(race -> DecisionConfiguration.decisionsToLoad
             .forEach((agentTypeID, desireKeyIDS) -> desireKeyIDS
                 .forEach(
                     desireKeyID -> loadDecisionPoint(agentTypeID, desireKeyID, mapSize, race))))
     );
+
+    //what is loaded
+
   }
 
   /**
@@ -61,6 +66,16 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
       cache.computeIfAbsent(mapSize, id -> new HashMap<>())
           .computeIfAbsent(race, id -> new HashMap<>())
           .computeIfAbsent(agentTypeID, id -> new HashMap<>()).put(desireKeyID, decisionPoint);
+      if (!loaded.containsKey(agentTypeID)) {
+        Map<DesireKeyID, DecisionPoint> toAdd = new HashMap<>();
+        toAdd.put(desireKeyID, decisionPoint);
+        loaded.put(agentTypeID, toAdd);
+      } else {
+        if (!loaded.get(agentTypeID).containsKey(desireKeyID)) {
+          loaded.get(agentTypeID).put(desireKeyID, decisionPoint);
+        }
+      }
+
     } catch (Exception e) {
       log.error(e.getMessage() + " for combination " + mapSize.name()
           + ", " + race.name() + ", " + agentTypeID.getName()
@@ -74,6 +89,12 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
       return cache.get(DecisionConfiguration.getMapSize()).get(DecisionConfiguration.getRace())
           .get(agentTypeID).get(desireKeyID);
     } catch (Exception e) {
+
+      //try to load at least some
+      if (loaded.containsKey(agentTypeID) && loaded.get(agentTypeID).containsKey(desireKeyID)) {
+        return loaded.get(agentTypeID).get(desireKeyID);
+      }
+
       log.error(e.getLocalizedMessage());
       throw new RuntimeException(
           "No models of decision for combination " + DecisionConfiguration.getMapSize().name()

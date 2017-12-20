@@ -53,7 +53,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EcoManagerAgentType {
 
   public static final AgentType ECO_MANAGER = AgentType.builder()
@@ -208,8 +210,8 @@ public class EcoManagerAgentType {
                         && !BuildLockerService.getInstance().isLocked(HATCHERY_TYPE)
                         && (Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
                         dataForDecision, EXPANDING))
-//                                        || (dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) > 350
-//                                        && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_HATCHERIES) == 2))
+                        || (dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) > 400
+                        && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_HATCHERIES) == 2)
                 )
                 .globalBeliefTypes(
                     Stream.concat(EXPANDING.getConvertersForFactsForGlobalBeliefs().stream(),

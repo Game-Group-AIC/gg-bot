@@ -25,8 +25,6 @@ import java.util.stream.Stream;
  */
 public class FactConverters {
 
-  //TODO change to intervals, call in FeatureContainerHeaders
-  //current frame
   public static final FactWithSetOfOptionalValuesForAgentType<APlayer> GAME_PHASE = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(0, FactKeys.IS_PLAYER),
       optionalStream -> (double) optionalStream

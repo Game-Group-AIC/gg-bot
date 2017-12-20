@@ -23,9 +23,13 @@ import bwta.BWTA;
 import bwta.BaseLocation;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -45,16 +49,23 @@ public class BotFacade extends DefaultBWListener {
   @Getter
   private static int gameDefaultSpeed = 15;
 
+  //TODO increase + block frame for a while
   @Setter
   @Getter
   private static long maxFrameExecutionTime = 30;
 
   @Setter
   @Getter
-  private static boolean annotateMap = true;
+  private static boolean annotateMap = false;
+
+  private long time, execution;
 
   //TODO hack to prevent building same types
   private final BuildLockerService buildLockerService = BuildLockerService.getInstance();
+  private static final int frameCountToRestart = 600;
+
+  //TODO hack to restart idle workers
+  private final Map<WorkerTuple, Integer> idleWorkers = new HashMap<>();
 
   //keep track of agent units
   private final Map<Integer, AgentUnit> agentsWithGameRepresentation = new HashMap<>();
@@ -156,7 +167,7 @@ public class BotFacade extends DefaultBWListener {
           .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
 
       //speed up game to setup value
-      game.setLocalSpeed(getGameDefaultSpeed());
+//      game.setLocalSpeed(getGameDefaultSpeed());
 
       log.info("Local game speed set to " + getGameDefaultSpeed());
 
@@ -240,15 +251,19 @@ public class BotFacade extends DefaultBWListener {
   @Override
   public void onEnd(boolean b) {
     try {
+      game.printf("http://gas.fel.cvut.cz");
       agentsWithGameRepresentation.clear();
       masFacade.terminate();
     } catch (Exception e) {
       e.printStackTrace();
     }
+    idleWorkers.clear();
   }
 
   @Override
   public void onFrame() {
+    time = System.currentTimeMillis();
+
     try {
       gameCommandExecutor.actOnFrame(maxFrameExecutionTime);
       buildLockerService.releaseLocksOnTypes();
@@ -263,8 +278,55 @@ public class BotFacade extends DefaultBWListener {
       annotator.annotate();
     }
 
+    //TODO hack to kill idle workers and start as new agents
+    checkWorkers();
+
     //TODO hack to ensure frame sync
     masFacade.notifyAgentsAboutNextCycle();
+
+    if ((execution = System.currentTimeMillis() - time) >= 75) {
+      game.printf("On frame " + game.getFrameCount() + " execution took " + execution + " ms.");
+    }
+  }
+
+  //TODO hack to restart idle workers
+  private void checkWorkers() {
+    Set<WorkerTuple> idleWorkersSet = self.getUnits().stream()
+        .filter(unit -> unit.getType().isWorker())
+        .filter(Unit::isIdle)
+        .map(WorkerTuple::new)
+        .collect(Collectors.toSet());
+
+    //remove missing
+    idleWorkers.keySet().removeIf(v -> !idleWorkersSet.contains(v));
+
+    //add new
+    idleWorkersSet.stream()
+        .filter(workerTuple -> !idleWorkers.containsKey(workerTuple))
+        .forEach(workerTuple -> idleWorkers.put(workerTuple, 0));
+
+    //restart stucked and update the map
+    Iterator<Entry<WorkerTuple, Integer>> it = idleWorkers.entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry<WorkerTuple, Integer> pair = it.next();
+      if (pair.getValue() + 1 >= frameCountToRestart) {
+        it.remove();
+
+        //restart
+        Optional<AgentUnit> agent = Optional
+            .ofNullable(agentsWithGameRepresentation.remove(pair.getKey().id));
+        log.info("Destroying stucked worker: " + agent
+            .map(agentUnit -> agentUnit.getAgentType().getName())
+            .orElse("null"));
+        agent.ifPresent(agentObservingGame -> masFacade
+            .removeAgentFromSystem(agentObservingGame, pair.getKey().unit.getType().isBuilding()));
+        onUnitCreate(pair.getKey().unit);
+      } else {
+
+        //update clock
+        pair.setValue(pair.getValue() + 1);
+      }
+    }
   }
 
   //TODO handle more events - unit renegade, visibility
@@ -300,5 +362,18 @@ public class BotFacade extends DefaultBWListener {
      * Creates new factory
      */
     IPlayerInitializer createFactory();
+  }
+
+  @Getter
+  @EqualsAndHashCode(of = "id")
+  private static class WorkerTuple {
+
+    private final int id;
+    private final Unit unit;
+
+    private WorkerTuple(Unit unit) {
+      this.unit = unit;
+      this.id = unit.getID();
+    }
   }
 }

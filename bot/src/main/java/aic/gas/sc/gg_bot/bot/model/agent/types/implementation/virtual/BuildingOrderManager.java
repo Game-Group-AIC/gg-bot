@@ -67,14 +67,15 @@ public class BuildingOrderManager {
                         dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) == 0
                             && dataForDecision.getFeatureValueGlobalBeliefs(
                             COUNT_OF_POOLS_IN_CONSTRUCTION) == 0
-                            && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
+                            && (Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
                             DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL)
-//                                                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) > 200)
+                            || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS)
+                            > 400)
                 )
                 .globalBeliefTypesByAgentType(Stream.concat(
                     BUILDING_POOL.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
-                    Stream.of(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS,
-                        COUNT_OF_MINERALS)).collect(Collectors.toSet()))
+                    Stream.of(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS, COUNT_OF_MINERALS))
+                    .collect(Collectors.toSet()))
                 .globalBeliefSetTypesByAgentType(
                     BUILDING_POOL.getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .globalBeliefTypes(BUILDING_POOL.getConvertersForFactsForGlobalBeliefs())
@@ -82,9 +83,10 @@ public class BuildingOrderManager {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
-                            || dataForDecision
-                            .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0)
+                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0 ||
+                            dataForDecision
+                                .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0
+                )
                 .globalBeliefTypesByAgentType(
                     new HashSet<>(Arrays.asList(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS)))
                 .build())
