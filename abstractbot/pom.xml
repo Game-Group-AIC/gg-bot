@@ -19,4 +19,8 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <finalName>abstract-bot</finalName>
+  </build>
+
 </project>

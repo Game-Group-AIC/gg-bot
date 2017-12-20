@@ -20,7 +20,7 @@
   </dependencies>
 
   <build>
-    <finalName>gg-bot</finalName>
+    <finalName>bot</finalName>
     <plugins>
 
       <!-- download source code in Eclipse, best practice -->

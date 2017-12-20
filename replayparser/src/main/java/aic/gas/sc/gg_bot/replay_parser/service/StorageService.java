@@ -6,6 +6,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
+import aic.gas.sc.gg_bot.replay_parser.model.tracking.TrajectoryWrapper;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +32,7 @@ public interface StorageService {
   /**
    * Get stored trajectories for given parameters
    */
-  List<Trajectory> getRandomListOfTrajectories(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
+  List<TrajectoryWrapper> getRandomListOfTrajectories(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
       MapSizeEnums mapSize, ARace race, int limit);
 
   /**

@@ -11,4 +11,8 @@
 
   <artifactId>mas</artifactId>
 
+  <build>
+    <finalName>mas</finalName>
+  </build>
+
 </project>
