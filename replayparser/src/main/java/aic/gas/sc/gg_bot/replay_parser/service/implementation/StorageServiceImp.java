@@ -13,13 +13,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,17 +26,20 @@ import lombok.extern.slf4j.Slf4j;
 public class StorageServiceImp implements StorageService {
 
   //databases
-  private static final String storageFolder = "storage";
-  private static final String parsingFolder = storageFolder + "/parsing";
-  private static final String outputFolder = storageFolder + "/output";
-  private static final String dbFileReplays = storageFolder + "/replays.db";
-  private static StorageServiceImp instance = null;
 
   //subdirectories
   public static final List<String> subdirectories = Stream.of(MapSizeEnums.values())
       .flatMap(size -> Stream.of(ARace.values())
           .map(race -> size.name() + "/" + race.name()))
       .collect(Collectors.toList());
+  // we need two folders: human
+  private static final String storageFolder = "storage";
+  private static final String parsingFolder = storageFolder + "/parsing";
+  private static final String humanFolder = "human_" + parsingFolder;
+  private static final String otherFolder = "other_" + parsingFolder;
+  private static final String outputFolder = storageFolder + "/output";
+  private static final String dbFileReplays = storageFolder + "/replays.db";
+  private static StorageServiceImp instance = null;
 
   private StorageServiceImp() {
     //singleton
@@ -86,7 +83,7 @@ public class StorageServiceImp implements StorageService {
             + ".db";
     ArrayList<Trajectory> savedTrajectories = new ArrayList<>(trajectories);
     try {
-      log.info("Saving "+savedTrajectories.size()+" trajectories to "+path);
+      log.info("Saving " + savedTrajectories.size() + " trajectories to " + path);
       SerializationUtil.serialize(savedTrajectories, path);
     } catch (Exception e) {
       log.error("Could not save list. Due to " + e.getLocalizedMessage());
@@ -123,7 +120,15 @@ public class StorageServiceImp implements StorageService {
         .map(File::getPath)
         .flatMap(s -> {
           try {
-            return ((List<Trajectory>) SerializationUtil.deserialize(s)).stream();
+            boolean isHumanReplay = s.contains("human");
+
+            // noinspection unchecked
+            return ((List<Trajectory>) SerializationUtil.deserialize(s))
+                .stream()
+                .map(trajectory -> {
+                  trajectory.setUsedToLearnPolicy(isHumanReplay);
+                  return trajectory;
+                });
           } catch (Exception e) {
             log.error(e.getLocalizedMessage());
           }
@@ -137,9 +142,18 @@ public class StorageServiceImp implements StorageService {
    */
   private Set<File> getFilesForAgentTypeOfGivenDesire(AgentTypeID agentTypeID,
       DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) {
-    return SerializationUtil
-        .getAllFilesInFolder(parsingFolder + "/" + mapSize.name() + "/"
-            + "/" + race.name() + "/" + agentTypeID.getName(), "db")
+
+    Set<File> humanFiles = SerializationUtil
+        .getAllFilesInFolder(humanFolder + "/" + mapSize.name() + "/"
+            + "/" + race.name() + "/" + agentTypeID.getName(), "db");
+    Set<File> otherFiles = SerializationUtil
+        .getAllFilesInFolder(otherFolder + "/" + mapSize.name() + "/"
+            + "/" + race.name() + "/" + agentTypeID.getName(), "db");
+    Set<File> allFiles = new HashSet<File>();
+    allFiles.addAll(humanFiles);
+    allFiles.addAll(otherFiles);
+
+    return allFiles
         .stream()
         .filter(file -> file.getName().contains(desireKeyID.getName()))
         .collect(Collectors.toSet());

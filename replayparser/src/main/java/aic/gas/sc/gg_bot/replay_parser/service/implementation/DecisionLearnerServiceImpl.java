@@ -20,14 +20,7 @@ import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.mdp.core.action.SimpleAction;
 import burlap.mdp.singleagent.SADomain;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -130,6 +123,143 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
     log.info("Finished...");
   }
 
+  private MyTask prepareDataForPolicy(Tuple tuple) {
+    log.info(
+        "Starting computation for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
+            .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+
+    //TODO load for bots as well. Use human example to learn policy only
+    List<Trajectory> trajectories = storageService
+        .getRandomListOfTrajectories(tuple.agentTypeID, tuple.desireKeyID, tuple.getMapSize(),
+            tuple.getRace(), -1);
+
+    //get number of features for state
+    int numberOfFeatures = trajectories.get(0).getNumberOfFeatures();
+
+    log.info("Number of trajectories: " + trajectories.size() + " with cardinality of features: "
+        + numberOfFeatures + " for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
+        .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+
+    //find representatives of states
+    List<State> states = trajectories.stream()
+        .map(Trajectory::getStates)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+    log.info("Number of states: " + states.size() + " for " + tuple.desireKeyID.getName() + " of "
+        + tuple.agentTypeID.getName() + " on " + tuple.mapSize + " with " + tuple.race);
+
+    List<FeatureNormalizer> normalizers = stateClusteringService
+        .computeFeatureNormalizersBasedOnStates(states, numberOfFeatures);
+    List<Vec> classes = stateClusteringService
+        .computeStateRepresentatives(trajectories, states, normalizers);
+
+    //create states with corresponding mean
+    Map<DecisionState, Vec> statesAndTheirMeans = new HashMap<>();
+    for (int i = 0; i < classes.size(); i++) {
+      statesAndTheirMeans.put(new DecisionState(i), classes.get(i));
+    }
+
+    log.info("Creating MDP... for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
+        .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+
+    //create transitions
+    Map<DecisionState, Map<NextActionEnumerations, Map<DecisionState, Double>>> transitions = new HashMap<>();
+    List<Episode> episodes = new ArrayList<>();
+    for (Trajectory trajectory : trajectories) {
+      List<State> stateList = trajectory.getStates();
+      if (stateList.size() <= 2) {
+        continue;
+      }
+
+      Episode episode = new Episode();
+      //convert vectors to states (more memory intensive but faster)
+      List<DecisionState> convertedOnStates = stateList.parallelStream()
+          .map(state -> closestStateRepresentative(new DenseVector(
+                  Configuration
+                      .normalizeFeatureVector(state.getFeatureVector(), normalizers)),
+              statesAndTheirMeans))
+          .collect(Collectors.toList());
+
+      DecisionState currentState = convertedOnStates.get(0);
+      NextActionEnumerations nextAction = NextActionEnumerations
+          .returnNextAction(stateList.get(0).isCommittedWhenTransiting());
+
+      //add initial position in expert trajectory
+      if (trajectory.isUsedToLearnPolicy()) {
+        episode.addState(convertedOnStates.get(0));
+      }
+
+      //there is no transition in last state
+      for (int i = 1; i < stateList.size(); i++) {
+        Map<DecisionState, Double> transitedTo = transitions
+            .computeIfAbsent(currentState, decisionState -> new HashMap<>())
+            .computeIfAbsent(nextAction, actionEnumerations -> new HashMap<>());
+        currentState = convertedOnStates.get(i);
+
+        //add transition to episode. Do not add last transition if agent is committed
+        if (trajectory.isUsedToLearnPolicy()) {
+          episode.transition(new SimpleAction(nextAction.name()), currentState,
+              DecisionDomainGenerator.defaultReward);
+        }
+
+        nextAction = NextActionEnumerations
+            .returnNextAction(stateList.get(i).isCommittedWhenTransiting());
+
+        //increment count of this type transitions
+        Double currentValue = transitedTo.get(currentState);
+        if (currentValue == null) {
+          currentValue = 0.0;
+        }
+        transitedTo.put(currentState, currentValue + 1.0);
+      }
+
+      if (trajectory.isUsedToLearnPolicy()) {
+        episodes.add(episode);
+      }
+    }
+
+    //Start learning policy
+    return new MyTask(tuple,
+        new DataForPolicy(episodes, normalizers, classes, statesAndTheirMeans, transitions));
+  }
+
+  /**
+   * Create decision point data structure
+   */
+  private DecisionPointDataStructure createDecisionPoint(List<FeatureNormalizer> normalizers,
+      Map<DecisionState, Vec> statesAndTheirMeans, Policy policy) {
+    Set<DecisionPointDataStructure.StateWithTransition> states = statesAndTheirMeans.entrySet()
+        .stream()
+        .map(entry -> new DecisionPointDataStructure.StateWithTransition(
+            entry.getValue().arrayCopy(),
+            NextActionEnumerations.getActionMap(policy.action(entry.getKey()).actionName(),
+                policy.actionProb(entry.getKey(), policy.action(entry.getKey())))))
+        .collect(Collectors.toSet());
+
+    //check if all actions are available
+    return new DecisionPointDataStructure(states, normalizers);
+  }
+
+  @AllArgsConstructor
+  private static class DataForPolicy {
+
+    private final List<Episode> episodes;
+    private final List<FeatureNormalizer> normalizers;
+    private final List<Vec> classes;
+    private final Map<DecisionState, Vec> statesAndTheirMeans;
+    private final Map<DecisionState, Map<NextActionEnumerations, Map<DecisionState, Double>>> transitions;
+  }
+
+  @AllArgsConstructor
+  @Getter
+  private static class Tuple {
+
+    private final MapSizeEnums mapSize;
+    private final ARace race;
+    private final AgentTypeID agentTypeID;
+    private final DesireKeyID desireKeyID;
+  }
+
   /**
    * Do clustering and prepare data set for policy learning. Learn policy
    */
@@ -211,135 +341,6 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
         log.error(e.getLocalizedMessage());
       }
     }
-  }
-
-  private MyTask prepareDataForPolicy(Tuple tuple) {
-    log.info(
-        "Starting computation for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-            .getName() + " on " + tuple.mapSize + " with " + tuple.race);
-
-    //TODO load for bots as well. Use human example to learn policy only
-    List<Trajectory> trajectories = storageService
-        .getRandomListOfTrajectories(tuple.agentTypeID, tuple.desireKeyID, tuple.getMapSize(),
-            tuple.getRace(), -1);
-
-    //get number of features for state
-    int numberOfFeatures = trajectories.get(0).getNumberOfFeatures();
-
-    log.info("Number of trajectories: " + trajectories.size() + " with cardinality of features: "
-        + numberOfFeatures + " for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-        .getName() + " on " + tuple.mapSize + " with " + tuple.race);
-
-    //find representatives of states
-    List<State> states = trajectories.stream()
-        .map(Trajectory::getStates)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
-    log.info("Number of states: " + states.size() + " for " + tuple.desireKeyID.getName() + " of "
-        + tuple.agentTypeID.getName() + " on " + tuple.mapSize + " with " + tuple.race);
-
-    List<FeatureNormalizer> normalizers = stateClusteringService
-        .computeFeatureNormalizersBasedOnStates(states, numberOfFeatures);
-    List<Vec> classes = stateClusteringService
-        .computeStateRepresentatives(trajectories, states, normalizers);
-
-    //create states with corresponding mean
-    Map<DecisionState, Vec> statesAndTheirMeans = new HashMap<>();
-    for (int i = 0; i < classes.size(); i++) {
-      statesAndTheirMeans.put(new DecisionState(i), classes.get(i));
-    }
-
-    log.info("Creating MDP... for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-        .getName() + " on " + tuple.mapSize + " with " + tuple.race);
-
-    //create transitions
-    Map<DecisionState, Map<NextActionEnumerations, Map<DecisionState, Double>>> transitions = new HashMap<>();
-    List<Episode> episodes = new ArrayList<>();
-    trajectories.stream().map(Trajectory::getStates)
-        //interested in trajectories with some transitions
-        .filter(stateList -> stateList.size() > 2)
-        .forEach(stateList -> {
-          Episode episode = new Episode();
-
-          //convert vectors to states (more memory intensive but faster)
-          List<DecisionState> convertedOnStates = stateList.parallelStream()
-              .map(state -> closestStateRepresentative(new DenseVector(
-                      Configuration
-                          .normalizeFeatureVector(state.getFeatureVector(), normalizers)),
-                  statesAndTheirMeans))
-              .collect(Collectors.toList());
-
-          DecisionState currentState = convertedOnStates.get(0);
-          NextActionEnumerations nextAction = NextActionEnumerations
-              .returnNextAction(stateList.get(0).isCommittedWhenTransiting());
-
-          //add initial position in expert trajectory
-          episode.addState(convertedOnStates.get(0));
-
-          //there is no transition in last state
-          for (int i = 1; i < stateList.size(); i++) {
-            Map<DecisionState, Double> transitedTo = transitions
-                .computeIfAbsent(currentState, decisionState -> new HashMap<>())
-                .computeIfAbsent(nextAction, actionEnumerations -> new HashMap<>());
-            currentState = convertedOnStates.get(i);
-
-            //add transition to episode. Do not add last transition if agent is committed
-            episode.transition(new SimpleAction(nextAction.name()), currentState,
-                DecisionDomainGenerator.defaultReward);
-            nextAction = NextActionEnumerations
-                .returnNextAction(stateList.get(i).isCommittedWhenTransiting());
-
-            //increment count of this type transitions
-            Double currentValue = transitedTo.get(currentState);
-            if (currentValue == null) {
-              currentValue = 0.0;
-            }
-            transitedTo.put(currentState, currentValue + 1.0);
-          }
-
-          episodes.add(episode);
-        });
-
-    //Start learning policy
-    return new MyTask(tuple,
-        new DataForPolicy(episodes, normalizers, classes, statesAndTheirMeans, transitions));
-  }
-
-  @AllArgsConstructor
-  private static class DataForPolicy {
-
-    private final List<Episode> episodes;
-    private final List<FeatureNormalizer> normalizers;
-    private final List<Vec> classes;
-    private final Map<DecisionState, Vec> statesAndTheirMeans;
-    private final Map<DecisionState, Map<NextActionEnumerations, Map<DecisionState, Double>>> transitions;
-  }
-
-  @AllArgsConstructor
-  @Getter
-  private static class Tuple {
-
-    private final MapSizeEnums mapSize;
-    private final ARace race;
-    private final AgentTypeID agentTypeID;
-    private final DesireKeyID desireKeyID;
-  }
-
-  /**
-   * Create decision point data structure
-   */
-  private DecisionPointDataStructure createDecisionPoint(List<FeatureNormalizer> normalizers,
-      Map<DecisionState, Vec> statesAndTheirMeans, Policy policy) {
-    Set<DecisionPointDataStructure.StateWithTransition> states = statesAndTheirMeans.entrySet()
-        .stream()
-        .map(entry -> new DecisionPointDataStructure.StateWithTransition(
-            entry.getValue().arrayCopy(),
-            NextActionEnumerations.getActionMap(policy.action(entry.getKey()).actionName(),
-                policy.actionProb(entry.getKey(), policy.action(entry.getKey())))))
-        .collect(Collectors.toSet());
-
-    //check if all actions are available
-    return new DecisionPointDataStructure(states, normalizers);
   }
 
 

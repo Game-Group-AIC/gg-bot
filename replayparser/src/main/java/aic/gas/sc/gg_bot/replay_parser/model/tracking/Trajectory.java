@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Trajectory - to capture player's decision on commitment given state
@@ -14,6 +15,10 @@ public class Trajectory implements Serializable {
   private final int numberOfFeatures;
   @Getter
   private List<State> states = new ArrayList<>();
+
+  @Getter
+  @Setter
+  private boolean usedToLearnPolicy = false;
 
   public Trajectory(int numberOfFeatures) {
     this.numberOfFeatures = numberOfFeatures;
