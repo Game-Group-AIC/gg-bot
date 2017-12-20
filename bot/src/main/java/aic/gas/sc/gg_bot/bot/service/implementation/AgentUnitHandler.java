@@ -56,31 +56,10 @@ public class AgentUnitHandler implements IAgentUnitHandler {
 
   private final Map<AUnitTypeWrapper, AgentTypeUnit> agentConfigurationForUnitType = new HashMap<>();
 
-  {
-    agentConfigurationForUnitType.put(DRONE_TYPE, DroneAgentType.DRONE);
-    agentConfigurationForUnitType.put(HATCHERY_TYPE, HatcheryAgentType.HATCHERY);
-    agentConfigurationForUnitType.put(LARVA_TYPE, LarvaAgentType.LARVA);
-    agentConfigurationForUnitType.put(EGG_TYPE, EggAgentType.EGG);
-    agentConfigurationForUnitType.put(SPAWNING_POOL_TYPE, SpawningPoolAgentType.SPAWNING_POOL);
-    agentConfigurationForUnitType.put(OVERLORD_TYPE, OverlordAgentType.OVERLORD);
-    agentConfigurationForUnitType.put(ZERGLING_TYPE, ZerglingAgentType.ZERGLING);
-    agentConfigurationForUnitType.put(EXTRACTOR_TYPE, ExtractorAgentType.EXTRACTOR);
-    agentConfigurationForUnitType.put(LAIR_TYPE, LairAgentType.LAIR);
-    agentConfigurationForUnitType.put(SPIRE_TYPE, SpireAgentType.SPIRE);
-    agentConfigurationForUnitType
-        .put(EVOLUTION_CHAMBER_TYPE, EvolutionChamberAgentType.EVOLUTION_CHAMBER);
-    agentConfigurationForUnitType.put(HYDRALISK_DEN_TYPE, HydraliskDenAgentType.HYDRALISK_DEN);
-    agentConfigurationForUnitType.put(SUNKEN_COLONY_TYPE, SunkenColonyAgentType.SUNKEN_COLONY);
-    agentConfigurationForUnitType.put(CREEP_COLONY_TYPE, CreepColonyAgentType.CREEP_COLONY);
-    agentConfigurationForUnitType.put(SPORE_COLONY_TYPE, SporeColonyAgentType.SPORE_COLONY);
-    agentConfigurationForUnitType.put(MUTALISK_TYPE, MutaliskAgentType.MUTALISK);
-    agentConfigurationForUnitType.put(HYDRALISK_TYPE, HydraliskAgentType.HYDRALISK);
-  }
-
   @Override
   public Optional<AgentUnit> createAgentForUnit(Unit unit, BotFacade botFacade, int frameCount) {
-    Optional<AgentTypeUnit> agentTypeUnit = Optional.ofNullable(
-        agentConfigurationForUnitType.get(WrapperTypeFactory.createFrom(unit.getType())));
+    Optional<AgentTypeUnit> agentTypeUnit = getFromConfiguration(
+        WrapperTypeFactory.createFrom(unit.getType()));
     if (agentTypeUnit.isPresent()) {
       Optional<AUnitWithCommands> wrappedUnit = Optional.ofNullable(
           UnitWrapperFactory.getCurrentWrappedUnitToCommand(unit, frameCount, false));
@@ -92,6 +71,66 @@ public class AgentUnitHandler implements IAgentUnitHandler {
       return Optional.of(agent);
     }
     return Optional.empty();
+  }
+
+  private Optional<AgentTypeUnit> getFromConfiguration(AUnitTypeWrapper unitTypeWrapper) {
+    AgentTypeUnit agentTypeUnit = agentConfigurationForUnitType.get(unitTypeWrapper);
+    if (agentTypeUnit == null) {
+      if (unitTypeWrapper.equals(DRONE_TYPE)) {
+        agentConfigurationForUnitType.put(DRONE_TYPE, DroneAgentType.DRONE);
+        agentTypeUnit = DroneAgentType.DRONE;
+      } else if (unitTypeWrapper.equals(HATCHERY_TYPE)) {
+        agentConfigurationForUnitType.put(HATCHERY_TYPE, HatcheryAgentType.HATCHERY);
+        agentTypeUnit = HatcheryAgentType.HATCHERY;
+      } else if (unitTypeWrapper.equals(LARVA_TYPE)) {
+        agentConfigurationForUnitType.put(LARVA_TYPE, LarvaAgentType.LARVA);
+        agentTypeUnit = LarvaAgentType.LARVA;
+      } else if (unitTypeWrapper.equals(EGG_TYPE)) {
+        agentConfigurationForUnitType.put(EGG_TYPE, EggAgentType.EGG);
+        agentTypeUnit = EggAgentType.EGG;
+      } else if (unitTypeWrapper.equals(SPAWNING_POOL_TYPE)) {
+        agentConfigurationForUnitType.put(SPAWNING_POOL_TYPE, SpawningPoolAgentType.SPAWNING_POOL);
+        agentTypeUnit = SpawningPoolAgentType.SPAWNING_POOL;
+      } else if (unitTypeWrapper.equals(OVERLORD_TYPE)) {
+        agentConfigurationForUnitType.put(OVERLORD_TYPE, OverlordAgentType.OVERLORD);
+        agentTypeUnit = OverlordAgentType.OVERLORD;
+      } else if (unitTypeWrapper.equals(ZERGLING_TYPE)) {
+        agentConfigurationForUnitType.put(ZERGLING_TYPE, ZerglingAgentType.ZERGLING);
+        agentTypeUnit = ZerglingAgentType.ZERGLING;
+      } else if (unitTypeWrapper.equals(EXTRACTOR_TYPE)) {
+        agentConfigurationForUnitType.put(EXTRACTOR_TYPE, ExtractorAgentType.EXTRACTOR);
+        agentTypeUnit = ExtractorAgentType.EXTRACTOR;
+      } else if (unitTypeWrapper.equals(LAIR_TYPE)) {
+        agentConfigurationForUnitType.put(LAIR_TYPE, LairAgentType.LAIR);
+        agentTypeUnit = LairAgentType.LAIR;
+      } else if (unitTypeWrapper.equals(SPIRE_TYPE)) {
+        agentConfigurationForUnitType.put(SPIRE_TYPE, SpireAgentType.SPIRE);
+        agentTypeUnit = SpireAgentType.SPIRE;
+      } else if (unitTypeWrapper.equals(EVOLUTION_CHAMBER_TYPE)) {
+        agentConfigurationForUnitType
+            .put(EVOLUTION_CHAMBER_TYPE, EvolutionChamberAgentType.EVOLUTION_CHAMBER);
+        agentTypeUnit = EvolutionChamberAgentType.EVOLUTION_CHAMBER;
+      } else if (unitTypeWrapper.equals(HYDRALISK_DEN_TYPE)) {
+        agentConfigurationForUnitType.put(HYDRALISK_DEN_TYPE, HydraliskDenAgentType.HYDRALISK_DEN);
+        agentTypeUnit = HydraliskDenAgentType.HYDRALISK_DEN;
+      } else if (unitTypeWrapper.equals(SUNKEN_COLONY_TYPE)) {
+        agentConfigurationForUnitType.put(SUNKEN_COLONY_TYPE, SunkenColonyAgentType.SUNKEN_COLONY);
+        agentTypeUnit = SunkenColonyAgentType.SUNKEN_COLONY;
+      } else if (unitTypeWrapper.equals(CREEP_COLONY_TYPE)) {
+        agentConfigurationForUnitType.put(CREEP_COLONY_TYPE, CreepColonyAgentType.CREEP_COLONY);
+        agentTypeUnit = CreepColonyAgentType.CREEP_COLONY;
+      } else if (unitTypeWrapper.equals(SPORE_COLONY_TYPE)) {
+        agentConfigurationForUnitType.put(SPORE_COLONY_TYPE, SporeColonyAgentType.SPORE_COLONY);
+        agentTypeUnit = SporeColonyAgentType.SPORE_COLONY;
+      } else if (unitTypeWrapper.equals(MUTALISK_TYPE)) {
+        agentConfigurationForUnitType.put(MUTALISK_TYPE, MutaliskAgentType.MUTALISK);
+        agentTypeUnit = MutaliskAgentType.MUTALISK;
+      } else if (unitTypeWrapper.equals(HYDRALISK_TYPE)) {
+        agentConfigurationForUnitType.put(HYDRALISK_TYPE, HydraliskAgentType.HYDRALISK);
+        agentTypeUnit = HydraliskAgentType.HYDRALISK;
+      }
+    }
+    return Optional.ofNullable(agentTypeUnit);
   }
 
 

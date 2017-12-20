@@ -3,13 +3,14 @@ package aic.gas.sc.gg_bot.bot.service.implementation;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Annotator;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractPositionWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
+import aic.gas.sc.gg_bot.bot.model.agent.AbstractAgent;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentPlayer;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentUnit;
-import aic.gas.sc.gg_bot.bot.service.IAbstractAgentsInitializer;
 import aic.gas.sc.gg_bot.bot.service.IAgentUnitHandler;
 import aic.gas.sc.gg_bot.bot.service.ILocationInitializer;
 import aic.gas.sc.gg_bot.bot.service.IPlayerInitializer;
@@ -20,18 +21,18 @@ import bwapi.Mirror;
 import bwapi.Player;
 import bwapi.Unit;
 import bwta.BWTA;
-import bwta.BaseLocation;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -45,18 +46,9 @@ public class BotFacade extends DefaultBWListener {
   //class to handle additional commands with observations requests
   public static AdditionalCommandToObserveGameProcessor ADDITIONAL_OBSERVATIONS_PROCESSOR;
 
-  @Setter
-  @Getter
-  private static int gameDefaultSpeed = 15;
-
   //TODO increase + block frame for a while
-  @Setter
-  @Getter
-  private static long maxFrameExecutionTime = 30;
-
-  @Setter
-  @Getter
-  private static boolean annotateMap = false;
+  private final long maxFrameExecutionTime;
+  private final boolean annotateMap;
 
   private long time, execution;
 
@@ -69,20 +61,16 @@ public class BotFacade extends DefaultBWListener {
 
   //keep track of agent units
   private final Map<Integer, AgentUnit> agentsWithGameRepresentation = new HashMap<>();
-  //fields provided by user
-  private final AgentUnitFactoryCreationStrategy agentUnitFactoryCreationStrategy;
-  private final PlayerInitializerCreationStrategy playerInitializerCreationStrategy;
-  private final LocationInitializerCreationStrategy locationInitializerCreationStrategy;
-  //to init abstract agents at the beginning of each game
-  private final IAbstractAgentsInitializer abstractAgentsInitializer = new AbstractAgentsInitializer();
   //executor of game commands
   private GameCommandExecutor gameCommandExecutor;
   //facade for MAS
-  private MASFacade masFacade;
+  private MASFacade masFacade = new MASFacade(() -> gameCommandExecutor.getCountOfPassedFrames(),
+      true);
   //this is created with new game
   private IAgentUnitHandler agentUnitFactory;
   private IPlayerInitializer playerInitializer;
   private ILocationInitializer locationInitializer;
+  private final List<AbstractAgent> abstractAgents;
 
   //game related fields
   private Mirror mirror = new Mirror();
@@ -95,21 +83,67 @@ public class BotFacade extends DefaultBWListener {
 
   private Annotator annotator;
 
-  public BotFacade(AgentUnitFactoryCreationStrategy agentUnitFactoryCreationStrategy,
-      PlayerInitializerCreationStrategy playerInitializerCreationStrategy,
-      LocationInitializerCreationStrategy locationInitializerCreationStrategy) {
-    this.agentUnitFactoryCreationStrategy = agentUnitFactoryCreationStrategy;
-    this.playerInitializerCreationStrategy = playerInitializerCreationStrategy;
-    this.locationInitializerCreationStrategy = locationInitializerCreationStrategy;
-    this.masFacade = new MASFacade(() -> gameCommandExecutor.getCountOfPassedFrames(), true);
+
+  public BotFacade(long maxFrameExecutionTime, boolean annotateMap) {
+    long start = System.currentTimeMillis();
+
+    this.maxFrameExecutionTime = maxFrameExecutionTime;
+    this.annotateMap = annotateMap;
+
+    //load decision points
+    DecisionLoadingServiceImpl.getInstance();
+
+    //init factories
+    playerInitializer = new PlayerInitializer();
+    locationInitializer = new LocationInitializer();
+    agentUnitFactory = new AgentUnitHandler();
+
+    //create abstract agents
+    abstractAgents = (new AbstractAgentsInitializer()).initializeAbstractAgents(this);
+
+    log.info("Facade ready. It took " + (System.currentTimeMillis() - start));
+  }
+
+  /**
+   * Initialize agents out of start method - concurrently
+   */
+  @AllArgsConstructor
+  private class InitializationThread implements Runnable {
+
+    private final APlayer playerToInitAsAgent;
+    private final List<ABaseLocationWrapper> baseLocations;
+    private final BotFacade botFacade;
+    private final ARace enemyRace;
+
+    @Override
+    public void run() {
+      long start = System.currentTimeMillis();
+      log.info("Agent initialization has started.");
+
+      //init player as another agent
+      AgentPlayer agentPlayer = playerInitializer
+          .createAgentForPlayer(playerToInitAsAgent, botFacade, enemyRace);
+      masFacade.addAgentToSystem(agentPlayer);
+
+      //init base locations as agents
+      baseLocations.stream()
+          .map(location -> locationInitializer.createAgent(location, botFacade))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
+
+      //run abstract agents
+      abstractAgents.forEach(abstractAgent -> masFacade.addAgentToSystem(abstractAgent));
+
+      log.info("Agent initialization has ended. It took " + (System.currentTimeMillis() - start));
+    }
   }
 
   @Override
   public void onStart() {
     try {
-      UnitWrapperFactory.clearCache();
-      WrapperTypeFactory.clearCache();
-      AbstractPositionWrapper.clearCache();
+      long start = System.currentTimeMillis();
+      log.info("Game initialization.");
 
       //initialize game related data
       game = mirror.getGame();
@@ -119,9 +153,6 @@ public class BotFacade extends DefaultBWListener {
       gameCommandExecutor = new GameCommandExecutor(game);
       ADDITIONAL_OBSERVATIONS_PROCESSOR = new AdditionalCommandToObserveGameProcessor(
           gameCommandExecutor);
-      playerInitializer = playerInitializerCreationStrategy.createFactory();
-      agentUnitFactory = agentUnitFactoryCreationStrategy.createFactory();
-      locationInitializer = locationInitializerCreationStrategy.createFactory();
 
       //Use BWTA to analyze map
       //This may take a few minutes if the map is processed first time!
@@ -130,9 +161,31 @@ public class BotFacade extends DefaultBWListener {
       BWTA.analyze();
       log.info("Map data ready");
 
+      //get player
+      Optional<APlayer> me = APlayer
+          .wrapPlayer(self, gameCommandExecutor.getCountOfPassedFrames());
+      if (!me.isPresent()) {
+        log.error("Could not initiate player.");
+        throw new RuntimeException("Could not initiate player.");
+      }
+
+      //get base locations
+      List<ABaseLocationWrapper> baseLocations = BWTA.getBaseLocations().stream()
+          .map(ABaseLocationWrapper::wrap).collect(Collectors.toList());
+
+      log.info(
+          "Data for agent initialization ready. It took " + (System.currentTimeMillis() - start));
+
+      //start parallel thread
+      Thread thread = new Thread(new InitializationThread(me.get(), baseLocations, this,
+          ARace.getRace(game.enemy().getRace())));
+      thread.start();
+
+      log.info("Setting up data for decisions.");
+
       //set map size
-      int mapSize = (int) BWTA.getBaseLocations().stream()
-          .filter(BaseLocation::isStartLocation)
+      int mapSize = (int) baseLocations.stream()
+          .filter(ABaseLocationWrapper::isStartLocation)
           .count();
       DecisionConfiguration.setMapSize(MapSizeEnums.getByStartBases(mapSize));
 
@@ -140,40 +193,13 @@ public class BotFacade extends DefaultBWListener {
       DecisionConfiguration.setupRace(self, game.getPlayers());
 
       //init annotation
-      annotator = new Annotator(game.getPlayers().stream()
-          .filter(player -> player.isEnemy(self) || player.getID() == self.getID())
-          .collect(Collectors.toList()), self, game);
-
-      //init player as another agent
-      Optional<APlayer> player = APlayer
-          .wrapPlayer(self, gameCommandExecutor.getCountOfPassedFrames());
-      if (!player.isPresent()) {
-        log.error("Could not initiate player.");
-        throw new RuntimeException("Could not initiate player.");
+      if (annotateMap) {
+        annotator = new Annotator(game.getPlayers().stream()
+            .filter(player -> player.isEnemy(self) || player.getID() == self.getID())
+            .collect(Collectors.toList()), self, game);
       }
-      AgentPlayer agentPlayer = playerInitializer
-          .createAgentForPlayer(player.get(), this, game.enemy().getRace());
-      masFacade.addAgentToSystem(agentPlayer);
 
-      //init base location as agents
-      BWTA.getBaseLocations().stream()
-          .map(location -> locationInitializer.createAgent(location, this))
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
-
-      //init abstract agents
-      abstractAgentsInitializer.initializeAbstractAgents(this)
-          .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
-
-      //speed up game to setup value
-//      game.setLocalSpeed(getGameDefaultSpeed());
-
-      log.info("Local game speed set to " + getGameDefaultSpeed());
-
-      //load decision points
-      DecisionLoadingServiceImpl.getInstance();
-
+      log.info("System ready. It took " + (System.currentTimeMillis() - start));
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -284,6 +310,15 @@ public class BotFacade extends DefaultBWListener {
     //TODO hack to ensure frame sync
     masFacade.notifyAgentsAboutNextCycle();
 
+    //hold frame for a small amount of time to give MAS time to handle new data
+    if ((execution = System.currentTimeMillis() - time) < maxFrameExecutionTime) {
+      try {
+        wait(maxFrameExecutionTime - execution);
+      } catch (InterruptedException e) {
+        log.error(e.getMessage());
+      }
+    }
+
     if ((execution = System.currentTimeMillis() - time) >= 75) {
       game.printf("On frame " + game.getFrameCount() + " execution took " + execution + " ms.");
     }
@@ -330,39 +365,6 @@ public class BotFacade extends DefaultBWListener {
   }
 
   //TODO handle more events - unit renegade, visibility
-
-  /**
-   * Contract for strategy to create new AgentUnitHandler for new game
-   */
-  public interface AgentUnitFactoryCreationStrategy {
-
-    /**
-     * Creates new factory
-     */
-    IAgentUnitHandler createFactory();
-  }
-
-  /**
-   * Contract for strategy to create new ILocationInitializer for new game
-   */
-  public interface LocationInitializerCreationStrategy {
-
-    /**
-     * Creates new factory
-     */
-    ILocationInitializer createFactory();
-  }
-
-  /**
-   * Contract for strategy to create new IPlayerInitializer for new game
-   */
-  public interface PlayerInitializerCreationStrategy {
-
-    /**
-     * Creates new factory
-     */
-    IPlayerInitializer createFactory();
-  }
 
   @Getter
   @EqualsAndHashCode(of = "id")

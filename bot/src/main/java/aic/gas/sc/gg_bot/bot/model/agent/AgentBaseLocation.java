@@ -10,7 +10,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeBaseLocation;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
-import bwta.BaseLocation;
 
 /**
  * Agent for base location in game INSTANCE OF THIS AGENT SHOULD NOT SEND ANY COMMAND TO GAME. ONLY
@@ -19,11 +18,11 @@ import bwta.BaseLocation;
 public class AgentBaseLocation extends AgentObservingGame<AgentTypeBaseLocation> {
 
   public AgentBaseLocation(AgentTypeBaseLocation agentType, BotFacade botFacade,
-      BaseLocation location) {
+      ABaseLocationWrapper location) {
     super(agentType, botFacade);
+
     //add itself to knowledge
-    beliefs.updateFact(IS_BASE_LOCATION, ABaseLocationWrapper.wrap(location));
-    AgentTypeBaseLocation.updateKnowledgeAboutResources(location, beliefs, 0);
+    beliefs.updateFact(IS_BASE_LOCATION, location);
     beliefs.updateFact(MADE_OBSERVATION_IN_FRAME, 0);
     beliefs.updateFact(IS_MINERAL_ONLY, location.isMineralOnly());
     beliefs.updateFact(IS_ISLAND, location.isIsland());

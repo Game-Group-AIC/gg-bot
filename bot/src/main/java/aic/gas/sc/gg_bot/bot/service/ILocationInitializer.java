@@ -1,8 +1,8 @@
 package aic.gas.sc.gg_bot.bot.service;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentBaseLocation;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
-import bwta.BaseLocation;
 import java.util.Optional;
 
 /**
@@ -13,6 +13,6 @@ public interface ILocationInitializer {
   /**
    * Method to create agent from base location
    */
-  Optional<AgentBaseLocation> createAgent(BaseLocation baseLocation, BotFacade botFacade);
+  Optional<AgentBaseLocation> createAgent(ABaseLocationWrapper baseLocation, BotFacade botFacade);
 
 }

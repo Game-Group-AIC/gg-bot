@@ -14,7 +14,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypePlayer;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
-import bwapi.Race;
 import java.util.Optional;
 
 /**
@@ -23,13 +22,15 @@ import java.util.Optional;
 public class AgentPlayer extends AgentObservingGame<AgentTypePlayer> {
 
   public AgentPlayer(AgentTypePlayer agentType, BotFacade botFacade, APlayer aPlayer,
-      Race enemyStartingRace) {
+      ARace enemyStartingRace) {
     super(agentType, botFacade);
 
     //add itself to knowledge
     beliefs.updateFact(IS_PLAYER, aPlayer);
-    if (!enemyStartingRace.equals(Race.Unknown)) {
-      beliefs.updateFact(ENEMY_RACE, ARace.getRace(enemyStartingRace));
+    if (!enemyStartingRace.equals(ARace.UNKNOWN)) {
+      beliefs.updateFact(ENEMY_RACE, enemyStartingRace);
+    } else {
+      beliefs.updateFact(ENEMY_RACE, ARace.getRandomRace());
     }
   }
 

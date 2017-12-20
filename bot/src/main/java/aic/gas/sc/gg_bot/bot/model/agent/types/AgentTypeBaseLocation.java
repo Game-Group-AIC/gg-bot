@@ -72,10 +72,10 @@ public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
             .collect(Collectors.toSet()),
 
         //add fact set related to resources
-        Stream.concat(usingTypesForFactSets.stream(), Arrays.stream(new FactKey<?>[]{MINERAL,
-            GEYSER})).collect(Collectors.toSet()),
-
-        initializationStrategy, OBSERVING_COMMAND, skipTurnsToMakeObservation);
+        Stream.concat(usingTypesForFactSets.stream(),
+            Arrays.stream(new FactKey<?>[]{MINERAL, GEYSER})).collect(Collectors.toSet()),
+        initializationStrategy, OBSERVING_COMMAND,
+        skipTurnsToMakeObservation);
   }
 
   /**
