@@ -8,6 +8,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.Configuration;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.replay_parser.model.irl.BatchIterator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionDomainGenerator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionModel;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionState;
@@ -24,7 +25,14 @@ import burlap.mdp.singleagent.SADomain;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -130,6 +138,7 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
     tasks.forEach(executor::execute);
 
     executor.shutdown();
+
     log.info("Finished...");
   }
 
@@ -174,8 +183,8 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
           .getLearntDecisionPath(tuple.agentTypeID, tuple.desireKeyID, tuple.mapSize,
               tuple.race);
 
-      if(new File(path).exists()) {
-        log.info("File "+path+" exists, skipping.");
+      if (new File(path).exists()) {
+        log.info("File " + path + " exists, skipping.");
         return;
       }
 
@@ -320,24 +329,26 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
           + tuple.agentTypeID
           .getName() + " on " + tuple.mapSize + " with " + tuple.race);
 
-      List<Episode> episodesToUse;
-      if (episodes.size() > 35) {
-        int middle = ((episodes.size() - 25) / 2) + 5;
-        episodes.sort(Comparator.comparingInt(o -> o.stateSequence.size()));
-        episodesToUse = Stream.concat(
-            Stream.concat(episodes
-                    .subList(episodes.size() - 20, episodes.size())
-                    .stream(),
-                episodes.subList(0, 10).stream()),
-            episodes.subList(middle - 3, middle + 2).stream())
-            .collect(Collectors.toList());
-      } else {
-        episodesToUse = new ArrayList<>(episodes);
-      }
-      episodesToUse.sort(Comparator.comparingInt(o -> o.stateSequence.size()));
+//      List<Episode> episodesToUse;
+//      if (episodes.size() > 35) {
+//        int middle = ((episodes.size() - 25) / 2) + 5;
+//        episodes.sort(Comparator.comparingInt(o -> o.stateSequence.size()));
+//        episodesToUse = Stream.concat(
+//            Stream.concat(episodes
+//                    .subList(episodes.size() - 20, episodes.size())
+//                    .stream(),
+//                episodes.subList(0, 10).stream()),
+//            episodes.subList(middle - 3, middle + 2).stream())
+//            .collect(Collectors.toList());
+//      } else {
+//        episodesToUse = new ArrayList<>(episodes);
+//      }
+//      episodesToUse.sort(Comparator.comparingInt(o -> o.stateSequence.size()));
+
+      BatchIterator batchIterator = new BatchIterator(20, episodes);
       Policy policy = policyLearningService
-          .learnPolicy(domain, episodesToUse, classes.size() + 1,
-              episodesToUse.size());
+          .learnPolicy(domain, batchIterator.sampleBatchFromEpisodes(), classes.size() + 1,
+              batchIterator);
       //form decision point data structure and store it
       DecisionPointDataStructure decisionPoint = createDecisionPoint(normalizers,
           statesAndTheirMeans, policy);
