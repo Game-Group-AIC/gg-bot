@@ -181,14 +181,15 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
 
       // touch file right away
       try {
-        Files.createFile(new File(path).toPath());
+        File file = new File(path);
+        file.getParentFile().mkdirs();
+        Files.createFile(file.toPath());
+        log.info("Created placeholder "+path);
       } catch (IOException e) {
-        e.printStackTrace();
+        log.warn("Failed to create "+path);
       }
 
-      log.info(
-          "Starting computation for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-              .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+      log.info("Starting computation for " + path);
 
       //TODO load for bots as well. Use human example to learn policy only
       List<TrajectoryWrapper> trajectoriesWrapped = storageService

@@ -121,7 +121,6 @@ public class OurMLIRL extends MLIRL {
 
     log.info("\nNum gradient ascent steps: " + i + " using reward from iteration: " + bestIt
         + " with Log likelihood: " + bestLikelihood);
-    log.info("RF: " + this.request.getRf().toString());
   }
 
   private double normalize(int a, int b, double min, double max, double value) {
