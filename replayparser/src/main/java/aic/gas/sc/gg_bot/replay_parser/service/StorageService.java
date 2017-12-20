@@ -41,4 +41,6 @@ public interface StorageService {
   void storeLearntDecision(DecisionPointDataStructure structure, AgentTypeID agentTypeID,
       DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) throws Exception;
 
+  String getLearntDecisionPath(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
+      MapSizeEnums mapSize, ARace race);
 }

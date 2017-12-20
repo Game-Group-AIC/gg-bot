@@ -29,7 +29,7 @@ public class StorageServiceImp implements StorageService {
   //databases
 
   //subdirectories
-  public static final List<String> subdirectories = Stream.of(MapSizeEnums.values())
+  private static final List<String> subdirectories = Stream.of(MapSizeEnums.values())
       .flatMap(size -> Stream.of(ARace.values())
           .map(race -> size.name() + "/" + race.name()))
       .collect(Collectors.toList());
@@ -117,8 +117,8 @@ public class StorageServiceImp implements StorageService {
         ));
 
     // merge the two maps
-    for(AgentTypeID otherKey : others.keySet()) {
-      if(humans.containsKey(otherKey)) {
+    for (AgentTypeID otherKey : others.keySet()) {
+      if (humans.containsKey(otherKey)) {
         humans.get(otherKey).addAll(others.get(otherKey));
       } else {
         humans.put(otherKey, others.get(otherKey));
@@ -174,7 +174,7 @@ public class StorageServiceImp implements StorageService {
     Set<File> otherFiles = SerializationUtil
         .getAllFilesInFolder(otherFolder + "/" + mapSize.name() + "/"
             + "/" + race.name() + "/" + agentTypeID.getName(), "db");
-    Set<File> allFiles = new HashSet<File>();
+    Set<File> allFiles = new HashSet<>();
     allFiles.addAll(humanFiles);
     allFiles.addAll(otherFiles);
 
@@ -190,9 +190,15 @@ public class StorageServiceImp implements StorageService {
       DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) throws Exception {
     createDirectoryIfItDoesNotExist(agentTypeID.getName(), outputFolder + "/" + mapSize.name() + "/"
         + "/" + race.name());
-    String path = outputFolder + "/" + mapSize.name() + "/"
-        + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID.getName() + ".db";
+    String path = getLearntDecisionPath(agentTypeID, desireKeyID, mapSize, race);
     SerializationUtil.serialize(structure, path);
+  }
+
+  @Override
+  public String getLearntDecisionPath(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
+      MapSizeEnums mapSize, ARace race) {
+    return outputFolder + "/" + mapSize.name() + "/"
+        + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID.getName() + ".db";
   }
 
   /**
