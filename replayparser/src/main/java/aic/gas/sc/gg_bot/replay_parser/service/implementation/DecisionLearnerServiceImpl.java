@@ -13,6 +13,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionModel;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionState;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.State;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
+import aic.gas.sc.gg_bot.replay_parser.model.tracking.TrajectoryWrapper;
 import aic.gas.sc.gg_bot.replay_parser.service.DecisionLearnerService;
 import aic.gas.sc.gg_bot.replay_parser.service.PolicyLearningService;
 import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
@@ -24,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jsat.linear.DenseVector;
@@ -129,19 +131,23 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
             .getName() + " on " + tuple.mapSize + " with " + tuple.race);
 
     //TODO load for bots as well. Use human example to learn policy only
-    List<Trajectory> trajectories = storageService
+    List<TrajectoryWrapper> trajectoriesWrapped = storageService
         .getRandomListOfTrajectories(tuple.agentTypeID, tuple.desireKeyID, tuple.getMapSize(),
             tuple.getRace(), -1);
+    List<Trajectory> trajectories = trajectoriesWrapped.stream()
+        .map(TrajectoryWrapper::getTrajectory)
+        .collect(Collectors.toList());
 
     //get number of features for state
-    int numberOfFeatures = trajectories.get(0).getNumberOfFeatures();
+    int numberOfFeatures = trajectoriesWrapped.get(0).getTrajectory().getNumberOfFeatures();
 
-    log.info("Number of trajectories: " + trajectories.size() + " with cardinality of features: "
+    log.info("Number of trajectories: " + trajectoriesWrapped.size() + " with cardinality of features: "
         + numberOfFeatures + " for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
         .getName() + " on " + tuple.mapSize + " with " + tuple.race);
 
     //find representatives of states
-    List<State> states = trajectories.stream()
+    List<State> states = trajectoriesWrapped.stream()
+        .map(TrajectoryWrapper::getTrajectory)
         .map(Trajectory::getStates)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
@@ -165,8 +171,8 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
     //create transitions
     Map<DecisionState, Map<NextActionEnumerations, Map<DecisionState, Double>>> transitions = new HashMap<>();
     List<Episode> episodes = new ArrayList<>();
-    for (Trajectory trajectory : trajectories) {
-      List<State> stateList = trajectory.getStates();
+    for (TrajectoryWrapper trajectoryWrapper : trajectoriesWrapped) {
+      List<State> stateList = trajectoryWrapper.getTrajectory().getStates();
       if (stateList.size() <= 2) {
         continue;
       }
@@ -185,7 +191,7 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
           .returnNextAction(stateList.get(0).isCommittedWhenTransiting());
 
       //add initial position in expert trajectory
-      if (trajectory.isUsedToLearnPolicy()) {
+      if (trajectoryWrapper.isUsedToLearnPolicy()) {
         episode.addState(convertedOnStates.get(0));
       }
 
@@ -197,7 +203,7 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
         currentState = convertedOnStates.get(i);
 
         //add transition to episode. Do not add last transition if agent is committed
-        if (trajectory.isUsedToLearnPolicy()) {
+        if (trajectoryWrapper.isUsedToLearnPolicy()) {
           episode.transition(new SimpleAction(nextAction.name()), currentState,
               DecisionDomainGenerator.defaultReward);
         }
@@ -213,7 +219,7 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
         transitedTo.put(currentState, currentValue + 1.0);
       }
 
-      if (trajectory.isUsedToLearnPolicy()) {
+      if (trajectoryWrapper.isUsedToLearnPolicy()) {
         episodes.add(episode);
       }
     }

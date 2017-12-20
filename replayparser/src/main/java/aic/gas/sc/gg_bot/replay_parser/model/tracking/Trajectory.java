@@ -16,10 +16,6 @@ public class Trajectory implements Serializable {
   @Getter
   private List<State> states = new ArrayList<>();
 
-  @Getter
-  @Setter
-  private boolean usedToLearnPolicy = false;
-
   public Trajectory(int numberOfFeatures) {
     this.numberOfFeatures = numberOfFeatures;
   }

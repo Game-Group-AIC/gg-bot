@@ -11,6 +11,7 @@ import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
+import aic.gas.sc.gg_bot.replay_parser.model.tracking.TrajectoryWrapper;
 import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
 import java.io.File;
 import java.util.*;
@@ -93,19 +94,42 @@ public class StorageServiceImp implements StorageService {
   @Override
   public Map<AgentTypeID, Set<DesireKeyID>> getParsedAgentTypesWithDesiresTypesContainedInStorage(
       MapSizeEnums mapSize, ARace race) {
-    return getParsedAgentTypesContainedInStorage(parsingFolder, mapSize, race).stream()
+    Map<AgentTypeID, Set<DesireKeyID>> humans = getParsedAgentTypesContainedInStorage(humanFolder,
+        mapSize, race).stream()
         .filter(DecisionConfiguration.decisionsToLoad::containsKey)
         .collect(Collectors.toMap(Function.identity(),
-            t -> getParsedDesireTypesForAgentTypeContainedInStorage(t, parsingFolder, mapSize, race)
+            t -> getParsedDesireTypesForAgentTypeContainedInStorage(t, humanFolder, mapSize, race)
                 .stream()
                 .filter(desireKeyID -> DecisionConfiguration.decisionsToLoad
                     .getOrDefault(t, new HashSet<>()).contains(desireKeyID))
                 .collect(Collectors.toSet())
         ));
+
+    Map<AgentTypeID, Set<DesireKeyID>> others = getParsedAgentTypesContainedInStorage(otherFolder,
+        mapSize, race).stream()
+        .filter(DecisionConfiguration.decisionsToLoad::containsKey)
+        .collect(Collectors.toMap(Function.identity(),
+            t -> getParsedDesireTypesForAgentTypeContainedInStorage(t, otherFolder, mapSize, race)
+                .stream()
+                .filter(desireKeyID -> DecisionConfiguration.decisionsToLoad
+                    .getOrDefault(t, new HashSet<>()).contains(desireKeyID))
+                .collect(Collectors.toSet())
+        ));
+
+    // merge the two maps
+    for(AgentTypeID otherKey : others.keySet()) {
+      if(humans.containsKey(otherKey)) {
+        humans.get(otherKey).addAll(others.get(otherKey));
+      } else {
+        humans.put(otherKey, others.get(otherKey));
+      }
+    }
+
+    return humans;
   }
 
   @Override
-  public List<Trajectory> getRandomListOfTrajectories(AgentTypeID agentTypeID,
+  public List<TrajectoryWrapper> getRandomListOfTrajectories(AgentTypeID agentTypeID,
       DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race, int limit) {
     List<File> files = new ArrayList<>(
         getFilesForAgentTypeOfGivenDesire(agentTypeID, desireKeyID, mapSize, race));
@@ -126,8 +150,9 @@ public class StorageServiceImp implements StorageService {
             return ((List<Trajectory>) SerializationUtil.deserialize(s))
                 .stream()
                 .map(trajectory -> {
-                  trajectory.setUsedToLearnPolicy(isHumanReplay);
-                  return trajectory;
+                  TrajectoryWrapper trajectoryWrapped = new TrajectoryWrapper(trajectory);
+                  trajectoryWrapped.setUsedToLearnPolicy(isHumanReplay);
+                  return trajectoryWrapped;
                 });
           } catch (Exception e) {
             log.error(e.getLocalizedMessage());
