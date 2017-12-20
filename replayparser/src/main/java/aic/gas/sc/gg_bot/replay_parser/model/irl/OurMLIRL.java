@@ -95,7 +95,6 @@ public class OurMLIRL extends MLIRL {
       double likelihoodChange = newLikelihood - lastLikelihood;
       lastLikelihood = newLikelihood;
 
-      log.info(i + ": RF: " + this.request.getRf().toString());
       log.info(i + ": Log likelihood: " + lastLikelihood + " (change: " + likelihoodChange + ")");
 
       if (newLikelihood > bestLikelihood) {
