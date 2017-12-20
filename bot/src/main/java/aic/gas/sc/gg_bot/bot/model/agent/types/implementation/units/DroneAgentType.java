@@ -716,9 +716,9 @@ public class DroneAgentType {
             (dataForDecision, memory) -> dataForDecision.madeDecisionToAny()
                 //cancel where there is not enough minerals
                 || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) <
-                (typeOfBuilding.getMineralPrice() * 0.5)
+                (typeOfBuilding.getMineralPrice() * 0.8)
                 || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_GAS) <
-                (typeOfBuilding.getGasPrice() * 0.5)
+                (typeOfBuilding.getGasPrice() * 0.8)
                 //is this type of building is locked
                 || BuildLockerService.getInstance().isLocked(typeOfBuilding))
             .globalBeliefTypesByAgentType(

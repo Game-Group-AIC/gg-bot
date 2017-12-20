@@ -86,8 +86,19 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
   @Override
   public DecisionPoint getDecisionPoint(AgentTypeID agentTypeID, DesireKeyID desireKeyID) {
     try {
-      return cache.get(DecisionConfiguration.getMapSize()).get(DecisionConfiguration.getRace())
+      DecisionPoint decisionPoint = cache.get(DecisionConfiguration.getMapSize())
+          .get(DecisionConfiguration.getRace())
           .get(agentTypeID).get(desireKeyID);
+
+      //TODO hack
+      if (decisionPoint == null) {
+        //try to load at least some
+        if (loaded.containsKey(agentTypeID) && loaded.get(agentTypeID).containsKey(desireKeyID)) {
+          return loaded.get(agentTypeID).get(desireKeyID);
+        }
+      }
+
+      return decisionPoint;
     } catch (Exception e) {
 
       //try to load at least some

@@ -1,1 +1,1 @@
-START "" /W /affinity 0x80 "C:\Program Files (x86)\Java\jre1.8.0_152\bin\java.exe" -jar "C:\Users\Jean\Documents\Projects\bot\gg-bot\bot\target\gg-bot-jar-with-dependencies.jar"
+START "" /W /affinity 0x80 "C:\Program Files (x86)\Java\jre1.8.0_152\bin\java.exe" -jar -Xmx1g "C:\Users\Jean\Documents\Projects\bot\gg-bot\bot\target\bot-jar-with-dependencies.jar"

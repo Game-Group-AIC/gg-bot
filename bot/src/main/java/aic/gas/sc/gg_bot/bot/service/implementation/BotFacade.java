@@ -19,7 +19,9 @@ import bwapi.DefaultBWListener;
 import bwapi.Game;
 import bwapi.Mirror;
 import bwapi.Player;
+import bwapi.TilePosition;
 import bwapi.Unit;
+import bwapi.UnitType;
 import bwta.BWTA;
 import java.io.IOException;
 import java.util.HashMap;
@@ -54,7 +56,7 @@ public class BotFacade extends DefaultBWListener {
 
   //TODO hack to prevent building same types
   private final BuildLockerService buildLockerService = BuildLockerService.getInstance();
-  private static final int frameCountToRestart = 300;
+  private static final int frameCountToRestart = 150;
 
   //TODO hack to restart idle workers
   private final Map<WorkerTuple, Integer> idleWorkers = new HashMap<>();
@@ -75,6 +77,10 @@ public class BotFacade extends DefaultBWListener {
   //game related fields
   private Mirror mirror = new Mirror();
 
+  //TODO hack
+  private Unit workerToBuildPool;
+  private int orderedPool = -50;
+
   @Getter
   private Game game;
 
@@ -82,7 +88,6 @@ public class BotFacade extends DefaultBWListener {
   private Player self;
 
   private Annotator annotator;
-
 
   public BotFacade(long maxFrameExecutionTime, boolean annotateMap) {
     long start = System.currentTimeMillis();
@@ -310,12 +315,17 @@ public class BotFacade extends DefaultBWListener {
     //TODO hack to ensure frame sync
     masFacade.notifyAgentsAboutNextCycle();
 
+    //TODO pool hack. no idea why there is problem with building it :/
+    handleMissingPool();
+
     //hold frame for a small amount of time to give MAS time to handle new data
-    if ((execution = System.currentTimeMillis() - time) < maxFrameExecutionTime) {
-      try {
-        wait(maxFrameExecutionTime - execution);
-      } catch (InterruptedException e) {
-        log.error(e.getMessage());
+    {
+      if ((execution = System.currentTimeMillis() - time) < maxFrameExecutionTime) {
+        try {
+          wait(maxFrameExecutionTime - execution);
+        } catch (InterruptedException e) {
+          log.error(e.getMessage());
+        }
       }
     }
 
@@ -323,6 +333,37 @@ public class BotFacade extends DefaultBWListener {
       game.printf("On frame " + game.getFrameCount() + " execution took " + execution + " ms.");
     }
   }
+
+  //TODO pool hack. no idea why there is problem with building it :/
+  private void handleMissingPool() {
+    if (self.getUnits().stream()
+        .noneMatch(unit -> unit.getType().equals(UnitType.Zerg_Spawning_Pool)
+            || (unit.getType().isWorker() && unit.getTrainingQueue().stream()
+            .anyMatch(unitType -> unitType.equals(UnitType.Zerg_Spawning_Pool))))
+        && self.minerals() >= 300) {
+
+      //assign worker
+      if (workerToBuildPool == null || !workerToBuildPool.getType().isWorker()
+          || !workerToBuildPool.exists()) {
+        self.getUnits().stream()
+            .filter(unit -> unit.getType().isWorker())
+            .filter(unit -> game.hasCreep(unit.getTilePosition()) && unit
+                .getUnitsInRadius(unit.getType().sightRange()).stream()
+                .anyMatch(u -> u.getPlayer().getID() == self.getID()))
+            .findAny()
+            .ifPresent(unit -> workerToBuildPool = unit);
+      }
+
+      //send worker to build pool
+      if (workerToBuildPool != null && game.getFrameCount() >= orderedPool + 50) {
+        log.info("Finding place for POOL.");
+        if (buildPool(workerToBuildPool)) {
+          orderedPool = game.getFrameCount();
+        }
+      }
+    }
+  }
+
 
   //TODO hack to restart idle workers
   private void checkWorkers() {
@@ -377,5 +418,41 @@ public class BotFacade extends DefaultBWListener {
       this.unit = unit;
       this.id = unit.getID();
     }
+  }
+
+  //tODO remove
+  public boolean buildPool(Unit builder) {
+    int maxDist = 3;
+    int stopDist = 40;
+
+    while (maxDist < stopDist) {
+      for (int i = builder.getTilePosition().getX() - maxDist;
+          i <= builder.getTilePosition().getX() + maxDist; i++) {
+        for (int j = builder.getTilePosition().getY() - maxDist;
+            j <= builder.getTilePosition().getY() + maxDist; j++) {
+          if (game
+              .canBuildHere(new TilePosition(i, j), UnitType.Zerg_Spawning_Pool, builder, false)) {
+            // units that are blocking the tile
+            boolean unitsInWay = false;
+            for (Unit u : game.getAllUnits()) {
+              if (u.getID() == builder.getID()) {
+                continue;
+              }
+              if ((Math.abs(u.getTilePosition().getX() - i) < 4) && (
+                  Math.abs(u.getTilePosition().getY() - j) < 4)) {
+                unitsInWay = true;
+              }
+            }
+            if (!unitsInWay) {
+              builder.build(UnitType.Zerg_Spawning_Pool, new TilePosition(i, j));
+              log.info("Building POOL.");
+              return true;
+            }
+          }
+        }
+      }
+      maxDist += 2;
+    }
+    return false;
   }
 }
