@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.knowledge;
 
+import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import java.util.Map;
@@ -13,9 +14,10 @@ public class ReadOnlyMemory extends Memory<PlanningTreeOfAnotherAgent> {
       PlanningTreeOfAnotherAgent tree, AgentType agentType, int agentId,
       StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
       StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
-      StrategyToGetAllMemories strategyToGetAllMemories) {
+      StrategyToGetAllMemories strategyToGetAllMemories,
+      InternalClockObtainingStrategy internalClockObtainingStrategy) {
     super(factParameterMap, factSetParameterMap, tree, agentType, agentId,
         strategyToGetSetOfMemoriesByAgentType, strategyToGetMemoryOfAgent,
-        strategyToGetAllMemories);
+        strategyToGetAllMemories, internalClockObtainingStrategy);
   }
 }

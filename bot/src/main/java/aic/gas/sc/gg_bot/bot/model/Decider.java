@@ -19,9 +19,10 @@ public class Decider {
    * Get decision
    */
   public static boolean getDecision(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
-      DataForDecision dataForDecision, FeatureContainerHeader featureContainerHeader) {
+      DataForDecision dataForDecision, FeatureContainerHeader featureContainerHeader,
+      int currentFrame) {
     return DECISION_LOADING_SERVICE.getDecisionPoint(agentTypeID, desireKeyID)
-        .nextAction(featureContainerHeader.formVector(dataForDecision));
+        .nextAction(featureContainerHeader.formVector(dataForDecision), currentFrame);
   }
 
 }

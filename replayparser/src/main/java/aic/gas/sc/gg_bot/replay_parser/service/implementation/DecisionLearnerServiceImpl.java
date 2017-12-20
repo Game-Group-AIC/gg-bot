@@ -21,11 +21,17 @@ import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.mdp.core.action.SimpleAction;
 import burlap.mdp.singleagent.SADomain;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jsat.linear.DenseVector;
@@ -122,6 +128,8 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
     tasks.forEach(executor::execute);
 
     executor.shutdown();
+
+    // Wait until all threads are finish
     log.info("Finished...");
   }
 
@@ -141,9 +149,10 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
     //get number of features for state
     int numberOfFeatures = trajectoriesWrapped.get(0).getTrajectory().getNumberOfFeatures();
 
-    log.info("Number of trajectories: " + trajectoriesWrapped.size() + " with cardinality of features: "
-        + numberOfFeatures + " for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-        .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+    log.info(
+        "Number of trajectories: " + trajectoriesWrapped.size() + " with cardinality of features: "
+            + numberOfFeatures + " for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
+            .getName() + " on " + tuple.mapSize + " with " + tuple.race);
 
     //find representatives of states
     List<State> states = trajectoriesWrapped.stream()

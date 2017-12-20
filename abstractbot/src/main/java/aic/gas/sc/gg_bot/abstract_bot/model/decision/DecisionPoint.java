@@ -5,6 +5,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumeratio
 
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.utils.Configuration;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,14 @@ public class DecisionPoint {
   private final List<StateWithTransition> states;
   private final List<FeatureNormalizer> normalizers;
 
+  //todo hack
+  private static final int durationOfCommitment = 15;
+
+  //todo cache
+  private double[] previousFeatureVector = new double[]{};
+  private boolean lastDecision = false;
+  private int updatedOnFrame = -durationOfCommitment;
+
   public DecisionPoint(DecisionPointDataStructure dataStructure) {
     this.states = dataStructure.states.stream()
         .map(StateWithTransition::new)
@@ -36,7 +45,17 @@ public class DecisionPoint {
   /**
    * For given state (represented by feature vector) return optimal action based on policy
    */
-  public boolean nextAction(double[] featureVector) {
+  public boolean nextAction(double[] featureVector, int frame) {
+    if (!Arrays.equals(previousFeatureVector, featureVector)
+        && updatedOnFrame + durationOfCommitment <= frame) {
+      lastDecision = decideNextAction(featureVector);
+      previousFeatureVector = featureVector;
+      updatedOnFrame = frame;
+    }
+    return lastDecision;
+  }
+
+  private boolean decideNextAction(double[] featureVector) {
     Vec anotherInstance = new DenseVector((Configuration
         .normalizeFeatureVector(featureVector, normalizers)));
     Optional<StateWithTransition> closestState = states.stream()

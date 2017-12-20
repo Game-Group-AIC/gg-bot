@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.knowledge;
 
+import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.planing.heap.HeapOfTrees;
@@ -17,9 +18,10 @@ public class WorkingMemory extends Memory<HeapOfTrees> {
   public WorkingMemory(HeapOfTrees heapOfTrees, AgentType agentType, int agentId,
       StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
       StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
-      StrategyToGetAllMemories strategyToGetAllMemories) {
+      StrategyToGetAllMemories strategyToGetAllMemories,
+      InternalClockObtainingStrategy internalClockObtainingStrategy) {
     super(heapOfTrees, agentType, agentId, strategyToGetSetOfMemoriesByAgentType,
-        strategyToGetMemoryOfAgent, strategyToGetAllMemories);
+        strategyToGetMemoryOfAgent, strategyToGetAllMemories, internalClockObtainingStrategy);
   }
 
 
@@ -35,7 +37,7 @@ public class WorkingMemory extends Memory<HeapOfTrees> {
             .filter(factKeyFactEntry -> !factKeyFactEntry.getKey().isPrivate())
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
         tree.getReadOnlyCopy(), agentType, agentId, strategyToGetSetOfMemoriesByAgentType,
-        strategyToGetMemoryOfAgent, strategyToGetAllMemories);
+        strategyToGetMemoryOfAgent, strategyToGetAllMemories, internalClockObtainingStrategy);
   }
 
   /**

@@ -7,7 +7,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_H
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_LAIRS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_LAIRS_IN_CONSTRUCTION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_POOLS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_POOLS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPIRES;
@@ -47,7 +46,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class BuildingOrderManager {
 
   public static final AgentType BUILDING_ORDER_MANAGER = AgentType.builder()
@@ -67,14 +68,12 @@ public class BuildingOrderManager {
                         dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) == 0
                             && dataForDecision.getFeatureValueGlobalBeliefs(
                             COUNT_OF_POOLS_IN_CONSTRUCTION) == 0
-                            && (Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
-                            DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL)
-                            || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS)
-                            > 400)
-                )
+                            && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
+                            DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL,
+                            memory.getCurrentClock()))
                 .globalBeliefTypesByAgentType(Stream.concat(
                     BUILDING_POOL.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
-                    Stream.of(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS, COUNT_OF_MINERALS))
+                    Stream.of(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS))
                     .collect(Collectors.toSet()))
                 .globalBeliefSetTypesByAgentType(
                     BUILDING_POOL.getConvertersForFactSetsForGlobalBeliefsByAgentType())
@@ -83,12 +82,20 @@ public class BuildingOrderManager {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0 ||
-                            dataForDecision
-                                .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0
+                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
+                            || dataForDecision
+                            .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0
+                            || !Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
+                            DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL,
+                            memory.getCurrentClock())
                 )
-                .globalBeliefTypesByAgentType(
-                    new HashSet<>(Arrays.asList(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS)))
+                .globalBeliefTypesByAgentType(Stream.concat(
+                    BUILDING_POOL.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
+                    Stream.of(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS))
+                    .collect(Collectors.toSet()))
+                .globalBeliefSetTypesByAgentType(
+                    BUILDING_POOL.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .globalBeliefTypes(BUILDING_POOL.getConvertersForFactsForGlobalBeliefs())
                 .build())
             .build();
         type.addConfiguration(ENABLE_GROUND_MELEE, buildPool);
@@ -145,8 +152,8 @@ public class BuildingOrderManager {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                     && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_LAIRS) == 0
-                    && dataForDecision.getFeatureValueGlobalBeliefs(
-                    COUNT_OF_LAIRS_IN_CONSTRUCTION) == 0)
+                    && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_LAIRS_IN_CONSTRUCTION)
+                    == 0)
                 .globalBeliefTypesByAgentType(
                     Stream.of(COUNT_OF_LAIRS, COUNT_OF_LAIRS_IN_CONSTRUCTION).collect(
                         Collectors.toSet()))
@@ -192,7 +199,7 @@ public class BuildingOrderManager {
                     (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                         && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
                         DesireKeys.ENABLE_GROUND_RANGED, dataForDecision,
-                        BUILDING_HYDRALISK_DEN)
+                        BUILDING_HYDRALISK_DEN, memory.getCurrentClock())
                         && dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_HYDRALISK_DENS) == 0
                         && dataForDecision.getFeatureValueGlobalBeliefs(
@@ -247,7 +254,8 @@ public class BuildingOrderManager {
                 .decisionStrategy(
                     (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                         && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
-                        DesireKeys.UPGRADE_TO_LAIR, dataForDecision, UPGRADING_TO_LAIR)
+                        DesireKeys.UPGRADE_TO_LAIR, dataForDecision, UPGRADING_TO_LAIR,
+                        memory.getCurrentClock())
                         && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_LAIRS) == 0
                         && dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_LAIRS_IN_CONSTRUCTION) == 0)
@@ -281,7 +289,8 @@ public class BuildingOrderManager {
                 .decisionStrategy(
                     (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                         && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
-                        DesireKeys.ENABLE_AIR, dataForDecision, BUILDING_SPIRE)
+                        DesireKeys.ENABLE_AIR, dataForDecision, BUILDING_SPIRE,
+                        memory.getCurrentClock())
                         && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_SPIRES) == 0
                         && dataForDecision.getFeatureValueGlobalBeliefs(
                         COUNT_OF_SPIRES_IN_CONSTRUCTION) == 0)
@@ -338,7 +347,7 @@ public class BuildingOrderManager {
                         COUNT_OF_EVOLUTION_CHAMBERS_IN_CONSTRUCTION) == 0
                         && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
                         DesireKeys.ENABLE_STATIC_ANTI_AIR, dataForDecision,
-                        BUILDING_EVOLUTION_CHAMBER)
+                        BUILDING_EVOLUTION_CHAMBER, memory.getCurrentClock())
                 )
                 .globalBeliefTypesByAgentType(Stream.concat(
                     BUILDING_EVOLUTION_CHAMBER.getConvertersForFactsForGlobalBeliefsByAgentType()

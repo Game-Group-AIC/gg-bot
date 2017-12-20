@@ -42,7 +42,7 @@ public class UnitOrderManager {
             .decisionStrategy(
                 (dataForDecision, memory) ->
                     Decider.getDecision(AgentTypes.UNIT_ORDER_MANAGER, boostingTypeDesireID,
-                        dataForDecision, featureContainerHeader)
+                        dataForDecision, featureContainerHeader, memory.getCurrentClock())
             )
             .globalBeliefTypesByAgentType(Stream.concat(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
@@ -53,7 +53,8 @@ public class UnitOrderManager {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) -> !Decider.getDecision(AgentTypes.UNIT_ORDER_MANAGER,
-                    boostingTypeDesireID, dataForDecision, featureContainerHeader))
+                    boostingTypeDesireID, dataForDecision, featureContainerHeader,
+                    memory.getCurrentClock()))
             .globalBeliefTypesByAgentType(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
             .globalBeliefSetTypesByAgentType(

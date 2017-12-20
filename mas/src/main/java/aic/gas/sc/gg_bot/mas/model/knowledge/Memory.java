@@ -1,6 +1,7 @@
 package aic.gas.sc.gg_bot.mas.model.knowledge;
 
 import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
+import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.PlanningTreeInterface;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
@@ -33,17 +34,20 @@ public abstract class Memory<V extends PlanningTreeInterface> implements FactCon
   final StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType;
   final StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent;
   final StrategyToGetAllMemories strategyToGetAllMemories;
+  final InternalClockObtainingStrategy internalClockObtainingStrategy;
 
   Memory(V tree, AgentType agentType, int agentId,
       StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
       StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
-      StrategyToGetAllMemories strategyToGetAllMemories) {
+      StrategyToGetAllMemories strategyToGetAllMemories,
+      InternalClockObtainingStrategy internalClockObtainingStrategy) {
     this.tree = tree;
     this.agentType = agentType;
     this.agentId = agentId;
     this.strategyToGetSetOfMemoriesByAgentType = strategyToGetSetOfMemoriesByAgentType;
     this.strategyToGetMemoryOfAgent = strategyToGetMemoryOfAgent;
     this.strategyToGetAllMemories = strategyToGetAllMemories;
+    this.internalClockObtainingStrategy = internalClockObtainingStrategy;
     agentType.getUsingTypesForFacts()
         .forEach(factKey -> this.factParameterMap.put(factKey, factKey.returnEmptyFact()));
     agentType.getUsingTypesForFactSets()
@@ -57,16 +61,23 @@ public abstract class Memory<V extends PlanningTreeInterface> implements FactCon
       AgentType agentType, int agentId,
       StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
       StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
-      StrategyToGetAllMemories strategyToGetAllMemories) {
+      StrategyToGetAllMemories strategyToGetAllMemories,
+      InternalClockObtainingStrategy internalClockObtainingStrategy) {
     this.tree = tree;
     this.agentType = agentType;
     this.agentId = agentId;
     this.strategyToGetSetOfMemoriesByAgentType = strategyToGetSetOfMemoriesByAgentType;
     this.strategyToGetMemoryOfAgent = strategyToGetMemoryOfAgent;
     this.strategyToGetAllMemories = strategyToGetAllMemories;
+    this.internalClockObtainingStrategy = internalClockObtainingStrategy;
     factParameterMap.forEach((factKey, o) -> this.factParameterMap.put(factKey, o.copyFact()));
     factSetParameterMap
         .forEach((factKey, set) -> this.factSetParameterMap.put(factKey, set.copyFact()));
+  }
+
+  //TODO hack
+  public int getCurrentClock() {
+    return internalClockObtainingStrategy.internalClockCounter();
   }
 
   public boolean isFactKeyForValueInMemory(FactKey<?> factKey) {
