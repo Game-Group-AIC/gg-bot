@@ -20,17 +20,19 @@ import jsat.clustering.kmeans.HamerlyKMeans;
 import jsat.clustering.kmeans.MiniBatchKMeans;
 import jsat.linear.DenseVector;
 import jsat.linear.Vec;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Concrete implementation of StateClusteringService
  */
+@Slf4j
 public class StateClusteringServiceImpl implements StateClusteringService {
 
   //configuration
   private static final int sampleStates = 20000;
   private static final int batchSize = 2000;
   private static final int iterations = 250;
-  private static final int clusters = 750;
+  private static final int clusters = 1500;
 
   private static final SeedSelectionMethods.SeedSelection SEED_SELECTION_METHOD = SeedSelectionMethods.SeedSelection.MEAN_QUANTILES;
 
@@ -80,10 +82,20 @@ public class StateClusteringServiceImpl implements StateClusteringService {
     if (states.size() > sampleStates) {
 //            int clusterNumberEstimation = estimateClusters(trajectories, normalizers);
 //            log.info("Estimated #" + clusterNumberEstimation + " clusters.");
-      MiniBatchKMeans batchKMeans = new MiniBatchKMeans(DISTANCE_FUNCTION, batchSize, iterations,
-          SEED_SELECTION_METHOD);
-      batchKMeans.cluster(createDataSet(states, normalizers), clusters);
-      return batchKMeans.getMeans();
+      int num_clusters = clusters;
+
+      while(num_clusters > 1) {
+        try {
+          MiniBatchKMeans batchKMeans = new MiniBatchKMeans(DISTANCE_FUNCTION, batchSize,
+              iterations,
+              SEED_SELECTION_METHOD);
+          batchKMeans.cluster(createDataSet(states, normalizers), clusters);
+          return batchKMeans.getMeans();
+        } catch (IndexOutOfBoundsException e) {
+          num_clusters /= 2;
+          log.warn("decreasing cluster size to "+num_clusters);
+        }
+      }
     }
     return computeStateRepresentatives(states, normalizers);
   }

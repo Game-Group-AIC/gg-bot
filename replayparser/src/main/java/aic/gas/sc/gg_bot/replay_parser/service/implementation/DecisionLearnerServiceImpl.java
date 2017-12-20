@@ -21,11 +21,11 @@ import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.mdp.core.action.SimpleAction;
 import burlap.mdp.singleagent.SADomain;
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jsat.linear.DenseVector;
@@ -110,11 +110,17 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
         race -> storageService.getParsedAgentTypesWithDesiresTypesContainedInStorage(mapSize, race)
             .entrySet().stream().flatMap(entry -> entry.getValue().stream()
                 .map(desireKeyID -> new Tuple(mapSize, race, entry.getKey(), desireKeyID)))))
+        .filter(tuple -> {
+          String path = storageService
+              .getLearntDecisionPath(tuple.agentTypeID, tuple.desireKeyID, tuple.mapSize,
+                  tuple.race);
+          return !new File(path).exists();
+        })
         .collect(Collectors.toList());
 
     //execute
     List<MyTask> tasks = toLearn.parallelStream()
-        .map(this::prepareDataForPolicy)
+        .map(MyTask::new)
         .collect(Collectors.toList());
     log.info("Clustering finished...");
 
@@ -123,110 +129,6 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
 
     executor.shutdown();
     log.info("Finished...");
-  }
-
-  private MyTask prepareDataForPolicy(Tuple tuple) {
-    log.info(
-        "Starting computation for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-            .getName() + " on " + tuple.mapSize + " with " + tuple.race);
-
-    //TODO load for bots as well. Use human example to learn policy only
-    List<TrajectoryWrapper> trajectoriesWrapped = storageService
-        .getRandomListOfTrajectories(tuple.agentTypeID, tuple.desireKeyID, tuple.getMapSize(),
-            tuple.getRace(), -1);
-    List<Trajectory> trajectories = trajectoriesWrapped.stream()
-        .map(TrajectoryWrapper::getTrajectory)
-        .collect(Collectors.toList());
-
-    //get number of features for state
-    int numberOfFeatures = trajectoriesWrapped.get(0).getTrajectory().getNumberOfFeatures();
-
-    log.info("Number of trajectories: " + trajectoriesWrapped.size() + " with cardinality of features: "
-        + numberOfFeatures + " for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-        .getName() + " on " + tuple.mapSize + " with " + tuple.race);
-
-    //find representatives of states
-    List<State> states = trajectoriesWrapped.stream()
-        .map(TrajectoryWrapper::getTrajectory)
-        .map(Trajectory::getStates)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
-    log.info("Number of states: " + states.size() + " for " + tuple.desireKeyID.getName() + " of "
-        + tuple.agentTypeID.getName() + " on " + tuple.mapSize + " with " + tuple.race);
-
-    List<FeatureNormalizer> normalizers = stateClusteringService
-        .computeFeatureNormalizersBasedOnStates(states, numberOfFeatures);
-    List<Vec> classes = stateClusteringService
-        .computeStateRepresentatives(trajectories, states, normalizers);
-
-    //create states with corresponding mean
-    Map<DecisionState, Vec> statesAndTheirMeans = new HashMap<>();
-    for (int i = 0; i < classes.size(); i++) {
-      statesAndTheirMeans.put(new DecisionState(i), classes.get(i));
-    }
-
-    log.info("Creating MDP... for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-        .getName() + " on " + tuple.mapSize + " with " + tuple.race);
-
-    //create transitions
-    Map<DecisionState, Map<NextActionEnumerations, Map<DecisionState, Double>>> transitions = new HashMap<>();
-    List<Episode> episodes = new ArrayList<>();
-    for (TrajectoryWrapper trajectoryWrapper : trajectoriesWrapped) {
-      List<State> stateList = trajectoryWrapper.getTrajectory().getStates();
-      if (stateList.size() <= 2) {
-        continue;
-      }
-
-      Episode episode = new Episode();
-      //convert vectors to states (more memory intensive but faster)
-      List<DecisionState> convertedOnStates = stateList.parallelStream()
-          .map(state -> closestStateRepresentative(new DenseVector(
-                  Configuration
-                      .normalizeFeatureVector(state.getFeatureVector(), normalizers)),
-              statesAndTheirMeans))
-          .collect(Collectors.toList());
-
-      DecisionState currentState = convertedOnStates.get(0);
-      NextActionEnumerations nextAction = NextActionEnumerations
-          .returnNextAction(stateList.get(0).isCommittedWhenTransiting());
-
-      //add initial position in expert trajectory
-      if (trajectoryWrapper.isUsedToLearnPolicy()) {
-        episode.addState(convertedOnStates.get(0));
-      }
-
-      //there is no transition in last state
-      for (int i = 1; i < stateList.size(); i++) {
-        Map<DecisionState, Double> transitedTo = transitions
-            .computeIfAbsent(currentState, decisionState -> new HashMap<>())
-            .computeIfAbsent(nextAction, actionEnumerations -> new HashMap<>());
-        currentState = convertedOnStates.get(i);
-
-        //add transition to episode. Do not add last transition if agent is committed
-        if (trajectoryWrapper.isUsedToLearnPolicy()) {
-          episode.transition(new SimpleAction(nextAction.name()), currentState,
-              DecisionDomainGenerator.defaultReward);
-        }
-
-        nextAction = NextActionEnumerations
-            .returnNextAction(stateList.get(i).isCommittedWhenTransiting());
-
-        //increment count of this type transitions
-        Double currentValue = transitedTo.get(currentState);
-        if (currentValue == null) {
-          currentValue = 0.0;
-        }
-        transitedTo.put(currentState, currentValue + 1.0);
-      }
-
-      if (trajectoryWrapper.isUsedToLearnPolicy()) {
-        episodes.add(episode);
-      }
-    }
-
-    //Start learning policy
-    return new MyTask(tuple,
-        new DataForPolicy(episodes, normalizers, classes, statesAndTheirMeans, transitions));
   }
 
   /**
@@ -247,16 +149,6 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
   }
 
   @AllArgsConstructor
-  private static class DataForPolicy {
-
-    private final List<Episode> episodes;
-    private final List<FeatureNormalizer> normalizers;
-    private final List<Vec> classes;
-    private final Map<DecisionState, Vec> statesAndTheirMeans;
-    private final Map<DecisionState, Map<NextActionEnumerations, Map<DecisionState, Double>>> transitions;
-  }
-
-  @AllArgsConstructor
   @Getter
   private static class Tuple {
 
@@ -273,19 +165,117 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
   public class MyTask implements Runnable {
 
     private final Tuple tuple;
-    private final DataForPolicy dataForPolicy;
 
     @Override
     public void run() {
+      log.info(
+          "Starting computation for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
+              .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+
+      //TODO load for bots as well. Use human example to learn policy only
+      List<TrajectoryWrapper> trajectoriesWrapped = storageService
+          .getRandomListOfTrajectories(tuple.agentTypeID, tuple.desireKeyID, tuple.getMapSize(),
+              tuple.getRace(), -1);
+      List<Trajectory> trajectories = trajectoriesWrapped.stream()
+          .map(TrajectoryWrapper::getTrajectory)
+          .collect(Collectors.toList());
+
+      //get number of features for state
+      int numberOfFeatures = trajectoriesWrapped.get(0).getTrajectory().getNumberOfFeatures();
+
+      log.info("Number of trajectories: " + trajectoriesWrapped.size()
+          + " with cardinality of features: "
+          + numberOfFeatures + " for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
+          .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+
+      //find representatives of states
+      List<State> states = trajectoriesWrapped.stream()
+          .map(TrajectoryWrapper::getTrajectory)
+          .map(Trajectory::getStates)
+          .flatMap(Collection::stream)
+          .collect(Collectors.toList());
+      log.info("Number of states: " + states.size() + " for " + tuple.desireKeyID.getName() + " of "
+          + tuple.agentTypeID.getName() + " on " + tuple.mapSize + " with " + tuple.race);
+
+      List<FeatureNormalizer> normalizers = stateClusteringService
+          .computeFeatureNormalizersBasedOnStates(states, numberOfFeatures);
+      List<Vec> classes = stateClusteringService
+          .computeStateRepresentatives(trajectories, states, normalizers);
+
+      //create states with corresponding mean
+      Map<DecisionState, Vec> statesAndTheirMeans = new HashMap<>();
+      for (int i = 0; i < classes.size(); i++) {
+        statesAndTheirMeans.put(new DecisionState(i), classes.get(i));
+      }
+
+      log.info("Creating MDP... for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
+          .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+
+      //create transitions
+      Map<DecisionState, Map<NextActionEnumerations, Map<DecisionState, Double>>> transitions = new HashMap<>();
+      List<Episode> episodes = new ArrayList<>();
+      for (TrajectoryWrapper trajectoryWrapper : trajectoriesWrapped) {
+        List<State> stateList = trajectoryWrapper.getTrajectory().getStates();
+        if (stateList.size() <= 2) {
+          continue;
+        }
+
+        Episode episode = new Episode();
+        //convert vectors to states (more memory intensive but faster)
+        List<DecisionState> convertedOnStates = stateList.parallelStream()
+            .map(state -> closestStateRepresentative(new DenseVector(
+                    Configuration
+                        .normalizeFeatureVector(state.getFeatureVector(), normalizers)),
+                statesAndTheirMeans))
+            .collect(Collectors.toList());
+
+        DecisionState currentState = convertedOnStates.get(0);
+        NextActionEnumerations nextAction = NextActionEnumerations
+            .returnNextAction(stateList.get(0).isCommittedWhenTransiting());
+
+        //add initial position in expert trajectory
+        if (trajectoryWrapper.isUsedToLearnPolicy()) {
+          episode.addState(convertedOnStates.get(0));
+        }
+
+        //there is no transition in last state
+        for (int i = 1; i < stateList.size(); i++) {
+          Map<DecisionState, Double> transitedTo = transitions
+              .computeIfAbsent(currentState, decisionState -> new HashMap<>())
+              .computeIfAbsent(nextAction, actionEnumerations -> new HashMap<>());
+          currentState = convertedOnStates.get(i);
+
+          //add transition to episode. Do not add last transition if agent is committed
+          if (trajectoryWrapper.isUsedToLearnPolicy()) {
+            episode.transition(new SimpleAction(nextAction.name()), currentState,
+                DecisionDomainGenerator.defaultReward);
+          }
+
+          nextAction = NextActionEnumerations
+              .returnNextAction(stateList.get(i).isCommittedWhenTransiting());
+
+          //increment count of this type transitions
+          Double currentValue = transitedTo.get(currentState);
+          if (currentValue == null) {
+            currentValue = 0.0;
+          }
+          transitedTo.put(currentState, currentValue + 1.0);
+        }
+
+        if (trajectoryWrapper.isUsedToLearnPolicy()) {
+          episodes.add(episode);
+        }
+      }
+
       log.info("Preparing data for policy learning... for " + tuple.desireKeyID.getName()
           + " of " + tuple.agentTypeID.getName() + " on " + tuple.mapSize + " with "
           + tuple.race);
 
-      Map<DecisionState, Map<NextActionEnumerations, Double>> sums = dataForPolicy.transitions
+      Map<DecisionState, Map<NextActionEnumerations, Double>> sums = transitions
           .keySet()
           .stream()
           .collect(Collectors.toMap(Function.identity(),
-              o -> dataForPolicy.transitions.get(o).entrySet().stream()
+              o -> transitions.get(o).entrySet().stream()
                   .collect(
                       Collectors.groupingBy(Map.Entry::getKey, Collectors.summingDouble(
                           value -> value.getValue().values().stream().mapToDouble(v -> v)
@@ -294,7 +284,7 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
 
       //fill DecisionModel
       DecisionModel decisionModel = new DecisionModel();
-      dataForPolicy.transitions.forEach((decisionState, nextActionEnumerationsMapMap) ->
+      transitions.forEach((decisionState, nextActionEnumerationsMapMap) ->
           nextActionEnumerationsMapMap
               .forEach((actionEnumerations, decisionStateDoubleMap) ->
                   decisionStateDoubleMap.forEach((ds, aDouble) -> decisionModel
@@ -313,26 +303,26 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
           .getName() + " on " + tuple.mapSize + " with " + tuple.race);
 
       List<Episode> episodesToUse;
-      if (dataForPolicy.episodes.size() > 35) {
-        int middle = ((dataForPolicy.episodes.size() - 25) / 2) + 5;
-        dataForPolicy.episodes.sort(Comparator.comparingInt(o -> o.stateSequence.size()));
+      if (episodes.size() > 35) {
+        int middle = ((episodes.size() - 25) / 2) + 5;
+        episodes.sort(Comparator.comparingInt(o -> o.stateSequence.size()));
         episodesToUse = Stream.concat(
-            Stream.concat(dataForPolicy.episodes
-                    .subList(dataForPolicy.episodes.size() - 20, dataForPolicy.episodes.size())
+            Stream.concat(episodes
+                    .subList(episodes.size() - 20, episodes.size())
                     .stream(),
-                dataForPolicy.episodes.subList(0, 10).stream()),
-            dataForPolicy.episodes.subList(middle - 3, middle + 2).stream())
+                episodes.subList(0, 10).stream()),
+            episodes.subList(middle - 3, middle + 2).stream())
             .collect(Collectors.toList());
       } else {
-        episodesToUse = new ArrayList<>(dataForPolicy.episodes);
+        episodesToUse = new ArrayList<>(episodes);
       }
       episodesToUse.sort(Comparator.comparingInt(o -> o.stateSequence.size()));
       Policy policy = policyLearningService
-          .learnPolicy(domain, episodesToUse, dataForPolicy.classes.size() + 1,
+          .learnPolicy(domain, episodesToUse, classes.size() + 1,
               episodesToUse.size());
       //form decision point data structure and store it
-      DecisionPointDataStructure decisionPoint = createDecisionPoint(dataForPolicy.normalizers,
-          dataForPolicy.statesAndTheirMeans, policy);
+      DecisionPointDataStructure decisionPoint = createDecisionPoint(normalizers,
+          statesAndTheirMeans, policy);
 
       try {
         storageService
