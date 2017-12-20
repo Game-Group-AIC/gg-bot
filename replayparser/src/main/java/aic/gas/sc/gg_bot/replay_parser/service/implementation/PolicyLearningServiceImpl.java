@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
+import aic.gas.sc.gg_bot.replay_parser.model.irl.BatchIterator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionState;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.OurMLIRL;
 import aic.gas.sc.gg_bot.replay_parser.service.PolicyLearningService;
@@ -27,7 +28,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
 
   private static final double beta = 10;
   private static final boolean doNotPrintDebug = false;
-  private static final int steps = 100;
+  private static final int steps = 1000;
   //set last "dummy state" to large negative number as we do not want to go there
   private static final int minReward = -1, maxReward = 1;
   private static final double learningRate = 0.01;
@@ -38,7 +39,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
 
   @Override
   public Policy learnPolicy(SADomain domain, List<Episode> episodes, int numberOfStates,
-      int numberOfSamplesToUse) {
+      BatchIterator batchIterator) {
 
     //create reward function features to use
     LocationFeatures features = new LocationFeatures(numberOfStates);
@@ -57,7 +58,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
     HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 //        DifferentiableVI dplanner = new DifferentiableVI(domain, rf, 0.99, beta, hashingFactory, 0.01, 100);
     DifferentiableSparseSampling dplanner = new DifferentiableSparseSampling(domain, rf, 0.99,
-        hashingFactory, (int) Math.sqrt(numberOfStates), numberOfSamplesToUse, beta);
+        hashingFactory, (int) Math.sqrt(numberOfStates), batchIterator.getSizeOfBatch(), beta);
 
     dplanner.toggleDebugPrinting(doNotPrintDebug);
 
@@ -67,7 +68,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
 
     //run MLIRL on it
     MLIRL irl = new OurMLIRL(request, learningRate, maxLikelihoodChange, steps, minReward,
-        maxReward, timeBudget);
+        maxReward, timeBudget, batchIterator);
     irl.performIRL();
 
     return new GreedyQPolicy((QProvider) request.getPlanner());

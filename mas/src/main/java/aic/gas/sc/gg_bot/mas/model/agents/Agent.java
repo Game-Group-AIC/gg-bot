@@ -70,7 +70,8 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
         agentTypeID -> beliefMediator.getReadOnlyRegister()
             .getReadOnlyMemoriesForAgentType(agentTypeID),
         agentId -> beliefMediator.getReadOnlyRegister().getReadOnlyMemoryForAgent(agentId),
-        () -> beliefMediator.getReadOnlyRegister().getReadOnlyMemories());
+        () -> beliefMediator.getReadOnlyRegister().getReadOnlyMemories(),
+        masFacade.getClockObtainingStrategy());
 
     this.clockObtainingStrategy = masFacade.getClockObtainingStrategy();
     this.cycleSynchronizationObtainingStrategy = masFacade

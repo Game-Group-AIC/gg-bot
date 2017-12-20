@@ -535,7 +535,8 @@ public class BaseLocationAgentType {
                             && !dataForDecision.madeDecisionToAny()
                             && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
                             && Decider.getDecision(AgentTypes.BASE_LOCATION,
-                            DesireKeys.BUILD_CREEP_COLONY, dataForDecision, DEFENSE))
+                            DesireKeys.BUILD_CREEP_COLONY, dataForDecision, DEFENSE,
+                            memory.getCurrentClock()))
                 .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(Stream.concat(
@@ -634,8 +635,9 @@ public class BaseLocationAgentType {
                             COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION)
                             + dataForDecision.getFeatureValueBeliefSets(
                             COUNT_OF_SUNKEN_COLONIES_AT_BASE)) <= 4
-                            && Decider.getDecision(AgentTypes.BASE_LOCATION,
-                            DesireKeys.BUILD_SUNKEN_COLONY, dataForDecision, DEFENSE))
+                            && Decider
+                            .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.BUILD_SUNKEN_COLONY,
+                                dataForDecision, DEFENSE, memory.getCurrentClock()))
                 .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -716,7 +718,8 @@ public class BaseLocationAgentType {
                             + dataForDecision.getFeatureValueBeliefSets(
                             COUNT_OF_SPORE_COLONIES_AT_BASE)) <= 4
                             && Decider.getDecision(AgentTypes.BASE_LOCATION,
-                            DesireKeys.BUILD_SPORE_COLONY, dataForDecision, DEFENSE))
+                            DesireKeys.BUILD_SPORE_COLONY, dataForDecision, DEFENSE,
+                            memory.getCurrentClock()))
                 .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -777,7 +780,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) ->
                     memory.returnFactValueForGivenKey(IS_ENEMY_BASE).get()
                         && Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                        dataForDecision, HOLDING))
+                        dataForDecision, HOLDING, memory.getCurrentClock()))
                 .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -791,7 +794,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) -> !memory.returnFactValueForGivenKey(
                     IS_ENEMY_BASE).get()
                     || !Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                    dataForDecision, HOLDING)
+                    dataForDecision, HOLDING, memory.getCurrentClock())
                 )
                 .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
@@ -820,7 +823,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) -> memory.returnFactValueForGivenKey(
                     IS_ENEMY_BASE).get()
                     && Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
-                    dataForDecision, HOLDING))
+                    dataForDecision, HOLDING, memory.getCurrentClock()))
                 .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -834,7 +837,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) -> !memory.returnFactValueForGivenKey(
                     IS_ENEMY_BASE).get()
                     || !Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
-                    dataForDecision, HOLDING))
+                    dataForDecision, HOLDING, memory.getCurrentClock()))
                 .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(

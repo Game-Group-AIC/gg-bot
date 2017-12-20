@@ -682,11 +682,13 @@ public class DroneAgentType {
           memory.updateFact(BASE_TO_MOVE,
               desireParameters.returnFactValueForGivenKey(BASE_TO_MOVE).get());
           memory.updateFact(HAS_SOMETHING_TO_BUILD, true);
+          log.error("Commitmed to " + reactOn.getName());
         })
         .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
           memory.eraseFactValueForGivenKey(placeForBuilding);
           memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
           memory.eraseFactValueForGivenKey(HAS_SOMETHING_TO_BUILD);
+          log.error("Removed commitment to " + reactOn.getName());
         }).decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                 && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()

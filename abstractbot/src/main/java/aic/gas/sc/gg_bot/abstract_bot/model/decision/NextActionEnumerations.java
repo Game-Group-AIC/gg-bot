@@ -3,10 +3,12 @@ package aic.gas.sc.gg_bot.abstract_bot.model.decision;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Enumeration of all possible commitments based on policy
  */
+@Slf4j
 public enum NextActionEnumerations implements Serializable, NextActionStrategy {
   YES {
     @Override
