@@ -45,7 +45,7 @@ public class OurMLIRL extends MLIRL {
     this.request.getPlanner().resetSolver();
     this.request.getPlanner().setModel(new CustomRewardModel(request.getDomain().getModel(), rf));
     double lastLikelihood = this.logLikelihood();
-    log.info("RF: " + this.request.getRf().toString());
+//    log.info("RF: " + this.request.getRf().toString());
     log.info("Log likelihood: " + lastLikelihood);
 
     Map<Integer, Double> nextValuesOfParameters = new HashMap<>(), bestValuesOfParameters = new HashMap<>();
