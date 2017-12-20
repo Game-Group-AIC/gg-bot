@@ -184,7 +184,7 @@ public class EcoManagerAgentType {
               } else {
                 memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
               }
-
+//              log.error("Finding base. Base is present: " + basesToExpand.isPresent());
             })
             .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
               memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
@@ -214,7 +214,8 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    BuildLockerService.getInstance().isLocked(HATCHERY_TYPE)
+                    !memory.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent() ||
+                        BuildLockerService.getInstance().isLocked(HATCHERY_TYPE)
                         || !Decider
                         .getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND, dataForDecision,
                             EXPANDING, memory.getCurrentClock())

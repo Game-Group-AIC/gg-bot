@@ -285,19 +285,13 @@ public class DroneAgentType {
         //abstract plan to mine minerals in base
         ConfigurationWithAbstractPlan mineInBase = ConfigurationWithAbstractPlan.builder()
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> {
-                  if (!dataForDecision.madeDecisionToAny()
-                      //is in same base
-                      && (dataForDecision.returnFactValueForGivenKey(
-                      IS_BASE_LOCATION).get().equals(memory.returnFactValueForGivenKey(
-                      REPRESENTS_UNIT).get().getNearestBaseLocation().orElse(null))
-                      && dataForDecision.getNumberOfCommittedAgents() <= 2.5 * dataForDecision
-                      .getFeatureValueDesireBeliefSets(
-                          COUNT_OF_MINERALS_ON_BASE))) {
-                    return true;
-                  }
-                  return false;
-                })
+                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                    //is in same base
+                    && (dataForDecision.returnFactValueForGivenKey(IS_BASE_LOCATION).get().equals(
+                    memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
+                        .getNearestBaseLocation().orElse(null))
+                    && dataForDecision.getNumberOfCommittedAgents() <= 1.5 * dataForDecision
+                    .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE)))
                 .useFactsInMemory(true)
                 .parameterValueSetTypes(
                     new HashSet<>(Collections.singletonList(COUNT_OF_MINERALS_ON_BASE)))
@@ -309,7 +303,7 @@ public class DroneAgentType {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> {
                   if (dataForDecision.madeDecisionToAny() ||
-                      dataForDecision.getNumberOfCommittedAgents() >= 2.5 * dataForDecision
+                      dataForDecision.getNumberOfCommittedAgents() >= 2 * dataForDecision
                           .getFeatureValueDesireBeliefSets(
                               COUNT_OF_MINERALS_ON_BASE)
                       || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION).filter(
@@ -682,13 +676,13 @@ public class DroneAgentType {
           memory.updateFact(BASE_TO_MOVE,
               desireParameters.returnFactValueForGivenKey(BASE_TO_MOVE).get());
           memory.updateFact(HAS_SOMETHING_TO_BUILD, true);
-          log.error("Commitmed to " + reactOn.getName());
+//          log.error("Commitmed to " + reactOn.getName());
         })
         .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
           memory.eraseFactValueForGivenKey(placeForBuilding);
           memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
           memory.eraseFactValueForGivenKey(HAS_SOMETHING_TO_BUILD);
-          log.error("Removed commitment to " + reactOn.getName());
+//          log.error("Removed commitment to " + reactOn.getName());
         }).decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                 && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()

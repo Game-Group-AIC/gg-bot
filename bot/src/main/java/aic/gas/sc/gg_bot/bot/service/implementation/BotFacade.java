@@ -54,7 +54,7 @@ public class BotFacade extends DefaultBWListener {
 
   //TODO hack to prevent building same types
   private final BuildLockerService buildLockerService = BuildLockerService.getInstance();
-  private static final int frameCountToRestart = 600;
+  private static final int frameCountToRestart = 300;
 
   //TODO hack to restart idle workers
   private final Map<WorkerTuple, Integer> idleWorkers = new HashMap<>();

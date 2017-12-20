@@ -7,6 +7,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_H
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_LAIRS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_LAIRS_IN_CONSTRUCTION;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_POOLS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_POOLS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPIRES;
@@ -61,19 +62,24 @@ public class BuildingOrderManager {
             .counts(1)
             .reactionOnChangeStrategy(FIND_MAIN_BASE)
             .reactionOnChangeStrategyInIntention(
-                (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE))
+                (memory, desireParameters) -> {
+                  memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
+//                  log.error("POOL");
+                })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
                         dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) == 0
                             && dataForDecision.getFeatureValueGlobalBeliefs(
                             COUNT_OF_POOLS_IN_CONSTRUCTION) == 0
-                            && Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
+                            && (Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
                             DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL,
-                            memory.getCurrentClock()))
+                            memory.getCurrentClock())
+                            || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS)
+                            >= 400))
                 .globalBeliefTypesByAgentType(Stream.concat(
                     BUILDING_POOL.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
-                    Stream.of(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS))
+                    Stream.of(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS, COUNT_OF_MINERALS))
                     .collect(Collectors.toSet()))
                 .globalBeliefSetTypesByAgentType(
                     BUILDING_POOL.getConvertersForFactSetsForGlobalBeliefsByAgentType())
@@ -82,13 +88,10 @@ public class BuildingOrderManager {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
+                        !memory.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent() ||
+                            dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
                             || dataForDecision
-                            .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0
-                            || !Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
-                            DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL,
-                            memory.getCurrentClock())
-                )
+                            .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0)
                 .globalBeliefTypesByAgentType(Stream.concat(
                     BUILDING_POOL.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                     Stream.of(COUNT_OF_POOLS_IN_CONSTRUCTION, COUNT_OF_POOLS))
@@ -120,7 +123,8 @@ public class BuildingOrderManager {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0 ||
+                        !memory.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent() ||
+                            dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0 ||
                             dataForDecision
                                 .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0)
                 .globalBeliefTypesByAgentType(
@@ -239,7 +243,9 @@ public class BuildingOrderManager {
                 .decisionStrategy((dataForDecision, memory) -> true)
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> false)
+                .decisionStrategy(
+                    (dataForDecision, memory) -> !memory.returnFactValueForGivenKey(BASE_TO_MOVE)
+                        .isPresent())
                 .build())
             .build();
         type.addConfiguration(ENABLE_GROUND_RANGED, ENABLE_GROUND_RANGED, bdDen);
@@ -327,7 +333,9 @@ public class BuildingOrderManager {
                 .decisionStrategy((dataForDecision, memory) -> true)
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> false)
+                .decisionStrategy(
+                    (dataForDecision, memory) -> !memory.returnFactValueForGivenKey(BASE_TO_MOVE)
+                        .isPresent())
                 .build())
             .build();
         type.addConfiguration(ENABLE_AIR, ENABLE_AIR, bdSpire);

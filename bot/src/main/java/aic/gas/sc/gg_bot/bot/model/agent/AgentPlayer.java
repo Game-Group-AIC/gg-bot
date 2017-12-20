@@ -15,10 +15,12 @@ import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypePlayer;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Agent to represent "player" - to access field of Player
  */
+@Slf4j
 public class AgentPlayer extends AgentObservingGame<AgentTypePlayer> {
 
   public AgentPlayer(AgentTypePlayer agentType, BotFacade botFacade, APlayer aPlayer,

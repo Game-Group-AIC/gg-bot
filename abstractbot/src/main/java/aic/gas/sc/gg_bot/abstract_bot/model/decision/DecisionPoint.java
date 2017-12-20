@@ -5,14 +5,13 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumeratio
 
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.utils.Configuration;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import jsat.linear.DenseVector;
 import jsat.linear.Vec;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,10 +27,10 @@ public class DecisionPoint {
   private final List<FeatureNormalizer> normalizers;
 
   //todo hack
-  private static final int durationOfCommitment = 15;
+  private static final int durationOfCommitment = 50;
 
   //todo cache
-  private double[] previousFeatureVector = new double[]{};
+  private StateWithTransition previousState = null;
   private boolean lastDecision = false;
   private int updatedOnFrame = -durationOfCommitment;
 
@@ -46,33 +45,27 @@ public class DecisionPoint {
    * For given state (represented by feature vector) return optimal action based on policy
    */
   public boolean nextAction(double[] featureVector, int frame) {
-    if (!Arrays.equals(previousFeatureVector, featureVector)
-        && updatedOnFrame + durationOfCommitment <= frame) {
-      lastDecision = decideNextAction(featureVector);
-      previousFeatureVector = featureVector;
+    StateWithTransition nextState = getState(featureVector);
+    if (!nextState.equals(previousState) && updatedOnFrame + durationOfCommitment <= frame) {
+      lastDecision = nextState.commit();
+      previousState = nextState;
       updatedOnFrame = frame;
     }
     return lastDecision;
   }
 
-  private boolean decideNextAction(double[] featureVector) {
+  private StateWithTransition getState(double[] featureVector) {
     Vec anotherInstance = new DenseVector((Configuration
         .normalizeFeatureVector(featureVector, normalizers)));
-    Optional<StateWithTransition> closestState = states.stream()
-        .min(Comparator.comparingDouble(o -> o.distance(anotherInstance)));
-    if (!closestState.isPresent()) {
-      log.error("No state is present.");
-      return false;
-    }
-    return closestState.get().commit();
+    return states.stream().min(Comparator.comparingDouble(o -> o.distance(anotherInstance))).get();
   }
-
 
   /**
    * StateWithTransition to compute distance between instances and return next action (commitment)
    * based on policy
    */
   @Getter
+  @EqualsAndHashCode(of = "center")
   public static class StateWithTransition {
 
     private final double probOfYes;
