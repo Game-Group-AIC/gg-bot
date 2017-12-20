@@ -28,9 +28,9 @@ public class StateClusteringServiceImpl implements StateClusteringService {
 
   //configuration
   private static final int sampleStates = 20000;
-  private static final int batchSize = 200;
+  private static final int batchSize = 2000;
   private static final int iterations = 250;
-  private static final int clusters = 1500;
+  private static final int clusters = 750;
 
   private static final SeedSelectionMethods.SeedSelection SEED_SELECTION_METHOD = SeedSelectionMethods.SeedSelection.MEAN_QUANTILES;
 

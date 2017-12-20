@@ -49,6 +49,7 @@ public class BotFacade extends DefaultBWListener {
   @Getter
   private static int gameDefaultSpeed = 15;
 
+  //TODO increase + block frame for a while
   @Setter
   @Getter
   private static long maxFrameExecutionTime = 30;

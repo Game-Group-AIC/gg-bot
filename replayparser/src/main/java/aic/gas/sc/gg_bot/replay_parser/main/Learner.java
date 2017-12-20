@@ -14,7 +14,7 @@ public class Learner {
 //    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "100");
 
     //TODO increase
-    learnerService.learnDecisionMakers(8);
+    learnerService.learnDecisionMakers(4);
   }
 
 }

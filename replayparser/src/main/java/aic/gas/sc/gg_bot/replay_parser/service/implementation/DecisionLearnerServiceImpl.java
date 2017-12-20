@@ -118,11 +118,15 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
         .collect(Collectors.toList());
 
     //execute
+    List<MyTask> tasks = toLearn.parallelStream()
+        .map(this::prepareDataForPolicy)
+        .collect(Collectors.toList());
+    log.info("Clustering finished...");
+
     ExecutorService executor = Executors.newFixedThreadPool(parallelismLevel);
-    toLearn.forEach(tuple -> executor.submit(prepareDataForPolicy(tuple)));
+    tasks.forEach(executor::execute);
 
-    //TODO quit
-
+    executor.shutdown();
     log.info("Finished...");
   }
 
@@ -218,9 +222,6 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
     List<Trajectory> trajectories = storageService
         .getRandomListOfTrajectories(tuple.agentTypeID, tuple.desireKeyID, tuple.getMapSize(),
             tuple.getRace(), -1);
-
-    //TODO remove
-    trajectories = trajectories.subList(0, Math.min(trajectories.size(), 15));
 
     //get number of features for state
     int numberOfFeatures = trajectories.get(0).getNumberOfFeatures();
