@@ -22,6 +22,8 @@ import burlap.behavior.singleagent.Episode;
 import burlap.mdp.core.action.SimpleAction;
 import burlap.mdp.singleagent.SADomain;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -168,6 +170,22 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
 
     @Override
     public void run() {
+      String path = storageService
+          .getLearntDecisionPath(tuple.agentTypeID, tuple.desireKeyID, tuple.mapSize,
+              tuple.race);
+
+      if(new File(path).exists()) {
+        log.info("File "+path+" exists, skipping.");
+        return;
+      }
+
+      // touch file right away
+      try {
+        Files.createFile(new File(path).toPath());
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
       log.info(
           "Starting computation for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
               .getName() + " on " + tuple.mapSize + " with " + tuple.race);
