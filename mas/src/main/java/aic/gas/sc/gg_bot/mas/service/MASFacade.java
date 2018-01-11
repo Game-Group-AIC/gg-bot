@@ -3,13 +3,17 @@ package aic.gas.sc.gg_bot.mas.service;
 import aic.gas.sc.gg_bot.mas.model.CycleSynchronizationObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import aic.gas.sc.gg_bot.mas.service.implementation.AgentsRegister;
 import aic.gas.sc.gg_bot.mas.service.implementation.BeliefMediator;
 import aic.gas.sc.gg_bot.mas.service.implementation.DesireMediator;
 import com.rits.cloning.Cloner;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +58,7 @@ public class MASFacade implements TerminableService {
   @Getter
   private final BeliefMediator beliefMediator = new BeliefMediator();
 
-  private final Set<Agent> agentsInSystem = new HashSet<>();
+  private final Set<Agent<?>> agentsInSystem = new HashSet<>();
 
   //TODO HACK - to prevent executing more agents' cycles per frame
   @Getter
@@ -72,6 +76,17 @@ public class MASFacade implements TerminableService {
         agentsInSystem.forEach(Agent::notifyOnNextCycle);
       }
     }
+  }
+
+  public Map<DesireKeyID, Boolean> returnCommitmentToDesires(Set<DesireKeyID> toCheckCommitment) {
+    return agentsInSystem.stream()
+        .flatMap(agent -> agent.getTopCommitments().entrySet().stream())
+        .filter(entry -> toCheckCommitment.contains(entry.getKey()))
+        .collect(Collectors
+            .groupingBy(Entry::getKey, Collectors.mapping(Entry::getValue, Collectors.toList())))
+        .entrySet().stream()
+        .collect(Collectors
+            .toMap(Entry::getKey, e -> e.getValue().stream().anyMatch(aBoolean -> aBoolean)));
   }
 
   public int getInternalClockCounter() {

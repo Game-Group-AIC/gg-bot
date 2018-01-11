@@ -1,6 +1,7 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Annotator;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
@@ -14,6 +15,7 @@ import aic.gas.sc.gg_bot.bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.bot.service.IAgentUnitHandler;
 import aic.gas.sc.gg_bot.bot.service.ILocationInitializer;
 import aic.gas.sc.gg_bot.bot.service.IPlayerInitializer;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import bwapi.DefaultBWListener;
 import bwapi.Game;
@@ -51,6 +53,7 @@ public class BotFacade extends DefaultBWListener {
   //TODO increase + block frame for a while
   private final long maxFrameExecutionTime;
   private final boolean annotateMap;
+  private final boolean drawDebug;
 
   private long time, execution;
 
@@ -89,11 +92,12 @@ public class BotFacade extends DefaultBWListener {
 
   private Annotator annotator;
 
-  public BotFacade(long maxFrameExecutionTime, boolean annotateMap) {
+  public BotFacade(long maxFrameExecutionTime, boolean annotateMap, boolean drawDebug) {
     long start = System.currentTimeMillis();
 
     this.maxFrameExecutionTime = maxFrameExecutionTime;
     this.annotateMap = annotateMap;
+    this.drawDebug = drawDebug;
 
     //load decision points
     DecisionLoadingServiceImpl.getInstance();
@@ -309,6 +313,11 @@ public class BotFacade extends DefaultBWListener {
       annotator.annotate();
     }
 
+    //draw debug
+    if (drawDebug) {
+      drawDebug();
+    }
+
     //TODO hack to kill idle workers and start as new agents
     checkWorkers();
 
@@ -331,6 +340,21 @@ public class BotFacade extends DefaultBWListener {
 
     if ((execution = System.currentTimeMillis() - time) >= 75) {
       game.printf("On frame " + game.getFrameCount() + " execution took " + execution + " ms.");
+    }
+  }
+
+  private void drawDebug() {
+    try {
+      Map<DesireKeyID, Boolean> commitmentToLearntDesires = masFacade
+          .returnCommitmentToDesires(DesireKeys.LEARNT_DESIRE_KEYS);
+      String message = DesireKeys.LEARNT_DESIRE_KEYS.stream()
+          .map(desireKeyID -> desireKeyID.getName() + ": " + Optional
+              .ofNullable(commitmentToLearntDesires.get(desireKeyID)).map(aBoolean ->
+                  aBoolean ? "1" : "0").orElse("N/A"))
+          .collect(Collectors.joining("\n"));
+      Annotator.printMessage(message, 10, 10, game);
+    } catch (Exception e){
+      e.printStackTrace();
     }
   }
 

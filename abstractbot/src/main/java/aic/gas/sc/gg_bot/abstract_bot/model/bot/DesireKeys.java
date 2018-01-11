@@ -1,6 +1,9 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Enumeration of all IDs for desires as static classes
@@ -40,6 +43,14 @@ public class DesireKeys {
   public static final DesireKeyID BUILD_CREEP_COLONY = new DesireKeyID("BUILD_CREEP_COLONY", 33);
   public static final DesireKeyID BUILD_SUNKEN_COLONY = new DesireKeyID("BUILD_SUNKEN_COLONY", 34);
   public static final DesireKeyID BUILD_SPORE_COLONY = new DesireKeyID("BUILD_SPORE_COLONY", 35);
+
+  //learnt desires
+  public static final Set<DesireKeyID> LEARNT_DESIRE_KEYS = Stream
+      .of(EXPAND, BUILD_EXTRACTOR, BUILD_WORKER, INCREASE_CAPACITY, ENABLE_AIR,
+          ENABLE_GROUND_RANGED, ENABLE_STATIC_ANTI_AIR, ENABLE_GROUND_MELEE, UPGRADE_TO_LAIR,
+          BOOST_AIR, BOOST_GROUND_MELEE, BOOST_GROUND_RANGED, HOLD_GROUND, HOLD_AIR, DEFEND,
+          BUILD_SUNKEN_COLONY, BUILD_SPORE_COLONY).collect(
+          Collectors.toSet());
 
   /**
    * LEARNT DESIRES
@@ -112,10 +123,7 @@ public class DesireKeys {
       "FIND_PLACE_FOR_CREEP_COLONY", 212);
   public static final DesireKeyID FIND_PLACE_FOR_EVOLUTION_CHAMBER = new DesireKeyID(
       "FIND_PLACE_FOR_EVOLUTION_CHAMBER", 213);
-  public static final DesireKeyID REASON_ABOUT_RESOURCES = new DesireKeyID("REASON_ABOUT_RESOURCES",
-      214);
   public static final DesireKeyID BUILD = new DesireKeyID("BUILD", 215);
-  public static final DesireKeyID RETURN_CARGO = new DesireKeyID("RETURN_CARGO", 216);
 
   //desires for buildings
   public static final DesireKeyID UPDATE_BELIEFS_ABOUT_CONSTRUCTION = new DesireKeyID(

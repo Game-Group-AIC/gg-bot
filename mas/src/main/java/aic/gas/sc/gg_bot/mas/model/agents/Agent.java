@@ -8,6 +8,7 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.planing.DesireForOthers;
 import aic.gas.sc.gg_bot.mas.model.planing.DesireFromAnotherAgent;
@@ -23,7 +24,12 @@ import aic.gas.sc.gg_bot.mas.model.planing.heap.visitors.CommitmentRemovalDecide
 import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import aic.gas.sc.gg_bot.mas.service.implementation.BeliefMediator;
 import aic.gas.sc.gg_bot.mas.service.implementation.DesireMediator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -152,6 +158,28 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
    */
   public Memory getBeliefs() {
     return beliefs;
+  }
+
+  @AllArgsConstructor
+  @Getter
+  private static class Tuple {
+
+    private final DesireKeyID key;
+    private final boolean value;
+  }
+
+  public Map<DesireKeyID, Boolean> getTopCommitments() {
+    return Stream.concat(beliefs.getParametersOfCommittedDesiresOnTopLevel().stream()
+            .map(desireParameter -> desireParameter.getDesireKey().getId())
+            .map(desireKeyID -> new Tuple(desireKeyID, true)),
+        beliefs.getParametersOfDesiresOnTopLevel().stream()
+            .map(desireParameter -> desireParameter.getDesireKey().getId())
+            .map(desireKeyID -> new Tuple(desireKeyID, false)))
+        .collect(Collectors
+            .groupingBy(Tuple::getKey, Collectors.mapping(Tuple::isValue, Collectors.toList())))
+        .entrySet().stream()
+        .collect(Collectors
+            .toMap(Entry::getKey, e -> e.getValue().stream().anyMatch(aBoolean -> aBoolean)));
   }
 
   @Override

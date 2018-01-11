@@ -36,8 +36,8 @@ public class Annotator {
     return new Position(position.getX() + deltaPixelX, position.getY() + deltaPixelY);
   }
 
-  static void paintMessage(String text, Position position, Game bwapi) {
-    bwapi.drawTextScreen(position, text);
+  public static void printMessage(String text, int x, int y, Game bwapi) {
+    bwapi.drawTextScreen(x, y, text);
   }
 
   static void paintRectangle(Position position, int width, int height, Color color, Game bwapi) {

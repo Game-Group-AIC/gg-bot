@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -222,14 +223,29 @@ public class HeapOfTrees implements PlanningTreeInterface,
 
   public List<DesireNodeAtTopLevel<?>> getNodesWithDesire() {
     return registers.stream()
-        .flatMap(childNodeManipulation -> childNodeManipulation.desiresNodesByKey.values().stream())
+        .flatMap(childNodeManipulation -> {
+
+          //todo hack to catch exception
+          try {
+            return new ArrayList<>(childNodeManipulation.desiresNodesByKey.values()).stream();
+          } catch (Exception e) {
+            return Stream.empty();
+          }
+        })
         .collect(Collectors.toList());
   }
 
   public List<IntentionNodeAtTopLevel<?, ?>> getNodesWithIntention() {
     return registers.stream()
-        .flatMap(
-            childNodeManipulation -> childNodeManipulation.intentionNodesByKey.values().stream())
+        .flatMap(childNodeManipulation -> {
+
+          //todo hack to catch exception
+          try {
+            return new ArrayList<>(childNodeManipulation.intentionNodesByKey.values()).stream();
+          } catch (Exception e) {
+            return Stream.empty();
+          }
+        })
         .collect(Collectors.toList());
   }
 
@@ -268,7 +284,8 @@ public class HeapOfTrees implements PlanningTreeInterface,
   public Map<DesireKey, Long> collectKeysOfCommittedDesiresInTreeCounts() {
     List<DesireKey> list = new ArrayList<>();
     List<IntentionNodeAtTopLevel<?, ?>> intentions = getNodesWithIntention();
-    intentions.forEach(intentionNode -> intentionNode.collectKeysOfCommittedDesiresInSubtree(list));
+    intentions
+        .forEach(intentionNode -> intentionNode.collectKeysOfCommittedDesiresInSubtree(list));
     return list.stream()
         .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
   }
@@ -316,7 +333,8 @@ public class HeapOfTrees implements PlanningTreeInterface,
     manipulationWithDesiresFromOthers.replaceDesireByIntention(desireNode, intentionNode);
   }
 
-  void replaceIntentionByDesire(IntentionNodeAtTopLevel.WithCommand.FromAnotherAgent intentionNode,
+  void replaceIntentionByDesire(IntentionNodeAtTopLevel.WithCommand.FromAnotherAgent
+      intentionNode,
       DesireNodeAtTopLevel.FromAnotherAgent.WithIntentionWithPlan desireNode) {
     manipulationWithDesiresFromOthers.replaceIntentionByDesire(intentionNode, desireNode);
   }

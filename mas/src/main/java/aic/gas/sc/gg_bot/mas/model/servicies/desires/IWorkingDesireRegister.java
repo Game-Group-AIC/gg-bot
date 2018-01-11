@@ -1,11 +1,15 @@
 package aic.gas.sc.gg_bot.mas.model.servicies.desires;
 
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireInRegister;
 import aic.gas.sc.gg_bot.mas.model.servicies.WorkingRegister;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Concrete implementation of DesireRegister. This class is intended as working register - register
