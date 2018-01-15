@@ -13,7 +13,7 @@ import lombok.Getter;
 /**
  * Wrapper for TechType
  */
-public class ATechTypeWrapper extends AbstractWrapper<TechType> {
+public class ATechTypeWrapper extends AbstractWrapper<TechType> implements TypeToBuy {
 
   //types, only for zerg
   public static final ATechTypeWrapper RESEARCH_BURROW_TYPE = WrapperTypeFactory
@@ -71,6 +71,16 @@ public class ATechTypeWrapper extends AbstractWrapper<TechType> {
 
   public AUnitTypeWrapper getRequiredUnit() {
     return WrapperTypeFactory.createFrom(requiredUnit);
+  }
+
+  @Override
+  public int mineralCost() {
+    return mineralPrice;
+  }
+
+  @Override
+  public int gasCost() {
+    return gasPrice;
   }
 
 }

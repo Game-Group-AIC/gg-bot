@@ -65,7 +65,7 @@ public class HatcheryAgentType {
             .build();
         type.addConfiguration(DesiresKeys.UPGRADE_TO_LAIR, upgradeToLair);
       })
-      .usingTypesForFacts(new HashSet<>(Arrays.asList(IS_BEING_CONSTRUCTED)))
+      .usingTypesForFacts(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
       .desiresWithIntentionToReason(new HashSet<>(Collections.singletonList(
           DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION)))
       .build();

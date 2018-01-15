@@ -100,6 +100,11 @@ public class DesireKeys {
   public static final DesireKeyID MORPH_TO_EVOLUTION_CHAMBER = new DesireKeyID(
       "MORPH_TO_EVOLUTION_CHAMBER", 161);
 
+  //building desires
+  public static final Set<DesireKeyID> BUILDING_DESIRE_KEYS = Stream
+      .of(MORPH_TO_POOL, MORPH_TO_EXTRACTOR, MORPH_TO_SPIRE, MORPH_TO_HYDRALISK_DEN,
+          MORPH_TO_CREEP_COLONY, MORPH_TO_EVOLUTION_CHAMBER).collect(Collectors.toSet());
+
   //desires for worker
   public static final DesireKeyID UPDATE_BELIEFS_ABOUT_WORKER_ACTIVITIES = new DesireKeyID(
       "UPDATE_BELIEFS_ABOUT_WORKER_ACTIVITIES", 201);

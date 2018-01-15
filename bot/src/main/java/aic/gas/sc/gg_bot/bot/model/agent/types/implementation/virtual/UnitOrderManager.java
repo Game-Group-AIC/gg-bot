@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//TODO everything as abstract plan - reservation is made, shared desire is sub-plan - checking if there is enough resources
 public class UnitOrderManager {
 
   private static ConfigurationWithSharedDesire shareIntentionToTrainUnit(

@@ -144,27 +144,6 @@ public class FactKeys {
       return null;
     }
   };
-  public static final FactKey<Integer> LAST_SUNKEN_COLONY_BUILDING_TIME = new FactKey<Integer>(
-      "LAST_SUNKEN_COLONY_BUILDING_TIME", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Integer> LAST_CREEP_COLONY_BUILDING_TIME = new FactKey<Integer>(
-      "LAST_CREEP_COLONY_BUILDING_TIME", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Integer> LAST_SPORE_COLONY_BUILDING_TIME = new FactKey<Integer>(
-      "LAST_SPORE_COLONY_BUILDING_TIME", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
   public static final FactKey<AUnit> GEYSER = new FactKey<AUnit>("GEYSER", false) {
     @Override
     public AUnit getInitValue() {

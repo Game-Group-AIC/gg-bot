@@ -13,6 +13,9 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_P
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPIRES;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPIRES_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EVOLUTION_CHAMBER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_HYDRALISK_DEN;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_POOL;
@@ -33,24 +36,57 @@ import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_SPIRE;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_SPORE_COLONY;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_SUNKEN_COLONY;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.UPGRADE_TO_LAIR;
-import static aic.gas.sc.gg_bot.bot.model.agent.AgentPlayer.FIND_MAIN_BASE;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.bot.model.Decider;
+import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
+import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
+//TODO everything as abstract plan - reservation is made, shared desire is sub-plan - checking if there is enough resources
 @Slf4j
 public class BuildingOrderManager {
+
+  private static class FindBaseForBuilding implements ReactionOnChangeStrategy {
+
+    @Override
+    public void updateBeliefs(WorkingMemory memory, DesireParameters desireParameters) {
+      FIND_BASE_FOR_BUILDING.updateBeliefs(memory, desireParameters);
+    }
+
+    //find base to build building
+    private static final ReactionOnChangeStrategy FIND_BASE_FOR_BUILDING = (memory, desireParameters) -> {
+      List<ABaseLocationWrapper> ourBases = memory
+          .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+          .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE).get())
+          .filter(readOnlyMemory -> readOnlyMemory.returnFactSetValueForGivenKey(HAS_BASE).get()
+              .anyMatch(aUnitOfPlayer -> !aUnitOfPlayer.isMorphing() && !aUnitOfPlayer
+                  .isBeingConstructed()))
+          .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE_LOCATION).get())
+          .collect(Collectors.toList());
+      if (!ourBases.isEmpty()) {
+        //prefer base on start location
+        memory.updateFact(BASE_TO_MOVE, ourBases.stream()
+            .filter(ABaseLocationWrapper::isStartLocation)
+            .findAny().orElse(ourBases.get(0)));
+      } else {
+        memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
+      }
+    };
+  }
 
   public static final AgentType BUILDING_ORDER_MANAGER = AgentType.builder()
       .agentTypeID(AgentTypes.BUILDING_ORDER_MANAGER)
@@ -60,18 +96,17 @@ public class BuildingOrderManager {
         ConfigurationWithSharedDesire buildPool = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(MORPH_TO_POOL)
             .counts(1)
-            .reactionOnChangeStrategy(FIND_MAIN_BASE)
+            .reactionOnChangeStrategy(new FindBaseForBuilding())
             .reactionOnChangeStrategyInIntention(
                 (memory, desireParameters) -> {
                   memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
-//                  log.error("POOL");
                 })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
                         dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) == 0
-                            && dataForDecision.getFeatureValueGlobalBeliefs(
-                            COUNT_OF_POOLS_IN_CONSTRUCTION) == 0
+                            && dataForDecision
+                            .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) == 0
                             && (Decider.getDecision(AgentTypes.BUILDING_ORDER_MANAGER,
                             DesireKeys.ENABLE_GROUND_MELEE, dataForDecision, BUILDING_POOL,
                             memory.getCurrentClock())
@@ -88,8 +123,8 @@ public class BuildingOrderManager {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
-                        !memory.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent() ||
-                            dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
+                        !memory.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()
+                            || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
                             || dataForDecision
                             .getFeatureValueGlobalBeliefs(COUNT_OF_POOLS_IN_CONSTRUCTION) > 0)
                 .globalBeliefTypesByAgentType(Stream.concat(
@@ -107,7 +142,7 @@ public class BuildingOrderManager {
         //build pool if not present
         ConfigurationWithSharedDesire buildPoolCommon = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(MORPH_TO_POOL)
-            .reactionOnChangeStrategy(FIND_MAIN_BASE)
+            .reactionOnChangeStrategy(new FindBaseForBuilding())
             .reactionOnChangeStrategyInIntention(
                 (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE))
             .counts(1)
@@ -234,7 +269,7 @@ public class BuildingOrderManager {
         type.addConfiguration(ENABLE_GROUND_RANGED, buildHydraliskDen, true);
         ConfigurationWithSharedDesire bdDen = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(MORPH_TO_HYDRALISK_DEN)
-            .reactionOnChangeStrategy(FIND_MAIN_BASE)
+            .reactionOnChangeStrategy(new FindBaseForBuilding())
             .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
               memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
             })
@@ -325,7 +360,7 @@ public class BuildingOrderManager {
         type.addConfiguration(ENABLE_AIR, buildSpire, true);
         ConfigurationWithSharedDesire bdSpire = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(MORPH_TO_SPIRE)
-            .reactionOnChangeStrategy(FIND_MAIN_BASE)
+            .reactionOnChangeStrategy(new FindBaseForBuilding())
             .reactionOnChangeStrategyInIntention(
                 (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE))
             .counts(1)

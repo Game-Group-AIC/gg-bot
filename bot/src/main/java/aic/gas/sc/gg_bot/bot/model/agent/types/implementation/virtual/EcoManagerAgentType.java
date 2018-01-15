@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
+//TODO everything as abstract plan - reservation is made, shared desire is sub-plan - checking if there is enough resources
 @Slf4j
 public class EcoManagerAgentType {
 
@@ -71,8 +72,7 @@ public class EcoManagerAgentType {
                 .decisionStrategy((dataForDecision, memory) -> Decider
                     .getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_WORKER,
                         dataForDecision, TRAINING_WORKER, memory.getCurrentClock())
-                    && !BuildLockerService.getInstance()
-                    .isLocked(DRONE_TYPE)
+                    && !BuildLockerService.getInstance().isLocked(DRONE_TYPE)
                 )
                 .globalBeliefTypesByAgentType(
                     TRAINING_WORKER.getConvertersForFactsForGlobalBeliefsByAgentType())
@@ -84,8 +84,8 @@ public class EcoManagerAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) -> !Decider.getDecision(AgentTypes.ECO_MANAGER,
                         DesireKeys.BUILD_WORKER, dataForDecision, TRAINING_WORKER,
-                        memory.getCurrentClock())
-                        || BuildLockerService.getInstance().isLocked(DRONE_TYPE))
+                        memory.getCurrentClock()) || BuildLockerService.getInstance()
+                        .isLocked(DRONE_TYPE))
                 .globalBeliefTypesByAgentType(
                     TRAINING_WORKER.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
@@ -103,9 +103,8 @@ public class EcoManagerAgentType {
                 .decisionStrategy((dataForDecision, memory) ->
                     !BuildLockerService.getInstance().isLocked(OVERLORD_TYPE)
                         && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MORPHING_OVERLORDS)
-                        == 0
-                        && (dataForDecision.getFeatureValueGlobalBeliefs(
-                        CURRENT_POPULATION) >= dataForDecision.getFeatureValueGlobalBeliefs(
+                        == 0 && (dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION)
+                        >= dataForDecision.getFeatureValueGlobalBeliefs(
                         MAX_POPULATION) || Decider.getDecision(AgentTypes.ECO_MANAGER,
                         DesireKeys.INCREASE_CAPACITY, dataForDecision, INCREASING_CAPACITY,
                         memory.getCurrentClock())))
@@ -125,7 +124,9 @@ public class EcoManagerAgentType {
                         dataForDecision, INCREASING_CAPACITY, memory.getCurrentClock())
                         || dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION)
                         < dataForDecision.getFeatureValueGlobalBeliefs(MAX_POPULATION)
-                        || BuildLockerService.getInstance().isLocked(OVERLORD_TYPE))
+                        || BuildLockerService.getInstance().isLocked(OVERLORD_TYPE)
+                        || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MORPHING_OVERLORDS)
+                        > 0)
                 .globalBeliefTypesByAgentType(Stream.concat(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                     Stream.of(CURRENT_POPULATION, MAX_POPULATION)).collect(Collectors.toSet()))
@@ -184,7 +185,6 @@ public class EcoManagerAgentType {
               } else {
                 memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
               }
-//              log.error("Finding base. Base is present: " + basesToExpand.isPresent());
             })
             .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
               memory.eraseFactValueForGivenKey(BASE_TO_MOVE);

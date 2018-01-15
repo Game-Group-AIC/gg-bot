@@ -19,10 +19,12 @@ import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValu
 import bwapi.Order;
 import java.util.Optional;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Enumeration of all IDs for facts' types as static classes
  */
+@Slf4j
 public class FactConverters {
 
   public static final FactWithSetOfOptionalValuesForAgentType<APlayer> GAME_PHASE = new FactWithSetOfOptionalValuesForAgentType<>(
@@ -690,6 +692,7 @@ public class FactConverters {
       .mapToDouble(aUnitOfPlayer -> aUnitOfPlayer.getType().getSupplyProvided())
       .sum(), AgentTypes.OVERLORD);
 
+
   //scouting
   public static final FactWithSetOfOptionalValuesForAgentType<Integer> COUNT_OF_VISITED_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(601, FactKeys.LAST_TIME_SCOUTED), optionalStream -> optionalStream
@@ -753,8 +756,6 @@ public class FactConverters {
       .filter(AUnit::isIdle)
       .count(), AgentTypes.DRONE);
   public static final FactWithOptionalValue<AUnitWithCommands> IS_CONSTRUCTING_BUILDING = new FactWithOptionalValue<>(
-      new FactConverterID<>(711, FactKeys.IS_UNIT), aUnit -> aUnit.get().isConstructing()
-      || aUnit.get().isMorphing()
-      || !aUnit.get().getTrainingQueue().isEmpty() ? 1.0 : 0.0
-  );
+      new FactConverterID<>(711, FactKeys.IS_UNIT),
+      aUnit -> aUnit.get().isConstructing() ? 1.0 : 0.0);
 }

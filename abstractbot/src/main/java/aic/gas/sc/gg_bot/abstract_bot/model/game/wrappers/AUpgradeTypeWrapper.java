@@ -14,7 +14,7 @@ import lombok.Getter;
 /**
  * Wrapper for UpgradeType
  */
-public class AUpgradeTypeWrapper extends AbstractWrapper<UpgradeType> {
+public class AUpgradeTypeWrapper extends AbstractWrapper<UpgradeType> implements TypeToBuy {
 
   //types, only for zerg
   public static final AUpgradeTypeWrapper METABOLIC_BOOST_TYPE = WrapperTypeFactory
@@ -105,5 +105,17 @@ public class AUpgradeTypeWrapper extends AbstractWrapper<UpgradeType> {
 
   public AUnitTypeWrapper getWhatsRequired() {
     return WrapperTypeFactory.createFrom(whatsRequired);
+  }
+
+  //TODO this not correct (price is dependant on level)
+  @Override
+  public int mineralCost() {
+    return mineralPrice;
+  }
+
+  //TODO this not correct (price is dependant on level)
+  @Override
+  public int gasCost() {
+    return gasPrice;
   }
 }

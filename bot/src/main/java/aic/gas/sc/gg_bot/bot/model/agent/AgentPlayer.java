@@ -35,21 +35,4 @@ public class AgentPlayer extends AgentObservingGame<AgentTypePlayer> {
       beliefs.updateFact(ENEMY_RACE, ARace.getRandomRace());
     }
   }
-
-  public static final ReactionOnChangeStrategy FIND_MAIN_BASE = (memory, desireParameters) -> {
-    Optional<ABaseLocationWrapper> ourBase = memory
-        .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
-        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE).get())
-        .filter(readOnlyMemory -> readOnlyMemory.returnFactSetValueForGivenKey(HAS_BASE).get()
-            .anyMatch(aUnitOfPlayer -> !aUnitOfPlayer.isMorphing() && !aUnitOfPlayer
-                .isBeingConstructed()))
-        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE_LOCATION).get())
-        .filter(ABaseLocationWrapper::isStartLocation)
-        .findAny();
-    if (ourBase.isPresent()) {
-      memory.updateFact(BASE_TO_MOVE, ourBase.get());
-    } else {
-      memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
-    }
-  };
 }

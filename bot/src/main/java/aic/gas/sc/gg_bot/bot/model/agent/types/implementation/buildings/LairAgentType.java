@@ -17,7 +17,7 @@ public class LairAgentType {
         type.addConfiguration(
             DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION, AgentTypeUnit.beliefsAboutConstruction);
       })
-      .usingTypesForFacts(new HashSet<>(Arrays.asList(IS_BEING_CONSTRUCTED)))
+      .usingTypesForFacts(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
       .desiresWithIntentionToReason(new HashSet<>(Collections.singletonList(
           DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION)))
       .build();

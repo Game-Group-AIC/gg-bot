@@ -31,9 +31,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_CREEP_COLONY_BUILDING_TIME;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_SPORE_COLONY_BUILDING_TIME;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_SUNKEN_COLONY_BUILDING_TIME;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_TIME_SCOUTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
@@ -90,6 +87,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//TODO make reservations
 public class BaseLocationAgentType {
 
   public static final AgentTypeBaseLocation BASE_LOCATION = AgentTypeBaseLocation.builder()
@@ -501,9 +499,6 @@ public class BaseLocationAgentType {
         ConfigurationWithSharedDesire buildCreepColony = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(DesiresKeys.MORPH_TO_CREEP_COLONY)
             .counts(1)
-            .reactionOnChangeStrategyInIntention(
-                (memory, desireParameters) -> memory.updateFact(LAST_CREEP_COLONY_BUILDING_TIME,
-                    memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(null)))
             .reactionOnChangeStrategy((memory, desireParameters) -> {
               long countOfCreepColonies =
                   memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(
@@ -524,10 +519,6 @@ public class BaseLocationAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) ->
                         dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                            && (memory.returnFactValueForGivenKey(
-                            LAST_CREEP_COLONY_BUILDING_TIME).orElse(0) + 100
-                            < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
-                            0))
                             && (dataForDecision.getFeatureValueBeliefSets(
                             COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION)
                             + dataForDecision.getFeatureValueBeliefSets(
@@ -620,17 +611,10 @@ public class BaseLocationAgentType {
                       .count();
               memory.updateFact(SUNKEN_COLONY_COUNT, (int) countOfSunkenColonies);
             })
-            .reactionOnChangeStrategyInIntention(
-                (memory, desireParameters) -> memory.updateFact(LAST_SUNKEN_COLONY_BUILDING_TIME,
-                    memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(null)))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
                         dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                            && (memory.returnFactValueForGivenKey(
-                            LAST_SUNKEN_COLONY_BUILDING_TIME).orElse(0) + 100
-                            < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
-                            0))
                             && (dataForDecision.getFeatureValueBeliefSets(
                             COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION)
                             + dataForDecision.getFeatureValueBeliefSets(
@@ -702,17 +686,10 @@ public class BaseLocationAgentType {
                       .count();
               memory.updateFact(SPORE_COLONY_COUNT, (int) countOfSporeColonies);
             })
-            .reactionOnChangeStrategyInIntention(
-                (memory, desireParameters) -> memory.updateFact(LAST_SPORE_COLONY_BUILDING_TIME,
-                    memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(null)))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
                         dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                            && (memory.returnFactValueForGivenKey(
-                            LAST_SPORE_COLONY_BUILDING_TIME).orElse(0) + 100
-                            < memory.returnFactValueForGivenKey(MADE_OBSERVATION_IN_FRAME).orElse(
-                            0))
                             && (dataForDecision.getFeatureValueBeliefSets(
                             COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION)
                             + dataForDecision.getFeatureValueBeliefSets(
@@ -878,9 +855,7 @@ public class BaseLocationAgentType {
       })
       .usingTypesForFacts(
           new HashSet<>(Arrays.asList(IS_BASE, IS_ENEMY_BASE, BASE_TO_MOVE, SUNKEN_COLONY_COUNT,
-              SPORE_COLONY_COUNT, CREEP_COLONY_COUNT, LAST_SUNKEN_COLONY_BUILDING_TIME,
-              LAST_CREEP_COLONY_BUILDING_TIME,
-              LAST_SPORE_COLONY_BUILDING_TIME, TIME_OF_HOLD_COMMAND)))
+              SPORE_COLONY_COUNT, CREEP_COLONY_COUNT, TIME_OF_HOLD_COMMAND)))
       .usingTypesForFactSets(new HashSet<>(Arrays.asList(WORKER_ON_BASE, ENEMY_BUILDING, ENEMY_AIR,
           ENEMY_GROUND, HAS_BASE, HAS_EXTRACTOR, OWN_BUILDING, OWN_AIR, OWN_GROUND,
           WORKER_MINING_MINERALS, WORKER_MINING_GAS, OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS,

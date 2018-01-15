@@ -15,6 +15,7 @@ import aic.gas.sc.gg_bot.bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.bot.service.IAgentUnitHandler;
 import aic.gas.sc.gg_bot.bot.service.ILocationInitializer;
 import aic.gas.sc.gg_bot.bot.service.IPlayerInitializer;
+import aic.gas.sc.gg_bot.bot.service.IResourceManager;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import bwapi.DefaultBWListener;
@@ -50,6 +51,8 @@ public class BotFacade extends DefaultBWListener {
   //class to handle additional commands with observations requests
   public static AdditionalCommandToObserveGameProcessor ADDITIONAL_OBSERVATIONS_PROCESSOR;
 
+  public static final IResourceManager RESOURCE_MANAGER = new ResourceManager();
+
   //TODO increase + block frame for a while
   private final long maxFrameExecutionTime;
   private final boolean annotateMap;
@@ -79,10 +82,6 @@ public class BotFacade extends DefaultBWListener {
 
   //game related fields
   private Mirror mirror = new Mirror();
-
-  //TODO hack
-  private Unit workerToBuildPool;
-  private int orderedPool = -50;
 
   @Getter
   private Game game;
@@ -240,8 +239,8 @@ public class BotFacade extends DefaultBWListener {
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
         log.info("Destroying " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
             .orElse("null"));
-        agent.ifPresent(agentObservingGame -> masFacade.removeAgentFromSystem(agentObservingGame,
-            unit.getType().isBuilding()));
+        agent.ifPresent(
+            agentUnit -> masFacade.removeAgentFromSystem(agentUnit, unit.getType().isBuilding()));
       }
       UnitWrapperFactory.unitDied(unit);
     } catch (Exception e) {
@@ -255,8 +254,7 @@ public class BotFacade extends DefaultBWListener {
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = Optional
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
-        agent.ifPresent(
-            agentObservingGame -> masFacade.removeAgentFromSystem(agentObservingGame, true));
+        agent.ifPresent(agentUnit -> masFacade.removeAgentFromSystem(agentUnit, true));
 
         log.info("Morphing from " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
             .orElse("null")
@@ -318,14 +316,14 @@ public class BotFacade extends DefaultBWListener {
       drawDebug();
     }
 
-    //TODO hack to kill idle workers and start as new agents
-    checkWorkers();
+    //manage resources
+    RESOURCE_MANAGER.processReservations(self.minerals(), self.gas());
+
+//    //TODO hack to kill idle workers and start as new agents
+//    checkWorkers();
 
     //TODO hack to ensure frame sync
     masFacade.notifyAgentsAboutNextCycle();
-
-    //TODO pool hack. no idea why there is problem with building it :/
-    handleMissingPool();
 
     //hold frame for a small amount of time to give MAS time to handle new data
     {
@@ -344,50 +342,27 @@ public class BotFacade extends DefaultBWListener {
   }
 
   private void drawDebug() {
-    try {
-      Map<DesireKeyID, Boolean> commitmentToLearntDesires = masFacade
-          .returnCommitmentToDesires(DesireKeys.LEARNT_DESIRE_KEYS);
-      String message = DesireKeys.LEARNT_DESIRE_KEYS.stream()
-          .map(desireKeyID -> desireKeyID.getName() + ": " + Optional
-              .ofNullable(commitmentToLearntDesires.get(desireKeyID)).map(aBoolean ->
-                  aBoolean ? "1" : "0").orElse("N/A"))
-          .collect(Collectors.joining("\n"));
-      Annotator.printMessage(message, 10, 10, game);
-    } catch (Exception e){
-      e.printStackTrace();
-    }
+
+    //learnt desires
+    Map<DesireKeyID, Boolean> commitmentToLearntDesires = masFacade
+        .returnCommitmentToDesires(DesireKeys.LEARNT_DESIRE_KEYS);
+    String message = DesireKeys.LEARNT_DESIRE_KEYS.stream()
+        .map(desireKeyID -> desireKeyID.getName() + ": " + Optional
+            .ofNullable(commitmentToLearntDesires.get(desireKeyID)).map(aBoolean ->
+                aBoolean ? "1" : "0").orElse("N/A"))
+        .collect(Collectors.joining("\n"));
+    Annotator.printMessage(message, 10, 10, game);
+
+    //buildings
+    Map<DesireKeyID, Boolean> commitmentToBuildDesires = masFacade
+        .returnCommitmentToDesires(DesireKeys.BUILDING_DESIRE_KEYS);
+    message = DesireKeys.BUILDING_DESIRE_KEYS.stream()
+        .map(desireKeyID -> desireKeyID.getName() + ": " + Optional
+            .ofNullable(commitmentToBuildDesires.get(desireKeyID)).map(aBoolean ->
+                aBoolean ? "1" : "0").orElse("N/A"))
+        .collect(Collectors.joining("\n"));
+    Annotator.printMessage(message, 200, 10, game);
   }
-
-  //TODO pool hack. no idea why there is problem with building it :/
-  private void handleMissingPool() {
-    if (self.getUnits().stream()
-        .noneMatch(unit -> unit.getType().equals(UnitType.Zerg_Spawning_Pool)
-            || (unit.getType().isWorker() && unit.getTrainingQueue().stream()
-            .anyMatch(unitType -> unitType.equals(UnitType.Zerg_Spawning_Pool))))
-        && self.minerals() >= 300) {
-
-      //assign worker
-      if (workerToBuildPool == null || !workerToBuildPool.getType().isWorker()
-          || !workerToBuildPool.exists()) {
-        self.getUnits().stream()
-            .filter(unit -> unit.getType().isWorker())
-            .filter(unit -> game.hasCreep(unit.getTilePosition()) && unit
-                .getUnitsInRadius(unit.getType().sightRange()).stream()
-                .anyMatch(u -> u.getPlayer().getID() == self.getID()))
-            .findAny()
-            .ifPresent(unit -> workerToBuildPool = unit);
-      }
-
-      //send worker to build pool
-      if (workerToBuildPool != null && game.getFrameCount() >= orderedPool + 50) {
-        log.info("Finding place for POOL.");
-        if (buildPool(workerToBuildPool)) {
-          orderedPool = game.getFrameCount();
-        }
-      }
-    }
-  }
-
 
   //TODO hack to restart idle workers
   private void checkWorkers() {

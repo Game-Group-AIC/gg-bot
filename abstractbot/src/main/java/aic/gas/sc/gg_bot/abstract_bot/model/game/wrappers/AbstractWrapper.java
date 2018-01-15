@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
  * Common parent for all type wrappers
  */
 @Slf4j
-abstract class AbstractWrapper<T> {
+public abstract class AbstractWrapper<T> {
 
   @Getter
   final T type;

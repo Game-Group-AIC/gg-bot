@@ -149,17 +149,17 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
       })
       .decisionInDesire(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_TRAINING_QUEUE_EMPTY) == 0
+              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_CONSTRUCTING_BUILDING) == 1
                   || dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 1)
           .beliefTypes(new HashSet<>(
-              Arrays.asList(FactConverters.IS_TRAINING_QUEUE_EMPTY, FactConverters.IS_MORPHING)))
+              Arrays.asList(FactConverters.IS_MORPHING, FactConverters.IS_CONSTRUCTING_BUILDING)))
           .build())
       .decisionInIntention(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_TRAINING_QUEUE_EMPTY) == 1
+              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_CONSTRUCTING_BUILDING) == 0
                   && dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 0)
           .beliefTypes(new HashSet<>(
-              Arrays.asList(FactConverters.IS_TRAINING_QUEUE_EMPTY, FactConverters.IS_MORPHING)))
+              Arrays.asList(FactConverters.IS_MORPHING, FactConverters.IS_CONSTRUCTING_BUILDING)))
           .build())
       .build();
 

@@ -18,7 +18,7 @@ import lombok.Getter;
 /**
  * Wrapper for BWMirror UnitType It also make it possible to use it by different threads
  */
-public class AUnitTypeWrapper extends AbstractWrapper<UnitType> {
+public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeToBuy {
 
   //types, only for zerg
   public static final AUnitTypeWrapper ZERGLING_TYPE = WrapperTypeFactory
@@ -491,5 +491,15 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> {
 
   public boolean canBeHealed() {
     return repairableMechanically || healable;
+  }
+
+  @Override
+  public int mineralCost() {
+    return mineralPrice;
+  }
+
+  @Override
+  public int gasCost() {
+    return gasPrice;
   }
 }
