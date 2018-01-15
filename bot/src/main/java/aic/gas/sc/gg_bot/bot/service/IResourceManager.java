@@ -5,13 +5,14 @@ package aic.gas.sc.gg_bot.bot.service;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.TypeToBuy;
+import bwapi.Player;
 
 /**
  * Contract for service managing reservation of resources
  */
 public interface IResourceManager {
 
-  void processReservations(int minedMinerals, int minedGas);
+  void processReservations(int minedMinerals, int minedGas, int supplyAvailable, Player player);
 
   <T extends AbstractWrapper<?> & TypeToBuy> boolean canSpendResourcesOn(T t, int agentId);
 

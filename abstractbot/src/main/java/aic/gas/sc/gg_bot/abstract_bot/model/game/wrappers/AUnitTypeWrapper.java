@@ -122,7 +122,6 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
   private final UpgradeType armorUpgrade;
   @Getter
   private final int seekRange;
-  @Getter
   private final int supplyRequired;
   @Getter
   private final int spaceRequired;
@@ -501,5 +500,10 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
   @Override
   public int gasCost() {
     return gasPrice;
+  }
+
+  @Override
+  public int supplyRequired() {
+    return this.supplyRequired;
   }
 }

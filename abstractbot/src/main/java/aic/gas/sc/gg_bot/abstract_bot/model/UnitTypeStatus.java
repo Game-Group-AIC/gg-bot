@@ -59,7 +59,7 @@ public class UnitTypeStatus {
       this.isThereMinerals = unitTypeWrapper.getMineralPrice() >= aPlayer.getMinerals();
       this.isThereGas = unitTypeWrapper.getGasPrice() >= aPlayer.getGas();
       this.isThereCapacity =
-          unitTypeWrapper.getSupplyRequired() + aPlayer.getSupplyUsed() <= aPlayer.getSupplyTotal();
+          unitTypeWrapper.supplyRequired() + aPlayer.getSupplyUsed() <= aPlayer.getSupplyTotal();
       this.isThereEnoughResources = isThereMinerals && isThereCapacity && isThereGas;
       this.areRequirementsMet = lockedTypes
           .noneMatch(typeWrapper -> typeWrapper.equals(unitTypeWrapper));

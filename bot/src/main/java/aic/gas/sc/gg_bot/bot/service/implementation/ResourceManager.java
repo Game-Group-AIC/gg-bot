@@ -1,8 +1,11 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATechTypeWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.TypeToBuy;
 import aic.gas.sc.gg_bot.bot.service.IResourceManager;
+import bwapi.Player;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,7 +26,8 @@ public class ResourceManager implements IResourceManager {
   private final List<Tuple<?>> reservationQueue = new ArrayList<>();
   private final Set<Integer> reservationsFrom = new HashSet<>();
 
-  public void processReservations(int minedMinerals, int minedGas) {
+  public void processReservations(int minedMinerals, int minedGas, int supplyAvailable,
+      Player player) {
     updatingResources = true;
     synchronized (MONITOR) {
       try {
@@ -31,14 +35,29 @@ public class ResourceManager implements IResourceManager {
           MONITOR.wait();
         }
         resourcesAvailableFor.clear();
-        int sumOfMinerals = 0, sumOfGas = 0;
+        int sumOfMinerals = 0, sumOfGas = 0, sumOfSupply = 0;
         boolean skippedGasRequest = false;
         for (Tuple<?> tuple : reservationQueue) {
+
+          //skip when dependencies are not met
+          if (tuple.reservationMadeOn instanceof AUnitTypeWrapper) {
+            if (!player.isUnitAvailable(((AUnitTypeWrapper) tuple.reservationMadeOn).getType())) {
+              continue;
+            }
+          } else if (tuple.reservationMadeOn instanceof ATechTypeWrapper) {
+            if (!player
+                .isResearchAvailable(((ATechTypeWrapper) tuple.reservationMadeOn).getType())) {
+              continue;
+            }
+          }
+
           if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() <= minedMinerals
-              && sumOfGas + tuple.reservationMadeOn.gasCost() <= sumOfGas) {
+              && sumOfGas + tuple.reservationMadeOn.gasCost() <= sumOfGas
+              && sumOfSupply + tuple.reservationMadeOn.supplyRequired() <= sumOfSupply) {
             resourcesAvailableFor.add(tuple);
             sumOfMinerals = sumOfMinerals + tuple.reservationMadeOn.mineralCost();
             sumOfGas = sumOfGas + tuple.reservationMadeOn.gasCost();
+            sumOfSupply = sumOfSupply + tuple.reservationMadeOn.supplyRequired();
           } else {
             if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() > minedMinerals
                 && sumOfGas + tuple.reservationMadeOn.gasCost() > sumOfGas) {
@@ -158,7 +177,7 @@ public class ResourceManager implements IResourceManager {
         }
         readingResources = true;
         if (reservationsFrom.contains(agentId)) {
-          reservationQueue.removeIf(tuple -> tuple.reservationMadeBy==agentId);
+          reservationQueue.removeIf(tuple -> tuple.reservationMadeBy == agentId);
           reservationsFrom.remove(agentId);
         }
       } catch (InterruptedException e) {

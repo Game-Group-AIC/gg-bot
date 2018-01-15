@@ -22,18 +22,13 @@ import bwapi.DefaultBWListener;
 import bwapi.Game;
 import bwapi.Mirror;
 import bwapi.Player;
-import bwapi.TilePosition;
 import bwapi.Unit;
-import bwapi.UnitType;
 import bwta.BWTA;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -62,7 +57,6 @@ public class BotFacade extends DefaultBWListener {
 
   //TODO hack to prevent building same types
   private final BuildLockerService buildLockerService = BuildLockerService.getInstance();
-  private static final int frameCountToRestart = 150;
 
   //TODO hack to restart idle workers
   private final Map<WorkerTuple, Integer> idleWorkers = new HashMap<>();
@@ -317,10 +311,9 @@ public class BotFacade extends DefaultBWListener {
     }
 
     //manage resources
-    RESOURCE_MANAGER.processReservations(self.minerals(), self.gas());
-
-//    //TODO hack to kill idle workers and start as new agents
-//    checkWorkers();
+    RESOURCE_MANAGER
+        .processReservations(self.minerals(), self.gas(), self.supplyTotal() - self.supplyUsed(),
+            self);
 
     //TODO hack to ensure frame sync
     masFacade.notifyAgentsAboutNextCycle();
@@ -364,46 +357,6 @@ public class BotFacade extends DefaultBWListener {
     Annotator.printMessage(message, 200, 10, game);
   }
 
-  //TODO hack to restart idle workers
-  private void checkWorkers() {
-    Set<WorkerTuple> idleWorkersSet = self.getUnits().stream()
-        .filter(unit -> unit.getType().isWorker())
-        .filter(Unit::isIdle)
-        .map(WorkerTuple::new)
-        .collect(Collectors.toSet());
-
-    //remove missing
-    idleWorkers.keySet().removeIf(v -> !idleWorkersSet.contains(v));
-
-    //add new
-    idleWorkersSet.stream()
-        .filter(workerTuple -> !idleWorkers.containsKey(workerTuple))
-        .forEach(workerTuple -> idleWorkers.put(workerTuple, 0));
-
-    //restart stucked and update the map
-    Iterator<Entry<WorkerTuple, Integer>> it = idleWorkers.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<WorkerTuple, Integer> pair = it.next();
-      if (pair.getValue() + 1 >= frameCountToRestart) {
-        it.remove();
-
-        //restart
-        Optional<AgentUnit> agent = Optional
-            .ofNullable(agentsWithGameRepresentation.remove(pair.getKey().id));
-        log.info("Destroying stucked worker: " + agent
-            .map(agentUnit -> agentUnit.getAgentType().getName())
-            .orElse("null"));
-        agent.ifPresent(agentObservingGame -> masFacade
-            .removeAgentFromSystem(agentObservingGame, pair.getKey().unit.getType().isBuilding()));
-        onUnitCreate(pair.getKey().unit);
-      } else {
-
-        //update clock
-        pair.setValue(pair.getValue() + 1);
-      }
-    }
-  }
-
   //TODO handle more events - unit renegade, visibility
 
   @Getter
@@ -417,41 +370,5 @@ public class BotFacade extends DefaultBWListener {
       this.unit = unit;
       this.id = unit.getID();
     }
-  }
-
-  //tODO remove
-  public boolean buildPool(Unit builder) {
-    int maxDist = 3;
-    int stopDist = 40;
-
-    while (maxDist < stopDist) {
-      for (int i = builder.getTilePosition().getX() - maxDist;
-          i <= builder.getTilePosition().getX() + maxDist; i++) {
-        for (int j = builder.getTilePosition().getY() - maxDist;
-            j <= builder.getTilePosition().getY() + maxDist; j++) {
-          if (game
-              .canBuildHere(new TilePosition(i, j), UnitType.Zerg_Spawning_Pool, builder, false)) {
-            // units that are blocking the tile
-            boolean unitsInWay = false;
-            for (Unit u : game.getAllUnits()) {
-              if (u.getID() == builder.getID()) {
-                continue;
-              }
-              if ((Math.abs(u.getTilePosition().getX() - i) < 4) && (
-                  Math.abs(u.getTilePosition().getY() - j) < 4)) {
-                unitsInWay = true;
-              }
-            }
-            if (!unitsInWay) {
-              builder.build(UnitType.Zerg_Spawning_Pool, new TilePosition(i, j));
-              log.info("Building POOL.");
-              return true;
-            }
-          }
-        }
-      }
-      maxDist += 2;
-    }
-    return false;
   }
 }

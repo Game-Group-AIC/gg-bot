@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
+//TODO makes sense to replace workers?
 //TODO everything as abstract plan - reservation is made, shared desire is sub-plan - checking if there is enough resources
 @Slf4j
 public class EcoManagerAgentType {

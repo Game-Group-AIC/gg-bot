@@ -19,3 +19,6 @@ target/
 
 # StarCraft .dll files
 *.dll
+
+# ignore log files
+*.log

@@ -6,4 +6,8 @@ public interface TypeToBuy {
 
   int gasCost();
 
+  default int supplyRequired() {
+    return 0;
+  }
+
 }
