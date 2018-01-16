@@ -82,7 +82,8 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
 
     //TODO - HACK! does not change return value and enables reaction
     return commitmentDecider
-        .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
+        .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+            typesAboutToMakeDecision,
             memory) && actOnChange(memory, desireParameters);
   }
 

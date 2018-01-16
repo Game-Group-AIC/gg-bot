@@ -26,14 +26,6 @@ public class DecisionPoint {
   private final List<StateWithTransition> states;
   private final List<FeatureNormalizer> normalizers;
 
-  //todo hack
-  private static final int durationOfCommitment = 50;
-
-  //todo cache
-  private StateWithTransition previousState = null;
-  private boolean lastDecision = false;
-  private int updatedOnFrame = -durationOfCommitment;
-
   public DecisionPoint(DecisionPointDataStructure dataStructure) {
     this.states = dataStructure.states.stream()
         .map(StateWithTransition::new)
@@ -44,14 +36,8 @@ public class DecisionPoint {
   /**
    * For given state (represented by feature vector) return optimal action based on policy
    */
-  public boolean nextAction(double[] featureVector, int frame) {
-    StateWithTransition nextState = getState(featureVector);
-    if (!nextState.equals(previousState) && updatedOnFrame + durationOfCommitment <= frame) {
-      lastDecision = nextState.commit();
-      previousState = nextState;
-      updatedOnFrame = frame;
-    }
-    return lastDecision;
+  public boolean nextAction(double[] featureVector) {
+    return getState(featureVector).commit();
   }
 
   private StateWithTransition getState(double[] featureVector) {

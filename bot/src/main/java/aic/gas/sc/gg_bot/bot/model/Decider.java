@@ -21,16 +21,9 @@ public class Decider {
    * Get decision
    */
   public static boolean getDecision(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
-      DataForDecision dataForDecision, FeatureContainerHeader featureContainerHeader,
-      int currentFrame) {
-    //TODO hack
-    try {
-      return DECISION_LOADING_SERVICE.getDecisionPoint(agentTypeID, desireKeyID)
-          .nextAction(featureContainerHeader.formVector(dataForDecision), currentFrame);
-    } catch (Exception e) {
-      log.error(e.getMessage());
-    }
-    return false;
+      DataForDecision dataForDecision, FeatureContainerHeader featureContainerHeader) {
+    return DECISION_LOADING_SERVICE.getDecisionPoint(agentTypeID, desireKeyID)
+        .nextAction(featureContainerHeader.formVector(dataForDecision));
   }
 
 }

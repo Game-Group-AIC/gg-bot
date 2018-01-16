@@ -662,13 +662,19 @@ public class FactConverters {
           .map(Optional::get)
           .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE))
           .count(), AgentTypes.DRONE);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HATCHERIES_BEGINNING_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HATCHERIES_BEGINNING_CONSTRUCTED = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(418, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .map(Optional::get)
           .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
           .filter(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0)
               .equals(AUnitTypeWrapper.HATCHERY_TYPE))
+          .count(), AgentTypes.DRONE);
+  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_EXTRACTORS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(419, FactKeys.IS_MORPHING_TO),
+      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.EXTRACTOR_TYPE))
           .count(), AgentTypes.DRONE);
 
   //"barracks"

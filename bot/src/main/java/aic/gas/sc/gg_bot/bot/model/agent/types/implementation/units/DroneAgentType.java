@@ -1,8 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_IDLE_DRONES;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_CARRYING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_CARRYING_MINERAL;
@@ -51,7 +49,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeUnit;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
-import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
 import aic.gas.sc.gg_bot.bot.utils.Util;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
@@ -606,20 +603,16 @@ public class DroneAgentType {
       FactKey<ATilePosition> placeForBuilding, DesireKey reactOn,
       DesireKey findPlace, Set<DesireKey> desiresToConsider) {
 
-    //TODO refactor
     //abstract plan for building
     ConfigurationWithAbstractPlan buildPlan = ConfigurationWithAbstractPlan
         .builder()
-        .reactionOnChangeStrategy((memory, desireParameters) -> {
-          memory.updateFact(BASE_TO_MOVE,
-              desireParameters.returnFactValueForGivenKey(BASE_TO_MOVE).get());
-          log.error("Commitmed to " + reactOn.getName());
-        })
+        .reactionOnChangeStrategy((memory, desireParameters) -> memory.updateFact(BASE_TO_MOVE,
+            desireParameters.returnFactValueForGivenKey(BASE_TO_MOVE).get()))
         .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
           memory.eraseFactValueForGivenKey(placeForBuilding);
           memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
-          log.error("Removed commitment to " + reactOn.getName());
-        }).decisionInDesire(CommitmentDeciderInitializer.builder()
+        })
+        .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                 && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()
                 //is idle or no one is idle
@@ -635,33 +628,17 @@ public class DroneAgentType {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .noneMatch(aBaseLocationWrapper -> aBaseLocationWrapper
-                    .equals(dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get())))
-                //resources
-                && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) >= (
-                typeOfBuilding.getMineralPrice() * 0.9)
-                && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_GAS) >= (
-                typeOfBuilding.getGasPrice() * 0.9)
-                //is this type of building not locked
-                && !BuildLockerService.getInstance().isLocked(typeOfBuilding))
-            .globalBeliefTypesByAgentType(
-                new HashSet<>(Arrays.asList(COUNT_OF_MINERALS, COUNT_OF_GAS, COUNT_OF_IDLE_DRONES)))
+                    .equals(dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get()))))
+            .globalBeliefTypesByAgentType(Collections.singleton(COUNT_OF_IDLE_DRONES))
             .desiresToConsider(
                 Stream.concat(desiresToConsider.stream(), Stream.of(reactOn))
                     .collect(Collectors.toSet())).build())
         .decisionInIntention(CommitmentDeciderInitializer.builder().decisionStrategy(
-            (dataForDecision, memory) -> dataForDecision.madeDecisionToAny()
-                //cancel where there is not enough minerals
-                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MINERALS) <
-                (typeOfBuilding.getMineralPrice() * 0.8)
-                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_GAS) <
-                (typeOfBuilding.getGasPrice() * 0.8)
-                //is this type of building is locked
-                || BuildLockerService.getInstance().isLocked(typeOfBuilding))
-            .globalBeliefTypesByAgentType(
-                new HashSet<>(Arrays.asList(COUNT_OF_MINERALS, COUNT_OF_GAS)))
+            (dataForDecision, memory) -> dataForDecision.madeDecisionToAny())
             .desiresToConsider(desiresToConsider)
-            .build()).desiresWithIntentionToAct(
-            new HashSet<>(Arrays.asList(DesiresKeys.BUILD, DesiresKeys.GO_TO_BASE, findPlace)))
+            .build())
+        .desiresWithIntentionToAct(Stream.of(DesiresKeys.BUILD, DesiresKeys.GO_TO_BASE, findPlace)
+            .collect(Collectors.toSet()))
         .build();
     type.addConfiguration(reactOn, buildPlan, false);
 

@@ -25,6 +25,7 @@ import bwapi.Player;
 import bwapi.Unit;
 import bwta.BWTA;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class BotFacade extends DefaultBWListener {
   private IAgentUnitHandler agentUnitFactory;
   private IPlayerInitializer playerInitializer;
   private ILocationInitializer locationInitializer;
-  private final List<AbstractAgent> abstractAgents;
+  private List<AbstractAgent> abstractAgents = new ArrayList<>();
 
   //game related fields
   private Mirror mirror = new Mirror();
@@ -99,9 +100,6 @@ public class BotFacade extends DefaultBWListener {
     playerInitializer = new PlayerInitializer();
     locationInitializer = new LocationInitializer();
     agentUnitFactory = new AgentUnitHandler();
-
-    //create abstract agents
-    abstractAgents = (new AbstractAgentsInitializer()).initializeAbstractAgents(this);
 
     log.info("Facade ready. It took " + (System.currentTimeMillis() - start));
   }
@@ -146,6 +144,9 @@ public class BotFacade extends DefaultBWListener {
     try {
       long start = System.currentTimeMillis();
       log.info("Game initialization.");
+
+      //create abstract agents
+      abstractAgents = (new AbstractAgentsInitializer()).initializeAbstractAgents(this);
 
       //initialize game related data
       game = mirror.getGame();

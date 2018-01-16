@@ -6,18 +6,23 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.TypeToBuy;
 import aic.gas.sc.gg_bot.bot.service.IResourceManager;
 import bwapi.Player;
+import bwapi.Unit;
+import bwapi.UnitType;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
-//TODO check dependencies
-//TODO consider population
+//TODO there is still probably bug - skip building without dependencies - check if it is possible to mine gas
+//TODO save 50 minerals for worker if we do not have any worker
 @Slf4j
 public class ResourceManager implements IResourceManager {
+
+  //TODO own dependency tree + check why there are duplicities
 
   private final Object MONITOR = new Object();
   private boolean updatingResources = false;
@@ -25,6 +30,9 @@ public class ResourceManager implements IResourceManager {
   private final List<Tuple<?>> resourcesAvailableFor = new ArrayList<>();
   private final List<Tuple<?>> reservationQueue = new ArrayList<>();
   private final Set<Integer> reservationsFrom = new HashSet<>();
+
+  //todo hack to check for extractor
+  private Optional<Unit> extractor = Optional.empty();
 
   public void processReservations(int minedMinerals, int minedGas, int supplyAvailable,
       Player player) {
@@ -37,11 +45,23 @@ public class ResourceManager implements IResourceManager {
         resourcesAvailableFor.clear();
         int sumOfMinerals = 0, sumOfGas = 0, sumOfSupply = 0;
         boolean skippedGasRequest = false;
+
+        //check if we still have extractor
+        if (!extractor.isPresent() || !extractor.get().exists()) {
+          extractor = player.getUnits().stream()
+              .filter(unit -> unit.getType().equals(UnitType.Zerg_Extractor))
+              .filter(Unit::isCompleted)
+              .findAny();
+        }
+
+        System.out.println(player.hasUnitTypeRequirement(UnitType.Zerg_Extractor));
+
         for (Tuple<?> tuple : reservationQueue) {
 
           //skip when dependencies are not met
           if (tuple.reservationMadeOn instanceof AUnitTypeWrapper) {
-            if (!player.isUnitAvailable(((AUnitTypeWrapper) tuple.reservationMadeOn).getType())) {
+            if (!player
+                .hasUnitTypeRequirement(((AUnitTypeWrapper) tuple.reservationMadeOn).getType())) {
               continue;
             }
           } else if (tuple.reservationMadeOn instanceof ATechTypeWrapper) {
@@ -53,7 +73,7 @@ public class ResourceManager implements IResourceManager {
 
           if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() <= minedMinerals
               && sumOfGas + tuple.reservationMadeOn.gasCost() <= sumOfGas
-              && sumOfSupply + tuple.reservationMadeOn.supplyRequired() <= sumOfSupply) {
+              && sumOfSupply + tuple.reservationMadeOn.supplyRequired() <= supplyAvailable) {
             resourcesAvailableFor.add(tuple);
             sumOfMinerals = sumOfMinerals + tuple.reservationMadeOn.mineralCost();
             sumOfGas = sumOfGas + tuple.reservationMadeOn.gasCost();
@@ -63,7 +83,8 @@ public class ResourceManager implements IResourceManager {
                 && sumOfGas + tuple.reservationMadeOn.gasCost() > sumOfGas) {
               break;
             } else {
-              if (!skippedGasRequest && sumOfGas + tuple.reservationMadeOn.gasCost() > sumOfGas) {
+              if ((!skippedGasRequest || !extractor.isPresent())
+                  && sumOfGas + tuple.reservationMadeOn.gasCost() > sumOfGas) {
                 skippedGasRequest = true;
               } else {
                 break;
@@ -136,7 +157,7 @@ public class ResourceManager implements IResourceManager {
         }
         readingResources = true;
         if (reservationsFrom.contains(agentId)) {
-          int index = -1;
+          int index = 0;
           for (int i = 0; i < reservationQueue.size(); i++) {
             Tuple<?> tuple = reservationQueue.get(i);
             if (tuple.reservationMadeBy == agentId) {
