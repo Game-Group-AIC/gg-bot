@@ -1,9 +1,8 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATechTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.TypeToBuy;
+import aic.gas.sc.gg_bot.bot.service.IRequirementsChecker;
 import aic.gas.sc.gg_bot.bot.service.IResourceManager;
 import bwapi.Player;
 import bwapi.Unit;
@@ -15,6 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 //TODO there is still probably bug - skip building without dependencies - check if it is possible to mine gas
@@ -24,6 +24,7 @@ public class ResourceManager implements IResourceManager {
 
   //TODO own dependency tree + check why there are duplicities
 
+  private final IRequirementsChecker requirementsChecker;
   private final Object MONITOR = new Object();
   private boolean updatingResources = false;
   private boolean readingResources = false;
@@ -31,8 +32,15 @@ public class ResourceManager implements IResourceManager {
   private final List<Tuple<?>> reservationQueue = new ArrayList<>();
   private final Set<Integer> reservationsFrom = new HashSet<>();
 
+  @Getter
+  private List<String> reservationStatuses = new ArrayList<>();
+
   //todo hack to check for extractor
   private Optional<Unit> extractor = Optional.empty();
+
+  public ResourceManager(IRequirementsChecker requirementsChecker) {
+    this.requirementsChecker = requirementsChecker;
+  }
 
   public void processReservations(int minedMinerals, int minedGas, int supplyAvailable,
       Player player) {
@@ -54,21 +62,16 @@ public class ResourceManager implements IResourceManager {
               .findAny();
         }
 
-        System.out.println(player.hasUnitTypeRequirement(UnitType.Zerg_Extractor));
-
-        for (Tuple<?> tuple : reservationQueue) {
+        reservationStatuses.clear();
+        int lastIndex = 0;
+        for (int i = 0; i < reservationQueue.size(); i++) {
+          lastIndex = i;
+          Tuple<?> tuple = reservationQueue.get(i);
 
           //skip when dependencies are not met
-          if (tuple.reservationMadeOn instanceof AUnitTypeWrapper) {
-            if (!player
-                .hasUnitTypeRequirement(((AUnitTypeWrapper) tuple.reservationMadeOn).getType())) {
-              continue;
-            }
-          } else if (tuple.reservationMadeOn instanceof ATechTypeWrapper) {
-            if (!player
-                .isResearchAvailable(((ATechTypeWrapper) tuple.reservationMadeOn).getType())) {
-              continue;
-            }
+          if (!requirementsChecker.areDependenciesMeet(tuple.reservationMadeOn)) {
+            reservationStatuses.add(formMessage(tuple, "UD"));
+            continue;
           }
 
           if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() <= minedMinerals
@@ -78,20 +81,30 @@ public class ResourceManager implements IResourceManager {
             sumOfMinerals = sumOfMinerals + tuple.reservationMadeOn.mineralCost();
             sumOfGas = sumOfGas + tuple.reservationMadeOn.gasCost();
             sumOfSupply = sumOfSupply + tuple.reservationMadeOn.supplyRequired();
+            reservationStatuses.add(formMessage(tuple, "R"));
           } else {
             if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() > minedMinerals
                 && sumOfGas + tuple.reservationMadeOn.gasCost() > sumOfGas) {
+              reservationStatuses.add(formMessage(tuple, "W"));
               break;
             } else {
               if ((!skippedGasRequest || !extractor.isPresent())
                   && sumOfGas + tuple.reservationMadeOn.gasCost() > sumOfGas) {
+                reservationStatuses.add(formMessage(tuple, "W"));
                 skippedGasRequest = true;
               } else {
+                reservationStatuses.add(formMessage(tuple, "W"));
                 break;
               }
             }
           }
         }
+
+        //check rest
+        for (int i = lastIndex + 1; i < reservationQueue.size(); i++) {
+          reservationStatuses.add(formMessage(reservationQueue.get(i), "W"));
+        }
+
       } catch (InterruptedException e) {
         log.error(e.getMessage());
       } finally {
@@ -136,7 +149,8 @@ public class ResourceManager implements IResourceManager {
           MONITOR.wait();
         }
         readingResources = true;
-        reservationQueue.add(new Tuple<>(agentId, t));
+        Tuple<T> tuple = new Tuple<>(agentId, t);
+        reservationQueue.add(tuple);
         reservationsFrom.add(agentId);
       } catch (InterruptedException e) {
         log.error(e.getMessage());
@@ -208,6 +222,10 @@ public class ResourceManager implements IResourceManager {
         MONITOR.notify();
       }
     }
+  }
+
+  private static final String formMessage(Tuple<?> tuple, String status) {
+    return tuple.reservationMadeBy + ": " + tuple.reservationMadeOn.getName() + " - " + status;
   }
 
   @EqualsAndHashCode(of = {"reservationMadeBy", "reservationMadeOn"})

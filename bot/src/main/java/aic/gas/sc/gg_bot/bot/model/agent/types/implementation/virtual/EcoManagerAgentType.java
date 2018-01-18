@@ -41,6 +41,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.bot.model.Decider;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
+import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
@@ -100,7 +101,8 @@ public class EcoManagerAgentType {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
-                        dataForDecision
+                        !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.HATCHERY_TYPE)
+                            && dataForDecision
                             .getFeatureValueGlobalBeliefs(COUNT_OF_HATCHERIES_IN_CONSTRUCTION) == 0
                             && dataForDecision
                             .getFeatureValueGlobalBeliefs(COUNT_OF_HATCHERIES_BEING_CONSTRUCT) == 0
@@ -121,7 +123,8 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    dataForDecision
+                    BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.HATCHERY_TYPE)
+                        || dataForDecision
                         .getFeatureValueGlobalBeliefs(COUNT_OF_HATCHERIES_IN_CONSTRUCTION) > 0
                         || dataForDecision
                         .getFeatureValueGlobalBeliefs(COUNT_OF_HATCHERIES_BEING_CONSTRUCT) > 0
@@ -202,6 +205,8 @@ public class EcoManagerAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) ->
                         !dataForDecision.madeDecisionToAny()
+                            && !BuildLockerService.getInstance()
+                            .isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
                             //there is base without extractor
                             && getOurBaseWithoutExtractor(memory).isPresent()
                             //there are no extractors in construction
@@ -221,9 +226,11 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> !getOurBaseWithoutExtractor(memory).isPresent()
-                        || dataForDecision
-                        .getFeatureValueGlobalBeliefs(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION) > 0)
+                    (dataForDecision, memory) ->
+                        BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
+                            || !getOurBaseWithoutExtractor(memory).isPresent()
+                            || dataForDecision
+                            .getFeatureValueGlobalBeliefs(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION) > 0)
                 .globalBeliefTypesByAgentType(
                     Collections.singleton(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION))
                 .build())
@@ -241,6 +248,7 @@ public class EcoManagerAgentType {
                     .removeReservation(EXTRACTOR_TYPE, memory.getAgentId()))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                    && !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
                     //there is base without extractor
                     && getOurBaseWithoutExtractor(memory).isPresent()
                     //there are no extractors in construction
@@ -255,10 +263,13 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
-                    (dataForDecision, memory) -> !getOurBaseWithoutExtractor(memory).isPresent()
-                        || dataForDecision
-                        .getFeatureValueGlobalBeliefs(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION) > 0
-                        || dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS) > 0
+                    (dataForDecision, memory) ->
+                        !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
+                            || !getOurBaseWithoutExtractor(memory).isPresent()
+                            || dataForDecision
+                            .getFeatureValueGlobalBeliefs(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION) > 0
+                            || dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS)
+                            > 0
                 )
                 .globalBeliefTypesByAgentType(
                     Collections.singleton(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION))
@@ -291,8 +302,9 @@ public class EcoManagerAgentType {
                     .removeReservation(OVERLORD_TYPE, memory.getAgentId()))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MORPHING_OVERLORDS) == 0
-                        && (dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION) >=
+                    !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.OVERLORD_TYPE)
+                        && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MORPHING_OVERLORDS)
+                        == 0 && (dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION) >=
                         dataForDecision.getFeatureValueGlobalBeliefs(MAX_POPULATION)
                         || Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
                         dataForDecision, INCREASING_CAPACITY)))
@@ -309,7 +321,9 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MORPHING_OVERLORDS) > 0)
+                    BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.OVERLORD_TYPE)
+                        || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_MORPHING_OVERLORDS)
+                        > 0)
                 .globalBeliefTypes(Collections.singleton(COUNT_OF_MORPHING_OVERLORDS))
                 .build())
             .desiresForOthers(Collections.singleton(INCREASE_CAPACITY))

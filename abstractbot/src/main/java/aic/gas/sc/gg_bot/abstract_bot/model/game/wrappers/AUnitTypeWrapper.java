@@ -11,8 +11,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Getter;
 
 /**
@@ -75,11 +77,11 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
       .unmodifiableSet(new HashSet<>(Arrays.asList(
           SCOURGE_TYPE, LURKER_TYPE, ULTRALISK_TYPE, DEFILER_TYPE, GUARDIAN_TYPE, DEVOURER_TYPE,
           QUEEN_TYPE)));
-  static final Set<AUnitTypeWrapper> BUILDING_TYPES = new HashSet<>(
+  public static final Set<AUnitTypeWrapper> BUILDING_TYPES = new HashSet<>(
       Arrays.asList(HATCHERY_TYPE, SPAWNING_POOL_TYPE, CREEP_COLONY_TYPE,
           SUNKEN_COLONY_TYPE, SPORE_COLONY_TYPE, EXTRACTOR_TYPE, EVOLUTION_CHAMBER_TYPE,
           HYDRALISK_DEN_TYPE, LAIR_TYPE, SPIRE_TYPE, HIVE_TYPE));
-  static final Set<AUnitTypeWrapper> UNITS_TYPES = new HashSet<>(
+  public static final Set<AUnitTypeWrapper> UNITS_TYPES = new HashSet<>(
       Arrays.asList(ZERGLING_TYPE, DRONE_TYPE, LARVA_TYPE, EGG_TYPE, OVERLORD_TYPE,
           HYDRALISK_TYPE, MUTALISK_TYPE));
   @Getter
@@ -505,5 +507,17 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
   @Override
   public int supplyRequired() {
     return this.supplyRequired;
+  }
+
+  @Override
+  public Stream<AUnitTypeWrapper> unitTypeDependencies() {
+    return getRequiredUnits().keySet().stream()
+        .filter(unitTypeWrapper -> unitTypeWrapper.type != UnitType.None);
+  }
+
+  @Override
+  public Optional<ATechTypeWrapper> techTypeDependency() {
+    return Optional.ofNullable(getRequiredTech())
+        .map(aTechTypeWrapper -> aTechTypeWrapper.type == TechType.None ? null : aTechTypeWrapper);
   }
 }

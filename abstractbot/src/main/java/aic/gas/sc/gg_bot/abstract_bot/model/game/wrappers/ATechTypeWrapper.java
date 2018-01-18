@@ -7,7 +7,9 @@ import bwapi.UnitType;
 import bwapi.WeaponType;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import lombok.Getter;
 
 /**
@@ -20,7 +22,7 @@ public class ATechTypeWrapper extends AbstractWrapper<TechType> implements TypeT
       .createFrom(TechType.Burrowing);
   public static final ATechTypeWrapper RESEARCH_LURKER_ASPECT_TYPE = WrapperTypeFactory
       .createFrom(TechType.Lurker_Aspect);
-  static final Set<ATechTypeWrapper> TECH_TYPES = new HashSet<>(
+  public static final Set<ATechTypeWrapper> TECH_TYPES = new HashSet<>(
       Arrays.asList(RESEARCH_BURROW_TYPE, RESEARCH_LURKER_ASPECT_TYPE));
   @Getter
   private final Race race;
@@ -81,6 +83,17 @@ public class ATechTypeWrapper extends AbstractWrapper<TechType> implements TypeT
   @Override
   public int gasCost() {
     return gasPrice;
+  }
+
+  @Override
+  public Stream<AUnitTypeWrapper> unitTypeDependencies() {
+    return Stream.of(getRequiredUnit())
+        .filter(unitTypeWrapper -> unitTypeWrapper.type != UnitType.None);
+  }
+
+  @Override
+  public Optional<ATechTypeWrapper> techTypeDependency() {
+    return Optional.empty();
   }
 
 }

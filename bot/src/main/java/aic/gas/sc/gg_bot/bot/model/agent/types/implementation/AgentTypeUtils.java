@@ -26,7 +26,7 @@ public class AgentTypeUtils {
    * Initialize abstract build plan top - make reservation + check conditions (for building).
    * It is unlocked only when building is built
    */
-  public static <T, V> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanFromTemplate(
+  public static <T, V> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
       FactWithSetOfOptionalValuesForAgentType<T> currentCount,
       FactWithSetOfOptionalValuesForAgentType<V> currentCountInConstruction,
       DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
@@ -36,6 +36,7 @@ public class AgentTypeUtils {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                    && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                     && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
                     && dataForDecision
                     .getFeatureValueGlobalBeliefs(currentCountInConstruction) == 0
@@ -54,8 +55,9 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    //building exists
-                    dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0
+                    BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                        //building exists
+                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0
                         || dataForDecision
                         .getFeatureValueGlobalBeliefs(currentCountInConstruction) > 0)
             .globalBeliefTypesByAgentType(Stream.of(currentCountInConstruction, currentCount)
@@ -83,7 +85,8 @@ public class AgentTypeUtils {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                    !dataForDecision.madeDecisionToAny() &&
+                        !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //learnt decision
                         && (Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
                         featureContainerHeader)))
@@ -92,6 +95,7 @@ public class AgentTypeUtils {
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
@@ -124,27 +128,23 @@ public class AgentTypeUtils {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    //it is not locked
-                    !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        //resources are available
-                        && BotFacade.RESOURCE_MANAGER
+                    //resources are available
+                    BotFacade.RESOURCE_MANAGER
                         .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
                     //TODO check validity of the place
-                    //building has been locked
-                    BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        //we do not have enough resources
-                        || !BotFacade.RESOURCE_MANAGER
+                    //we do not have enough resources
+                    !BotFacade.RESOURCE_MANAGER
                         .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
             .build())
         .build();
   }
 
   /**
-   * Template to create shared desire to build building
+   * Template to create shared desire to train unit
    */
   public static ConfigurationWithSharedDesire createConfigurationWithSharedDesireToTrainFromTemplate(
       DesireKey desireToShareKey, AUnitTypeWrapper unitTypeWrapper) {

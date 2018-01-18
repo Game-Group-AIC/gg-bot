@@ -752,6 +752,7 @@ public class DroneAgentType {
           @Override
           public boolean act(WorkingMemory memory) {
             if (intention.returnFactValueForGivenKey(placeForBuilding).isPresent()) {
+              log.info("Morphing to " + typeOfBuilding.getName());
               intention.returnFactValueForGivenKey(IS_UNIT).get().build(typeOfBuilding,
                   intention.returnFactValueForGivenKey(placeForBuilding).get());
             }
@@ -769,7 +770,7 @@ public class DroneAgentType {
         })
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
-                (dataForDecision, memory) -> true)
+                (dataForDecision, memory) -> false)
             .build())
         .build();
     type.addConfiguration(DesiresKeys.BUILD, reactOn, build);

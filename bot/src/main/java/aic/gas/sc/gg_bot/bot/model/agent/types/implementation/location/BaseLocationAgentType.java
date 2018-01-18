@@ -8,13 +8,11 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_C
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS_ON_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_POOLS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPORE_COLONIES_AT_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.CREEP_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
@@ -46,20 +44,20 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND_FORCE
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SPORE_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.STATIC_DEFENSE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SUNKEN_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.DEFENSE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.HOLDING;
+import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.AgentTypeUtils.createConfigurationWithSharedDesireToBuildFromTemplate;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
+import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
@@ -70,12 +68,16 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.bot.model.Decider;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeBaseLocation;
+import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
+import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import java.util.Arrays;
@@ -87,11 +89,188 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//TODO make reservations
 public class BaseLocationAgentType {
+
+  private interface SimpleDecisionStrategy {
+
+    boolean isTrue(double value);
+  }
+
+  /**
+   * Template to create desire initiated by learnt decision.
+   * Initialize abstract build plan top - make reservation + check conditions (for building).
+   * It is unlocked only when building is built
+   */
+  private static <T, V> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
+      FactWithOptionalValueSet<T> completedCount, FactWithOptionalValueSet<V> constructionCount,
+      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
+      FeatureContainerHeader featureContainerHeader,
+      Stream<DesireKey> desireKeysWithSharedIntentionStream,
+      Stream<DesireKey> desireKeysWithAbstractIntentionStream,
+      SimpleDecisionStrategy forCommitment,
+      SimpleDecisionStrategy toRemoveCommitment) {
+    return ConfigurationWithAbstractPlan.builder()
+        .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
+            .makeReservation(unitTypeWrapper, memory.getAgentId()))
+        .reactionOnChangeStrategyInIntention(
+            (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
+                .removeReservation(unitTypeWrapper, memory.getAgentId()))
+        .decisionInDesire(CommitmentDeciderInitializer.builder()
+            .decisionStrategy(
+                (dataForDecision, memory) ->
+                    !dataForDecision.madeDecisionToAny()
+                        && !BuildLockerService.getInstance()
+                        .isLocked(unitTypeWrapper)
+                        //is base
+                        && memory.returnFactValueForGivenKey(IS_BASE).get()
+                        //we have base completed
+                        && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                        //there is/will be no creep colony available
+                        && forCommitment
+                        .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
+                        && dataForDecision.getFeatureValueBeliefSets(constructionCount) == 0
+                        && Decider
+                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
+                            featureContainerHeader))
+            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
+            .globalBeliefTypesByAgentType(
+                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
+            .globalBeliefSetTypesByAgentType(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .beliefTypes(featureContainerHeader.getConvertersForFacts())
+            .beliefSetTypes(
+                Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
+                    Stream.of(BASE_IS_COMPLETED, completedCount, constructionCount))
+                    .collect(Collectors.toSet()))
+            .desiresToConsider(Collections.singleton(desireKey))
+            .build())
+        .decisionInIntention(CommitmentDeciderInitializer.builder()
+            .decisionStrategy(
+                (dataForDecision, memory) ->
+                    BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                        || !memory.returnFactValueForGivenKey(IS_BASE).get()
+                        || toRemoveCommitment
+                        .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
+                        || dataForDecision.getFeatureValueBeliefSets(constructionCount) > 0
+            )
+            .beliefSetTypes(Stream.of(constructionCount, completedCount)
+                .collect(Collectors.toSet()))
+            .build())
+        .desiresWithAbstractIntention(
+            desireKeysWithAbstractIntentionStream.collect(Collectors.toSet()))
+        .desiresForOthers(desireKeysWithSharedIntentionStream.collect(Collectors.toSet()))
+        .build();
+  }
 
   public static final AgentTypeBaseLocation BASE_LOCATION = AgentTypeBaseLocation.builder()
       .initializationStrategy(type -> {
+
+        //build creep colony
+        ConfigurationWithAbstractPlan buildCreepColonyAbstractPlan = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
+            COUNT_OF_CREEP_COLONIES_AT_BASE, COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
+            DesiresKeys.BUILD_CREEP_COLONY, AUnitTypeWrapper.CREEP_COLONY_TYPE, DEFENSE,
+            Stream.of(DesiresKeys.BUILD_CREEP_COLONY), Stream.empty(), value -> value == 0,
+            value -> value > 0);
+        type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, buildCreepColonyAbstractPlan, true);
+
+        //common plan to build creep colony for sunken/spore colony
+        ConfigurationWithAbstractPlan buildCreepColonyIfMissingAbstractPlan = ConfigurationWithAbstractPlan
+            .builder()
+            .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
+                .makeReservation(AUnitTypeWrapper.CREEP_COLONY_TYPE, memory.getAgentId()))
+            .reactionOnChangeStrategyInIntention(
+                (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
+                    .removeReservation(AUnitTypeWrapper.CREEP_COLONY_TYPE, memory.getAgentId()))
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy(
+                    (dataForDecision, memory) ->
+                        !dataForDecision.madeDecisionToAny()
+                            && !BuildLockerService.getInstance()
+                            .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
+                            //is base
+                            && memory.returnFactValueForGivenKey(IS_BASE).get()
+                            //we have base completed
+                            && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                            //there is/will be no creep colony available
+                            && dataForDecision.getFeatureValueBeliefSets(
+                            COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION) == 0
+                            && dataForDecision
+                            .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) == 0)
+                .beliefSetTypes(
+                    Stream.of(BASE_IS_COMPLETED, COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
+                        COUNT_OF_CREEP_COLONIES_AT_BASE)
+                        .collect(Collectors.toSet()))
+                .desiresToConsider(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY))
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy(
+                    (dataForDecision, memory) ->
+                        BuildLockerService.getInstance()
+                            .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
+                            || !memory.returnFactValueForGivenKey(IS_BASE).get() || dataForDecision
+                            .getFeatureValueBeliefSets(
+                                COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION) > 0
+                            || dataForDecision
+                            .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) > 0
+                )
+                .beliefSetTypes(Stream.of(COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
+                    COUNT_OF_CREEP_COLONIES_AT_BASE)
+                    .collect(Collectors.toSet()))
+                .build())
+            .desiresForOthers(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY))
+            .build();
+
+        //shared desire to build creep colony
+        ConfigurationWithSharedDesire buildCreepColonyShared = createConfigurationWithSharedDesireToBuildFromTemplate(
+            DesiresKeys.BUILD_CREEP_COLONY, AUnitTypeWrapper.CREEP_COLONY_TYPE,
+            (memory, desireParameters) -> {
+            }, (memory, desireParameters) -> {
+            });
+        type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.BUILD_CREEP_COLONY,
+            buildCreepColonyShared);
+
+        //build sunken as abstract plan
+        ConfigurationWithAbstractPlan buildSunkenAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
+            COUNT_OF_SUNKEN_COLONIES_AT_BASE, COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION,
+            DesiresKeys.BUILD_SUNKEN_COLONY, AUnitTypeWrapper.SUNKEN_COLONY_TYPE, DEFENSE,
+            Stream.of(DesiresKeys.BUILD_SUNKEN_COLONY), Stream.of(DesiresKeys.BUILD_CREEP_COLONY),
+            value -> value <= 3, value -> value > 3);
+        type.addConfiguration(DesiresKeys.BUILD_SUNKEN_COLONY, buildSunkenAbstract, true);
+
+        //to meet dependencies
+        type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.BUILD_SUNKEN_COLONY,
+            buildCreepColonyIfMissingAbstractPlan);
+
+        //shared desire to build creep colony
+        ConfigurationWithSharedDesire buildSunkenShared = createConfigurationWithSharedDesireToBuildFromTemplate(
+            DesiresKeys.BUILD_SUNKEN_COLONY, AUnitTypeWrapper.SUNKEN_COLONY_TYPE,
+            (memory, desireParameters) -> {
+            }, (memory, desireParameters) -> {
+            });
+        type.addConfiguration(DesiresKeys.BUILD_SUNKEN_COLONY, DesiresKeys.BUILD_SUNKEN_COLONY,
+            buildSunkenShared);
+
+        //spore colony as abstract plan
+        ConfigurationWithAbstractPlan buildSporeColonyAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
+            COUNT_OF_SPORE_COLONIES_AT_BASE, COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION,
+            DesiresKeys.BUILD_SPORE_COLONY, AUnitTypeWrapper.SPORE_COLONY_TYPE, DEFENSE,
+            Stream.of(DesiresKeys.BUILD_SPORE_COLONY), Stream.of(DesiresKeys.BUILD_CREEP_COLONY),
+            value -> value <= 3, value -> value > 3);
+        type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, buildSporeColonyAbstract, true);
+
+        //to meet dependencies
+        type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.BUILD_SPORE_COLONY,
+            buildCreepColonyIfMissingAbstractPlan);
+
+        //shared desire to build creep colony
+        ConfigurationWithSharedDesire buildSporeColonyShared = createConfigurationWithSharedDesireToBuildFromTemplate(
+            DesiresKeys.BUILD_SPORE_COLONY, AUnitTypeWrapper.SPORE_COLONY_TYPE,
+            (memory, desireParameters) -> {
+            }, (memory, desireParameters) -> {
+            });
+        type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, DesiresKeys.BUILD_SPORE_COLONY,
+            buildSporeColonyShared);
 
         //reason about last visit
         ConfigurationWithCommand.WithReasoningCommandDesiredBySelf reasonAboutVisit = ConfigurationWithCommand.
@@ -462,7 +641,7 @@ public class BaseLocationAgentType {
         //Make request to start mining gas. Remove request when there are no extractors or there is no hatchery to bring mineral in
         ConfigurationWithSharedDesire mineGas = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(DesiresKeys.MINE_GAS_IN_BASE)
-            .counts(2)
+            .counts(3)
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
@@ -494,251 +673,6 @@ public class BaseLocationAgentType {
             )
             .build();
         type.addConfiguration(DesiresKeys.MINE_GAS_IN_BASE, mineGas);
-
-        //build creep colony
-        ConfigurationWithSharedDesire buildCreepColony = ConfigurationWithSharedDesire.builder()
-            .sharedDesireKey(DesiresKeys.MORPH_TO_CREEP_COLONY)
-            .counts(1)
-            .reactionOnChangeStrategy((memory, desireParameters) -> {
-              long countOfCreepColonies =
-                  memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(
-                      Stream.empty())
-                      .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(
-                          AUnitTypeWrapper.CREEP_COLONY_TYPE))
-                      .count()
-                      //workers building creep colony
-                      + memory.returnFactSetValueForGivenKey(WORKER_ON_BASE).orElse(Stream.empty())
-                      .filter(AUnit::isMorphing)
-                      .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
-                      .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
-                      .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.CREEP_COLONY_TYPE))
-                      .count();
-              memory.updateFact(CREEP_COLONY_COUNT, (int) countOfCreepColonies);
-            })
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                            && (dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                            + dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_CREEP_COLONIES_AT_BASE)) == 0
-                            && !dataForDecision.madeDecisionToAny()
-                            && dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_POOLS) > 0
-                            && Decider.getDecision(AgentTypes.BASE_LOCATION,
-                            DesireKeys.BUILD_CREEP_COLONY, dataForDecision, DEFENSE))
-                .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
-                .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
-                .globalBeliefTypesByAgentType(Stream.concat(
-                    DEFENSE.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
-                    Stream.of(COUNT_OF_POOLS)).collect(Collectors.toSet()))
-                .globalBeliefSetTypesByAgentType(
-                    DEFENSE.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(DEFENSE.getConvertersForFacts())
-                .beliefSetTypes(Stream.concat(DEFENSE.getConvertersForFactSets().stream(),
-                    Stream.of(BASE_IS_COMPLETED, COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                        COUNT_OF_CREEP_COLONIES_AT_BASE)).collect(Collectors.toSet()))
-                .desiresToConsider(
-                    new HashSet<>(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY)))
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) -> !memory.returnFactValueForGivenKey(IS_BASE).get()
-                        || memory.returnFactValueForGivenKey(CREEP_COLONY_COUNT).orElse(0) !=
-                        (dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                            + dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_CREEP_COLONIES_AT_BASE))
-                )
-                .beliefSetTypes(
-                    new HashSet<>(Arrays.asList(COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                        COUNT_OF_CREEP_COLONIES_AT_BASE)))
-                .useFactsInMemory(true)
-                .build())
-            .build();
-        type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, buildCreepColony);
-
-        //common plan to build creep colony for sunken/spore colony
-        ConfigurationWithSharedDesire buildCreepColonyCommon = ConfigurationWithSharedDesire
-            .builder()
-            .sharedDesireKey(DesiresKeys.MORPH_TO_CREEP_COLONY)
-            .counts(1)
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) -> (dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                        + dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_CREEP_COLONIES_AT_BASE)) == 0
-                        && !dataForDecision.madeDecisionToAny())
-                .beliefSetTypes(
-                    Stream.of(BASE_IS_COMPLETED, COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                        COUNT_OF_CREEP_COLONIES_AT_BASE).collect(Collectors.toSet()))
-                .desiresToConsider(
-                    new HashSet<>(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY)))
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) -> (dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                        + dataForDecision.getFeatureValueBeliefSets(
-                        COUNT_OF_CREEP_COLONIES_AT_BASE)) > 0
-                )
-                .beliefSetTypes(
-                    new HashSet<>(Arrays.asList(COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                        COUNT_OF_CREEP_COLONIES_AT_BASE)))
-                .useFactsInMemory(true)
-                .build())
-            .build();
-
-        //build sunken as abstract plan
-        ConfigurationWithAbstractPlan buildSunkenAbstract = ConfigurationWithAbstractPlan.builder()
-            .reactionOnChangeStrategy((memory, desireParameters) -> {
-              long countOfSunkenColonies =
-                  memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(
-                      Stream.empty())
-                      .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(
-                          AUnitTypeWrapper.SUNKEN_COLONY_TYPE))
-                      .count()
-                      //creep colonies morphing to sunken
-                      + memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(Stream.empty())
-                      .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(
-                          AUnitTypeWrapper.CREEP_COLONY_TYPE))
-                      .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
-                      .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
-                      .filter(
-                          typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SUNKEN_COLONY_TYPE))
-                      .count();
-              memory.updateFact(SUNKEN_COLONY_COUNT, (int) countOfSunkenColonies);
-            })
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                            && (dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                            + dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_SUNKEN_COLONIES_AT_BASE)) <= 4
-                            && Decider
-                            .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.BUILD_SUNKEN_COLONY,
-                                dataForDecision, DEFENSE))
-                .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
-                .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
-                .globalBeliefTypesByAgentType(
-                    DEFENSE.getConvertersForFactsForGlobalBeliefsByAgentType())
-                .globalBeliefSetTypesByAgentType(
-                    DEFENSE.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(DEFENSE.getConvertersForFacts())
-                .beliefSetTypes(Stream.concat(DEFENSE.getConvertersForFactSets().stream(),
-                    Stream.of(BASE_IS_COMPLETED, COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                        COUNT_OF_SUNKEN_COLONIES_AT_BASE)).collect(Collectors.toSet()))
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) -> !memory.returnFactValueForGivenKey(IS_BASE).get()
-                        || memory.returnFactValueForGivenKey(SUNKEN_COLONY_COUNT).orElse(0) !=
-                        (dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                            + dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_SUNKEN_COLONIES_AT_BASE))
-                )
-                .beliefSetTypes(
-                    new HashSet<>(Arrays.asList(COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                        COUNT_OF_SUNKEN_COLONIES_AT_BASE)))
-                .useFactsInMemory(true)
-                .build())
-            .desiresForOthers(new HashSet<>(Arrays.asList(
-                DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.BUILD_SUNKEN_COLONY)))
-            .build();
-        type.addConfiguration(DesiresKeys.BUILD_SUNKEN_COLONY, buildSunkenAbstract, true);
-        type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.BUILD_SUNKEN_COLONY,
-            buildCreepColonyCommon);
-        ConfigurationWithSharedDesire buildSunken = ConfigurationWithSharedDesire.builder()
-            .sharedDesireKey(DesiresKeys.MORPH_TO_SUNKEN_COLONY)
-            .counts(1)
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> true)
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> false)
-                .build())
-            .build();
-        type.addConfiguration(DesiresKeys.BUILD_SUNKEN_COLONY, DesiresKeys.BUILD_SUNKEN_COLONY,
-            buildSunken);
-
-        //spore colony as abstract plan
-        ConfigurationWithAbstractPlan buildSporeColonyAbstract = ConfigurationWithAbstractPlan
-            .builder()
-            .reactionOnChangeStrategy((memory, desireParameters) -> {
-              long countOfSporeColonies =
-                  memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(
-                      Stream.empty())
-                      .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(
-                          AUnitTypeWrapper.SPORE_COLONY_TYPE))
-                      .count()
-                      //creep colonies morphing to sunken
-                      + memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(Stream.empty())
-                      .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(
-                          AUnitTypeWrapper.CREEP_COLONY_TYPE))
-                      .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
-                      .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
-                      .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SPORE_COLONY_TYPE))
-                      .count();
-              memory.updateFact(SPORE_COLONY_COUNT, (int) countOfSporeColonies);
-            })
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                            && (dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                            + dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_SPORE_COLONIES_AT_BASE)) <= 4
-                            && Decider.getDecision(AgentTypes.BASE_LOCATION,
-                            DesireKeys.BUILD_SPORE_COLONY, dataForDecision, DEFENSE))
-                .globalBeliefTypes(DEFENSE.getConvertersForFactsForGlobalBeliefs())
-                .globalBeliefSetTypes(DEFENSE.getConvertersForFactSetsForGlobalBeliefs())
-                .globalBeliefTypesByAgentType(
-                    DEFENSE.getConvertersForFactsForGlobalBeliefsByAgentType())
-                .globalBeliefSetTypesByAgentType(
-                    DEFENSE.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(DEFENSE.getConvertersForFacts())
-                .beliefSetTypes(Stream.concat(DEFENSE.getConvertersForFactSets().stream(),
-                    Stream.of(BASE_IS_COMPLETED, COUNT_OF_SPORE_COLONIES_AT_BASE,
-                        COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION)).collect(
-                    Collectors.toSet()))
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) -> !memory.returnFactValueForGivenKey(IS_BASE).get()
-                        || memory.returnFactValueForGivenKey(SPORE_COLONY_COUNT).orElse(0) !=
-                        (dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION)
-                            + dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_SPORE_COLONIES_AT_BASE))
-                )
-                .beliefSetTypes(
-                    new HashSet<>(Arrays.asList(COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                        COUNT_OF_SPORE_COLONIES_AT_BASE)))
-                .useFactsInMemory(true)
-                .build())
-            .desiresForOthers(new HashSet<>(Arrays.asList(
-                DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.BUILD_SPORE_COLONY)))
-            .build();
-        type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, buildSporeColonyAbstract, true);
-        type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.BUILD_SPORE_COLONY,
-            buildCreepColonyCommon);
-        ConfigurationWithSharedDesire buildSporeColony = ConfigurationWithSharedDesire.builder()
-            .sharedDesireKey(DesiresKeys.MORPH_TO_SPORE_COLONY)
-            .counts(1)
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> true)
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> false)
-                .build())
-            .build();
-        type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, DesiresKeys.BUILD_SPORE_COLONY,
-            buildSporeColony);
 
         //hold ground
         ConfigurationWithSharedDesire holdGround = ConfigurationWithSharedDesire.builder()
@@ -851,27 +785,31 @@ public class BaseLocationAgentType {
             .build();
         type.addConfiguration(DesiresKeys.DEFEND, defend);
       })
-      .usingTypesForFacts(
-          new HashSet<>(Arrays.asList(IS_BASE, IS_ENEMY_BASE, BASE_TO_MOVE, SUNKEN_COLONY_COUNT,
-              SPORE_COLONY_COUNT, CREEP_COLONY_COUNT, TIME_OF_HOLD_COMMAND)))
-      .usingTypesForFactSets(new HashSet<>(Arrays.asList(WORKER_ON_BASE, ENEMY_BUILDING, ENEMY_AIR,
+      .usingTypesForFacts(Stream.of(IS_BASE, IS_ENEMY_BASE, BASE_TO_MOVE, TIME_OF_HOLD_COMMAND)
+          .collect(Collectors.toSet()))
+      .usingTypesForFactSets(Stream.of(WORKER_ON_BASE, ENEMY_BUILDING, ENEMY_AIR,
           ENEMY_GROUND, HAS_BASE, HAS_EXTRACTOR, OWN_BUILDING, OWN_AIR, OWN_GROUND,
           WORKER_MINING_MINERALS, WORKER_MINING_GAS, OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS,
           OWN_GROUND_FORCE_STATUS, ENEMY_AIR_FORCE_STATUS, ENEMY_BUILDING_STATUS,
           ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS, LOCKED_BUILDINGS, ENEMY_STATIC_AIR_FORCE_STATUS,
           ENEMY_STATIC_GROUND_FORCE_STATUS, OWN_STATIC_AIR_FORCE_STATUS,
-          OWN_STATIC_GROUND_FORCE_STATUS,
-          STATIC_DEFENSE, ENEMY_UNIT, OUR_UNIT)))
-      .desiresWithIntentionToReason(new HashSet<>(Arrays.asList(DesiresKeys.ECO_STATUS_IN_LOCATION,
-          DesiresKeys.FRIENDLIES_IN_LOCATION, DesiresKeys.ENEMIES_IN_LOCATION,
-          DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION, DesiresKeys.ESTIMATE_OUR_FORCE_IN_LOCATION,
-          DesiresKeys.VISIT)))
-      .desiresForOthers(new HashSet<>(Arrays.asList(
-          DesiresKeys.VISIT, DesiresKeys.MINE_GAS_IN_BASE, DesiresKeys.MINE_MINERALS_IN_BASE,
-          DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.HOLD_GROUND, DesiresKeys.HOLD_AIR,
-          DesiresKeys.DEFEND)))
-      .desiresWithAbstractIntention(new HashSet<>(Arrays.asList(
-          DesiresKeys.BUILD_SUNKEN_COLONY, DesiresKeys.BUILD_SPORE_COLONY)))
+          OWN_STATIC_GROUND_FORCE_STATUS, STATIC_DEFENSE, ENEMY_UNIT, OUR_UNIT)
+          .collect(Collectors.toSet()))
+      .desiresWithIntentionToReason(Stream
+          .of(DesiresKeys.ECO_STATUS_IN_LOCATION, DesiresKeys.FRIENDLIES_IN_LOCATION,
+              DesiresKeys.ENEMIES_IN_LOCATION,
+              DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION,
+              DesiresKeys.ESTIMATE_OUR_FORCE_IN_LOCATION, DesiresKeys.VISIT)
+          .collect(Collectors.toSet())
+      )
+      .desiresForOthers(Stream
+          .of(DesiresKeys.VISIT, DesiresKeys.MINE_GAS_IN_BASE, DesiresKeys.MINE_MINERALS_IN_BASE,
+              DesiresKeys.HOLD_GROUND, DesiresKeys.HOLD_AIR, DesiresKeys.DEFEND)
+          .collect(Collectors.toSet()))
+      .desiresWithAbstractIntention(
+          Stream.of(DesiresKeys.BUILD_SUNKEN_COLONY, DesiresKeys.BUILD_SPORE_COLONY,
+              DesiresKeys.BUILD_CREEP_COLONY)
+              .collect(Collectors.toSet()))
       .build();
 
   /**

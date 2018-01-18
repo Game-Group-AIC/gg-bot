@@ -15,7 +15,7 @@ import aic.gas.sc.gg_bot.bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.bot.service.IAgentUnitHandler;
 import aic.gas.sc.gg_bot.bot.service.ILocationInitializer;
 import aic.gas.sc.gg_bot.bot.service.IPlayerInitializer;
-import aic.gas.sc.gg_bot.bot.service.IResourceManager;
+import aic.gas.sc.gg_bot.bot.service.IRequirementsChecker;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import bwapi.DefaultBWListener;
@@ -47,7 +47,10 @@ public class BotFacade extends DefaultBWListener {
   //class to handle additional commands with observations requests
   public static AdditionalCommandToObserveGameProcessor ADDITIONAL_OBSERVATIONS_PROCESSOR;
 
-  public static final IResourceManager RESOURCE_MANAGER = new ResourceManager();
+  //track types available to check requirements
+  private static final IRequirementsChecker REQUIREMENTS_CHECKER = new RequirementsChecker();
+
+  public static final ResourceManager RESOURCE_MANAGER = new ResourceManager(REQUIREMENTS_CHECKER);
 
   //TODO increase + block frame for a while
   private final long maxFrameExecutionTime;
@@ -58,9 +61,6 @@ public class BotFacade extends DefaultBWListener {
 
   //TODO hack to prevent building same types
   private final BuildLockerService buildLockerService = BuildLockerService.getInstance();
-
-  //TODO hack to restart idle workers
-  private final Map<WorkerTuple, Integer> idleWorkers = new HashMap<>();
 
   //keep track of agent units
   private final Map<Integer, AgentUnit> agentsWithGameRepresentation = new HashMap<>();
@@ -202,6 +202,8 @@ public class BotFacade extends DefaultBWListener {
             .collect(Collectors.toList()), self, game);
       }
 
+      REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);
+
       log.info("System ready. It took " + (System.currentTimeMillis() - start));
     } catch (Exception e) {
       e.printStackTrace();
@@ -285,7 +287,6 @@ public class BotFacade extends DefaultBWListener {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    idleWorkers.clear();
   }
 
   @Override
@@ -330,6 +331,9 @@ public class BotFacade extends DefaultBWListener {
       }
     }
 
+    //check types
+    REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);
+
     if ((execution = System.currentTimeMillis() - time) >= 75) {
       game.printf("On frame " + game.getFrameCount() + " execution took " + execution + " ms.");
     }
@@ -356,6 +360,11 @@ public class BotFacade extends DefaultBWListener {
                 aBoolean ? "1" : "0").orElse("N/A"))
         .collect(Collectors.joining("\n"));
     Annotator.printMessage(message, 200, 10, game);
+
+    //reservations
+    Annotator.printMessage(
+        RESOURCE_MANAGER.getReservationStatuses().stream().collect(Collectors.joining("\n")),
+        400, 10, game);
   }
 
   //TODO handle more events - unit renegade, visibility
