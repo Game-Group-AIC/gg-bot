@@ -5,13 +5,10 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.LAIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.PLAYER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.BASE_IS_COMPLETED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_CREEP_COLONIES_AT_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPORE_COLONIES_AT_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
@@ -76,6 +73,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand.WithReasoningCommandDesiredBySelf;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
@@ -89,6 +87,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//TODO refactor everything except buildings
 public class BaseLocationAgentType {
 
   private interface SimpleDecisionStrategy {
@@ -101,14 +100,13 @@ public class BaseLocationAgentType {
    * Initialize abstract build plan top - make reservation + check conditions (for building).
    * It is unlocked only when building is built
    */
-  private static <T, V> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-      FactWithOptionalValueSet<T> completedCount, FactWithOptionalValueSet<V> constructionCount,
-      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
+  private static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
+      FactWithOptionalValueSet<T> completedCount, DesireKey desireKey,
+      AUnitTypeWrapper unitTypeWrapper,
       FeatureContainerHeader featureContainerHeader,
       Stream<DesireKey> desireKeysWithSharedIntentionStream,
       Stream<DesireKey> desireKeysWithAbstractIntentionStream,
-      SimpleDecisionStrategy forCommitment,
-      SimpleDecisionStrategy toRemoveCommitment) {
+      SimpleDecisionStrategy forCommitment) {
     return ConfigurationWithAbstractPlan.builder()
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
@@ -118,7 +116,9 @@ public class BaseLocationAgentType {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    !dataForDecision.madeDecisionToAny()
+                    !BotFacade.RESOURCE_MANAGER
+                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                        && !dataForDecision.madeDecisionToAny()
                         && !BuildLockerService.getInstance()
                         .isLocked(unitTypeWrapper)
                         //is base
@@ -128,7 +128,6 @@ public class BaseLocationAgentType {
                         //there is/will be no creep colony available
                         && forCommitment
                         .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
-                        && dataForDecision.getFeatureValueBeliefSets(constructionCount) == 0
                         && Decider
                         .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
                             featureContainerHeader))
@@ -141,21 +140,17 @@ public class BaseLocationAgentType {
             .beliefTypes(featureContainerHeader.getConvertersForFacts())
             .beliefSetTypes(
                 Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
-                    Stream.of(BASE_IS_COMPLETED, completedCount, constructionCount))
+                    Stream.of(BASE_IS_COMPLETED, completedCount))
                     .collect(Collectors.toSet()))
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
+        //TODO count is greater then before
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
                     BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        || !memory.returnFactValueForGivenKey(IS_BASE).get()
-                        || toRemoveCommitment
-                        .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
-                        || dataForDecision.getFeatureValueBeliefSets(constructionCount) > 0
-            )
-            .beliefSetTypes(Stream.of(constructionCount, completedCount)
-                .collect(Collectors.toSet()))
+                        || !memory.returnFactValueForGivenKey(IS_BASE).get())
+            .beliefSetTypes(Collections.singleton(completedCount))
             .build())
         .desiresWithAbstractIntention(
             desireKeysWithAbstractIntentionStream.collect(Collectors.toSet()))
@@ -168,10 +163,9 @@ public class BaseLocationAgentType {
 
         //build creep colony
         ConfigurationWithAbstractPlan buildCreepColonyAbstractPlan = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_CREEP_COLONIES_AT_BASE, COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
-            DesiresKeys.BUILD_CREEP_COLONY, AUnitTypeWrapper.CREEP_COLONY_TYPE, DEFENSE,
-            Stream.of(DesiresKeys.BUILD_CREEP_COLONY), Stream.empty(), value -> value == 0,
-            value -> value > 0);
+            COUNT_OF_CREEP_COLONIES_AT_BASE, DesiresKeys.BUILD_CREEP_COLONY,
+            AUnitTypeWrapper.CREEP_COLONY_TYPE, DEFENSE, Stream.of(DesiresKeys.BUILD_CREEP_COLONY),
+            Stream.empty(), value -> value == 0);
         type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, buildCreepColonyAbstractPlan, true);
 
         //common plan to build creep colony for sunken/spore colony
@@ -192,15 +186,10 @@ public class BaseLocationAgentType {
                             && memory.returnFactValueForGivenKey(IS_BASE).get()
                             //we have base completed
                             && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                            //there is/will be no creep colony available
-                            && dataForDecision.getFeatureValueBeliefSets(
-                            COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION) == 0
                             && dataForDecision
                             .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) == 0)
-                .beliefSetTypes(
-                    Stream.of(BASE_IS_COMPLETED, COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                        COUNT_OF_CREEP_COLONIES_AT_BASE)
-                        .collect(Collectors.toSet()))
+                .beliefSetTypes(Stream.of(BASE_IS_COMPLETED, COUNT_OF_CREEP_COLONIES_AT_BASE)
+                    .collect(Collectors.toSet()))
                 .desiresToConsider(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -208,34 +197,30 @@ public class BaseLocationAgentType {
                     (dataForDecision, memory) ->
                         BuildLockerService.getInstance()
                             .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
-                            || !memory.returnFactValueForGivenKey(IS_BASE).get() || dataForDecision
-                            .getFeatureValueBeliefSets(
-                                COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION) > 0
+                            || !memory.returnFactValueForGivenKey(IS_BASE).get()
                             || dataForDecision
                             .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) > 0
                 )
-                .beliefSetTypes(Stream.of(COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION,
-                    COUNT_OF_CREEP_COLONIES_AT_BASE)
-                    .collect(Collectors.toSet()))
+                .beliefSetTypes(Collections.singleton(COUNT_OF_CREEP_COLONIES_AT_BASE))
                 .build())
-            .desiresForOthers(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY))
+            .desiresForOthers(Collections.singleton(DesiresKeys.MORPH_TO_CREEP_COLONY))
             .build();
 
         //shared desire to build creep colony
         ConfigurationWithSharedDesire buildCreepColonyShared = createConfigurationWithSharedDesireToBuildFromTemplate(
-            DesiresKeys.BUILD_CREEP_COLONY, AUnitTypeWrapper.CREEP_COLONY_TYPE,
+            DesiresKeys.MORPH_TO_CREEP_COLONY, AUnitTypeWrapper.CREEP_COLONY_TYPE,
             (memory, desireParameters) -> {
             }, (memory, desireParameters) -> {
             });
-        type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, DesiresKeys.BUILD_CREEP_COLONY,
+        type.addConfiguration(DesiresKeys.MORPH_TO_CREEP_COLONY, DesiresKeys.BUILD_CREEP_COLONY,
             buildCreepColonyShared);
 
         //build sunken as abstract plan
         ConfigurationWithAbstractPlan buildSunkenAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_SUNKEN_COLONIES_AT_BASE, COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION,
-            DesiresKeys.BUILD_SUNKEN_COLONY, AUnitTypeWrapper.SUNKEN_COLONY_TYPE, DEFENSE,
-            Stream.of(DesiresKeys.BUILD_SUNKEN_COLONY), Stream.of(DesiresKeys.BUILD_CREEP_COLONY),
-            value -> value <= 3, value -> value > 3);
+            COUNT_OF_SUNKEN_COLONIES_AT_BASE, DesiresKeys.BUILD_SUNKEN_COLONY,
+            AUnitTypeWrapper.SUNKEN_COLONY_TYPE, DEFENSE,
+            Stream.of(DesiresKeys.BUILD_SUNKEN_COLONY),
+            Stream.of(DesiresKeys.BUILD_CREEP_COLONY), value -> value <= 3);
         type.addConfiguration(DesiresKeys.BUILD_SUNKEN_COLONY, buildSunkenAbstract, true);
 
         //to meet dependencies
@@ -244,7 +229,7 @@ public class BaseLocationAgentType {
 
         //shared desire to build creep colony
         ConfigurationWithSharedDesire buildSunkenShared = createConfigurationWithSharedDesireToBuildFromTemplate(
-            DesiresKeys.BUILD_SUNKEN_COLONY, AUnitTypeWrapper.SUNKEN_COLONY_TYPE,
+            DesiresKeys.MORPH_TO_SUNKEN_COLONY, AUnitTypeWrapper.SUNKEN_COLONY_TYPE,
             (memory, desireParameters) -> {
             }, (memory, desireParameters) -> {
             });
@@ -253,10 +238,9 @@ public class BaseLocationAgentType {
 
         //spore colony as abstract plan
         ConfigurationWithAbstractPlan buildSporeColonyAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_SPORE_COLONIES_AT_BASE, COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION,
-            DesiresKeys.BUILD_SPORE_COLONY, AUnitTypeWrapper.SPORE_COLONY_TYPE, DEFENSE,
-            Stream.of(DesiresKeys.BUILD_SPORE_COLONY), Stream.of(DesiresKeys.BUILD_CREEP_COLONY),
-            value -> value <= 3, value -> value > 3);
+            COUNT_OF_SPORE_COLONIES_AT_BASE, DesiresKeys.BUILD_SPORE_COLONY,
+            AUnitTypeWrapper.SPORE_COLONY_TYPE, DEFENSE, Stream.of(DesiresKeys.BUILD_SPORE_COLONY),
+            Stream.of(DesiresKeys.BUILD_CREEP_COLONY), value -> value <= 3);
         type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, buildSporeColonyAbstract, true);
 
         //to meet dependencies
@@ -265,7 +249,7 @@ public class BaseLocationAgentType {
 
         //shared desire to build creep colony
         ConfigurationWithSharedDesire buildSporeColonyShared = createConfigurationWithSharedDesireToBuildFromTemplate(
-            DesiresKeys.BUILD_SPORE_COLONY, AUnitTypeWrapper.SPORE_COLONY_TYPE,
+            DesiresKeys.MORPH_TO_SPORE_COLONY, AUnitTypeWrapper.SPORE_COLONY_TYPE,
             (memory, desireParameters) -> {
             }, (memory, desireParameters) -> {
             });
@@ -273,43 +257,43 @@ public class BaseLocationAgentType {
             buildSporeColonyShared);
 
         //reason about last visit
-        ConfigurationWithCommand.WithReasoningCommandDesiredBySelf reasonAboutVisit = ConfigurationWithCommand.
+        WithReasoningCommandDesiredBySelf reasonAboutVisit =
             WithReasoningCommandDesiredBySelf.builder()
-            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
-              @Override
-              public boolean act(WorkingMemory memory) {
-                ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                    .get();
-                OptionalInt frameWhenLastVisited = UnitWrapperFactory
-                    .getStreamOfAllAlivePlayersUnits()
-                    .filter(aUnitOfPlayer -> {
-                      APosition aPosition = aUnitOfPlayer.getPosition();
-                      return aPosition.distanceTo(base) < 5;
-                    })
-                    .mapToInt(AUnit::getFrameCount)
-                    .max();
-                frameWhenLastVisited.ifPresent(
-                    integer -> memory.updateFact(LAST_TIME_SCOUTED, integer));
+                .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+                  @Override
+                  public boolean act(WorkingMemory memory) {
+                    ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                        .get();
+                    OptionalInt frameWhenLastVisited = UnitWrapperFactory
+                        .getStreamOfAllAlivePlayersUnits()
+                        .filter(aUnitOfPlayer -> {
+                          APosition aPosition = aUnitOfPlayer.getPosition();
+                          return aPosition.distanceTo(base) < 5;
+                        })
+                        .mapToInt(AUnit::getFrameCount)
+                        .max();
+                    frameWhenLastVisited.ifPresent(
+                        integer -> memory.updateFact(LAST_TIME_SCOUTED, integer));
 
-                //base status
-                boolean isBase = memory.returnFactSetValueForGivenKey(HAS_BASE).map(
-                    Stream::count).orElse(0L) > 0;
-                memory.updateFact(IS_BASE, isBase);
+                    //base status
+                    boolean isBase = memory.returnFactSetValueForGivenKey(HAS_BASE).map(
+                        Stream::count).orElse(0L) > 0;
+                    memory.updateFact(IS_BASE, isBase);
 
-                //todo it is not our base and (it has enemy buildings on it || we haven't visited all base locations and this one is unvisited base location)
-                memory.updateFact(IS_ENEMY_BASE, !isBase
-                    && memory.returnFactSetValueForGivenKey(ENEMY_BUILDING).map(
-                    Stream::count).orElse(0L) > 0);
-                return true;
-              }
-            })
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> true)
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> true)
-                .build())
-            .build();
+                    //todo it is not our base and (it has enemy buildings on it || we haven't visited all base locations and this one is unvisited base location)
+                    memory.updateFact(IS_ENEMY_BASE, !isBase
+                        && memory.returnFactSetValueForGivenKey(ENEMY_BUILDING).map(
+                        Stream::count).orElse(0L) > 0);
+                    return true;
+                  }
+                })
+                .decisionInDesire(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .decisionInIntention(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .build();
         type.addConfiguration(DesiresKeys.VISIT, reasonAboutVisit);
 
         //tell system to visit me
@@ -404,127 +388,131 @@ public class BaseLocationAgentType {
         type.addConfiguration(DesiresKeys.VISIT, visitMe);
 
         //enemy's units
-        ConfigurationWithCommand.WithReasoningCommandDesiredBySelf enemyUnits = ConfigurationWithCommand.
+        WithReasoningCommandDesiredBySelf enemyUnits =
             WithReasoningCommandDesiredBySelf.builder()
-            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
-              @Override
-              public boolean act(WorkingMemory memory) {
-                ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                    .get();
+                .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+                  @Override
+                  public boolean act(WorkingMemory memory) {
+                    ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                        .get();
 
-                Set<Enemy> enemies = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
-                    .filter(
-                        enemy -> {
-                          Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
-                          return bL.isPresent() && bL.get().equals(base);
-                        }).collect(Collectors.toSet());
+                    Set<Enemy> enemies = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
+                        .filter(
+                            enemy -> {
+                              Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
+                              return bL.isPresent() && bL.get().equals(base);
+                            }).collect(Collectors.toSet());
 
-                memory.updateFactSetByFacts(ENEMY_UNIT, enemies);
-                memory.updateFactSetByFacts(ENEMY_BUILDING,
-                    enemies.stream().filter(enemy -> enemy.getType().isBuilding()).collect(
-                        Collectors.toSet()));
-                memory.updateFactSetByFacts(ENEMY_GROUND, enemies.stream().filter(
-                    enemy -> !enemy.getType().isBuilding() && !enemy.getType().isFlyer()).collect(
-                    Collectors.toSet()));
-                memory.updateFactSetByFacts(ENEMY_AIR, enemies.stream().filter(
-                    enemy -> !enemy.getType().isBuilding() && enemy.getType().isFlyer()).collect(
-                    Collectors.toSet()));
+                    memory.updateFactSetByFacts(ENEMY_UNIT, enemies);
+                    memory.updateFactSetByFacts(ENEMY_BUILDING,
+                        enemies.stream().filter(enemy -> enemy.getType().isBuilding()).collect(
+                            Collectors.toSet()));
+                    memory.updateFactSetByFacts(ENEMY_GROUND, enemies.stream().filter(
+                        enemy -> !enemy.getType().isBuilding() && !enemy.getType().isFlyer())
+                        .collect(
+                            Collectors.toSet()));
+                    memory.updateFactSetByFacts(ENEMY_AIR, enemies.stream().filter(
+                        enemy -> !enemy.getType().isBuilding() && enemy.getType().isFlyer())
+                        .collect(
+                            Collectors.toSet()));
 
-                return true;
-              }
-            })
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> {
-                  ABaseLocationWrapper base = memory.returnFactValueForGivenKey(
-                      IS_BASE_LOCATION).get();
-                  return UnitWrapperFactory.getStreamOfAllAliveEnemyUnits().filter(enemy -> {
-                    Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
-                    return bL.isPresent() && bL.get().equals(base);
-                  }).count() > 0;
+                    return true;
+                  }
                 })
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> true)
-                .build())
-            .build();
+                .decisionInDesire(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> {
+                      ABaseLocationWrapper base = memory.returnFactValueForGivenKey(
+                          IS_BASE_LOCATION).get();
+                      return UnitWrapperFactory.getStreamOfAllAliveEnemyUnits().filter(enemy -> {
+                        Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
+                        return bL.isPresent() && bL.get().equals(base);
+                      }).count() > 0;
+                    })
+                    .build())
+                .decisionInIntention(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .build();
         type.addConfiguration(DesiresKeys.ENEMIES_IN_LOCATION, enemyUnits);
 
         //player's units
-        ConfigurationWithCommand.WithReasoningCommandDesiredBySelf ourUnits = ConfigurationWithCommand.
+        WithReasoningCommandDesiredBySelf ourUnits =
             WithReasoningCommandDesiredBySelf.builder()
-            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
-              @Override
-              public boolean act(WorkingMemory memory) {
-                ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                    .get();
+                .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+                  @Override
+                  public boolean act(WorkingMemory memory) {
+                    ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                        .get();
 
-                Set<AUnitOfPlayer> playersUnits = UnitWrapperFactory
-                    .getStreamOfAllAlivePlayersUnits().filter(
-                        enemy -> {
-                          Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
-                          return bL.isPresent() && bL.get().equals(base);
-                        }).collect(Collectors.toSet());
+                    Set<AUnitOfPlayer> playersUnits = UnitWrapperFactory
+                        .getStreamOfAllAlivePlayersUnits().filter(
+                            enemy -> {
+                              Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
+                              return bL.isPresent() && bL.get().equals(base);
+                            }).collect(Collectors.toSet());
 
-                memory.updateFactSetByFacts(OUR_UNIT, playersUnits);
-                memory.updateFactSetByFacts(OWN_BUILDING,
-                    playersUnits.stream().filter(own -> own.getType().isBuilding()).collect(
+                    memory.updateFactSetByFacts(OUR_UNIT, playersUnits);
+                    memory.updateFactSetByFacts(OWN_BUILDING,
+                        playersUnits.stream().filter(own -> own.getType().isBuilding()).collect(
+                            Collectors.toSet()));
+                    memory.updateFactSetByFacts(OWN_GROUND, playersUnits.stream().filter(
+                        own -> !own.getType().isBuilding() && !own.getType().isFlyer()).collect(
                         Collectors.toSet()));
-                memory.updateFactSetByFacts(OWN_GROUND, playersUnits.stream().filter(
-                    own -> !own.getType().isBuilding() && !own.getType().isFlyer()).collect(
-                    Collectors.toSet()));
-                memory.updateFactSetByFacts(OWN_AIR, playersUnits.stream().filter(
-                    own -> !own.getType().isBuilding() && own.getType().isFlyer()).collect(
-                    Collectors.toSet()));
+                    memory.updateFactSetByFacts(OWN_AIR, playersUnits.stream().filter(
+                        own -> !own.getType().isBuilding() && own.getType().isFlyer()).collect(
+                        Collectors.toSet()));
 
-                //find new static defense buildings
-                if (memory.returnFactSetValueForGivenKey(OWN_BUILDING)
-                    .orElse(Stream.empty())
-                    .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isMilitaryBuilding())
-                    .count() > 0) {
-                  memory.updateFactSetByFacts(STATIC_DEFENSE,
-                      memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
-                          .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isMilitaryBuilding())
-                          .collect(Collectors.toSet()));
-                }
+                    //find new static defense buildings
+                    if (memory.returnFactSetValueForGivenKey(OWN_BUILDING)
+                        .orElse(Stream.empty())
+                        .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isMilitaryBuilding())
+                        .count() > 0) {
+                      memory.updateFactSetByFacts(STATIC_DEFENSE,
+                          memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
+                              .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isMilitaryBuilding())
+                              .collect(Collectors.toSet()));
+                    }
 
-                //eco buildings
-                memory.updateFactSetByFacts(HAS_BASE,
-                    Stream.concat(memory.getReadOnlyMemoriesForAgentType(HATCHERY)
-                            .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                                REPRESENTS_UNIT).get())
-                            .filter(aUnitOfPlayer -> aUnitOfPlayer.getNearestBaseLocation().isPresent())
-                            .filter(aUnitOfPlayer -> base.equals(
-                                aUnitOfPlayer.getNearestBaseLocation().orElse(null))),
-                        memory.getReadOnlyMemoriesForAgentType(LAIR)
-                            .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                                REPRESENTS_UNIT).get())
-                            .filter(
-                                aUnitOfPlayer -> aUnitOfPlayer.getNearestBaseLocation().isPresent())
-                            .filter(aUnitOfPlayer -> base.equals(
-                                aUnitOfPlayer.getNearestBaseLocation().orElse(null)))
-                    ).collect(Collectors.toSet()));
-                memory.updateFactSetByFacts(HAS_EXTRACTOR,
-                    memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
-                        .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isGasBuilding())
-                        .collect(Collectors.toSet()));
+                    //eco buildings
+                    memory.updateFactSetByFacts(HAS_BASE,
+                        Stream.concat(memory.getReadOnlyMemoriesForAgentType(HATCHERY)
+                                .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                                    REPRESENTS_UNIT).get())
+                                .filter(
+                                    aUnitOfPlayer -> aUnitOfPlayer.getNearestBaseLocation().isPresent())
+                                .filter(aUnitOfPlayer -> base.equals(
+                                    aUnitOfPlayer.getNearestBaseLocation().orElse(null))),
+                            memory.getReadOnlyMemoriesForAgentType(LAIR)
+                                .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                                    REPRESENTS_UNIT).get())
+                                .filter(
+                                    aUnitOfPlayer -> aUnitOfPlayer.getNearestBaseLocation()
+                                        .isPresent())
+                                .filter(aUnitOfPlayer -> base.equals(
+                                    aUnitOfPlayer.getNearestBaseLocation().orElse(null)))
+                        ).collect(Collectors.toSet()));
+                    memory.updateFactSetByFacts(HAS_EXTRACTOR,
+                        memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
+                            .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isGasBuilding())
+                            .collect(Collectors.toSet()));
 
-                return true;
-              }
-            })
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> {
-                  ABaseLocationWrapper base = memory.returnFactValueForGivenKey(
-                      IS_BASE_LOCATION).get();
-                  return UnitWrapperFactory.getStreamOfAllAlivePlayersUnits().filter(enemy -> {
-                    Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
-                    return bL.isPresent() && bL.get().equals(base);
-                  }).count() > 0;
+                    return true;
+                  }
                 })
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> true)
-                .build())
-            .build();
+                .decisionInDesire(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> {
+                      ABaseLocationWrapper base = memory.returnFactValueForGivenKey(
+                          IS_BASE_LOCATION).get();
+                      return UnitWrapperFactory.getStreamOfAllAlivePlayersUnits().filter(enemy -> {
+                        Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
+                        return bL.isPresent() && bL.get().equals(base);
+                      }).count() > 0;
+                    })
+                    .build())
+                .decisionInIntention(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .build();
         type.addConfiguration(DesiresKeys.FRIENDLIES_IN_LOCATION, ourUnits);
 
         //estimate enemy force
@@ -542,62 +530,63 @@ public class BaseLocationAgentType {
                 OWN_GROUND_FORCE_STATUS));
 
         //eco concerns
-        ConfigurationWithCommand.WithReasoningCommandDesiredBySelf ecoConcerns = ConfigurationWithCommand.
+        WithReasoningCommandDesiredBySelf ecoConcerns =
             WithReasoningCommandDesiredBySelf.builder()
-            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
-              @Override
-              public boolean act(WorkingMemory memory) {
-                ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                    .get();
+                .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+                  @Override
+                  public boolean act(WorkingMemory memory) {
+                    ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                        .get();
 
-                //workers
-                Set<ReadOnlyMemory> workersAroundBase = memory.getReadOnlyMemories()
-                    .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(LOCATION) &&
-                        readOnlyMemory.returnFactValueForGivenKey(LOCATION).isPresent()
-                        && readOnlyMemory.returnFactValueForGivenKey(LOCATION).get().equals(
-                        base))
-                    .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                        REPRESENTS_UNIT).get().getType().isWorker()
-                        || (!readOnlyMemory.returnFactValueForGivenKey(
-                        REPRESENTS_UNIT).get().getTrainingQueue().isEmpty()
-                        && readOnlyMemory.returnFactValueForGivenKey(
-                        REPRESENTS_UNIT).get().getTrainingQueue().get(0).isWorker()))
-                    .collect(Collectors.toSet());
+                    //workers
+                    Set<ReadOnlyMemory> workersAroundBase = memory.getReadOnlyMemories()
+                        .filter(
+                            readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(LOCATION) &&
+                                readOnlyMemory.returnFactValueForGivenKey(LOCATION).isPresent()
+                                && readOnlyMemory.returnFactValueForGivenKey(LOCATION).get().equals(
+                                base))
+                        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                            REPRESENTS_UNIT).get().getType().isWorker()
+                            || (!readOnlyMemory.returnFactValueForGivenKey(
+                            REPRESENTS_UNIT).get().getTrainingQueue().isEmpty()
+                            && readOnlyMemory.returnFactValueForGivenKey(
+                            REPRESENTS_UNIT).get().getTrainingQueue().get(0).isWorker()))
+                        .collect(Collectors.toSet());
 
-                memory.updateFactSetByFacts(WORKER_ON_BASE, workersAroundBase.stream()
-                    .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                        REPRESENTS_UNIT).get())
-                    .collect(Collectors.toSet()));
-                workersAroundBase = workersAroundBase.stream()
-                    .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                        REPRESENTS_UNIT).get().getType().isWorker())
-                    .collect(Collectors.toSet());
-                memory.updateFactSetByFacts(WORKER_MINING_MINERALS, workersAroundBase.stream()
-                    .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                        IS_GATHERING_MINERALS).get())
-                    .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                        REPRESENTS_UNIT).get())
-                    .collect(Collectors.toSet()));
-                memory.updateFactSetByFacts(WORKER_MINING_GAS, workersAroundBase.stream()
-                    .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                        IS_GATHERING_GAS).get())
-                    .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                        REPRESENTS_UNIT).get())
-                    .collect(Collectors.toSet()));
+                    memory.updateFactSetByFacts(WORKER_ON_BASE, workersAroundBase.stream()
+                        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                            REPRESENTS_UNIT).get())
+                        .collect(Collectors.toSet()));
+                    workersAroundBase = workersAroundBase.stream()
+                        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                            REPRESENTS_UNIT).get().getType().isWorker())
+                        .collect(Collectors.toSet());
+                    memory.updateFactSetByFacts(WORKER_MINING_MINERALS, workersAroundBase.stream()
+                        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                            IS_GATHERING_MINERALS).get())
+                        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                            REPRESENTS_UNIT).get())
+                        .collect(Collectors.toSet()));
+                    memory.updateFactSetByFacts(WORKER_MINING_GAS, workersAroundBase.stream()
+                        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                            IS_GATHERING_GAS).get())
+                        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                            REPRESENTS_UNIT).get())
+                        .collect(Collectors.toSet()));
 
-                return true;
-              }
-            })
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueBeliefs(
-                        FactConverters.IS_BASE) == 1.0)
-                .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BASE)))
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> true)
-                .build())
-            .build();
+                    return true;
+                  }
+                })
+                .decisionInDesire(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy(
+                        (dataForDecision, memory) -> dataForDecision.getFeatureValueBeliefs(
+                            FactConverters.IS_BASE) == 1.0)
+                    .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BASE)))
+                    .build())
+                .decisionInIntention(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .build();
         type.addConfiguration(DesiresKeys.ECO_STATUS_IN_LOCATION, ecoConcerns);
 
         //Make request to start mining. Remove request when there are no more minerals to mine or there is no hatchery to bring mineral in
@@ -797,8 +786,7 @@ public class BaseLocationAgentType {
           .collect(Collectors.toSet()))
       .desiresWithIntentionToReason(Stream
           .of(DesiresKeys.ECO_STATUS_IN_LOCATION, DesiresKeys.FRIENDLIES_IN_LOCATION,
-              DesiresKeys.ENEMIES_IN_LOCATION,
-              DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION,
+              DesiresKeys.ENEMIES_IN_LOCATION, DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION,
               DesiresKeys.ESTIMATE_OUR_FORCE_IN_LOCATION, DesiresKeys.VISIT)
           .collect(Collectors.toSet())
       )

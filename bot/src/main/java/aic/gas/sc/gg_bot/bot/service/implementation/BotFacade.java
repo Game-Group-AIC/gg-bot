@@ -216,8 +216,8 @@ public class BotFacade extends DefaultBWListener {
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = agentUnitFactory
             .createAgentForUnit(unit, this, game.getFrameCount());
-        log.info("Creating " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
-            .orElse("null"));
+//        log.info("Creating " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
+//            .orElse("null"));
         agent.ifPresent(agentObservingGame -> {
           agentsWithGameRepresentation.put(unit.getID(), agentObservingGame);
           masFacade.addAgentToSystem(agentObservingGame);
@@ -234,8 +234,8 @@ public class BotFacade extends DefaultBWListener {
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = Optional
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
-        log.info("Destroying " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
-            .orElse("null"));
+//        log.info("Destroying " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
+//            .orElse("null"));
         agent.ifPresent(
             agentUnit -> masFacade.removeAgentFromSystem(agentUnit, unit.getType().isBuilding()));
       }
@@ -253,9 +253,9 @@ public class BotFacade extends DefaultBWListener {
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
         agent.ifPresent(agentUnit -> masFacade.removeAgentFromSystem(agentUnit, true));
 
-        log.info("Morphing from " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
-            .orElse("null")
-            + " to " + unit.getType().toString());
+//        log.info("Morphing from " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
+//            .orElse("null")
+//            + " to " + unit.getType().toString());
 
         //put it under lock
         buildLockerService.lock(WrapperTypeFactory.createFrom(unit.getType()));

@@ -26,26 +26,25 @@ public class AgentTypeUtils {
    * Initialize abstract build plan top - make reservation + check conditions (for building).
    * It is unlocked only when building is built
    */
-  public static <T, V> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-      FactWithSetOfOptionalValuesForAgentType<T> currentCount,
-      FactWithSetOfOptionalValuesForAgentType<V> currentCountInConstruction,
-      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
-      FeatureContainerHeader featureContainerHeader,
+  public static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
+      FactWithSetOfOptionalValuesForAgentType<T> currentCount, DesireKey desireKey,
+      AUnitTypeWrapper unitTypeWrapper, FeatureContainerHeader featureContainerHeader,
       Stream<DesireKey> desireKeysWithAbstractIntentionStream, AgentTypeID agentTypeID) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
-                (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
-                    && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                    && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
-                    && dataForDecision
-                    .getFeatureValueGlobalBeliefs(currentCountInConstruction) == 0
-                    //learnt decision
-                    && (Decider.getDecision(agentTypeID, desireKey.getId(),
-                    dataForDecision, featureContainerHeader)))
+                (dataForDecision, memory) ->
+                    !BotFacade.RESOURCE_MANAGER
+                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                        && !dataForDecision.madeDecisionToAny()
+                        && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                        && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
+                        //learnt decision
+                        && (Decider.getDecision(agentTypeID, desireKey.getId(),
+                        dataForDecision, featureContainerHeader)))
             .globalBeliefTypesByAgentType(Stream.concat(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
-                Stream.of(currentCountInConstruction, currentCount))
+                Stream.of(currentCount))
                 .collect(Collectors.toSet()))
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
@@ -57,11 +56,8 @@ public class AgentTypeUtils {
                 (dataForDecision, memory) ->
                     BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //building exists
-                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0
-                        || dataForDecision
-                        .getFeatureValueGlobalBeliefs(currentCountInConstruction) > 0)
-            .globalBeliefTypesByAgentType(Stream.of(currentCountInConstruction, currentCount)
-                .collect(Collectors.toSet()))
+                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
+            .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
             .build())
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
@@ -85,7 +81,9 @@ public class AgentTypeUtils {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    !dataForDecision.madeDecisionToAny() &&
+                    !BotFacade.RESOURCE_MANAGER
+                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                        && !dataForDecision.madeDecisionToAny() &&
                         !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //learnt decision
                         && (Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,

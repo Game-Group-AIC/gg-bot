@@ -14,9 +14,9 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -49,7 +49,7 @@ public class DesiresKeys {
       .build();
   public static final DesireKey EXPAND = DesireKey.builder()
       .id(DesireKeys.EXPAND)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
   public static final DesireKey BUILD_EXTRACTOR = DesireKey.builder()
       .id(DesireKeys.BUILD_EXTRACTOR)
@@ -58,18 +58,18 @@ public class DesiresKeys {
   //for unit order manager
   public static final DesireKey BOOST_GROUND_MELEE = DesireKey.builder()
       .id(DesireKeys.BOOST_GROUND_MELEE)
-      .staticFactValues(new HashSet<>(Collections
-          .singletonList(new Fact<>(() -> AUnitTypeWrapper.ZERGLING_TYPE, FactKeys.MORPH_TO))))
+      .staticFactValues(Collections
+          .singleton(new Fact<>(() -> AUnitTypeWrapper.ZERGLING_TYPE, FactKeys.MORPH_TO)))
       .build();
   public static final DesireKey BOOST_GROUND_RANGED = DesireKey.builder()
       .id(DesireKeys.BOOST_GROUND_RANGED)
-      .staticFactValues(new HashSet<>(Collections
-          .singletonList(new Fact<>(() -> AUnitTypeWrapper.HYDRALISK_TYPE, FactKeys.MORPH_TO))))
+      .staticFactValues(Collections
+          .singleton(new Fact<>(() -> AUnitTypeWrapper.HYDRALISK_TYPE, FactKeys.MORPH_TO)))
       .build();
   public static final DesireKey BOOST_AIR = DesireKey.builder()
       .id(DesireKeys.BOOST_AIR)
-      .staticFactValues(new HashSet<>(Collections
-          .singletonList(new Fact<>(() -> AUnitTypeWrapper.MUTALISK_TYPE, FactKeys.MORPH_TO))))
+      .staticFactValues(Collections
+          .singleton(new Fact<>(() -> AUnitTypeWrapper.MUTALISK_TYPE, FactKeys.MORPH_TO)))
       .build();
 
   //for build order manager
@@ -92,15 +92,18 @@ public class DesiresKeys {
   //attack
   public static final DesireKey HOLD_GROUND = DesireKey.builder()
       .id(DesireKeys.HOLD_GROUND)
-      .parametersTypesForFacts(new HashSet<>(Arrays.asList(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)))
+      .parametersTypesForFacts(Stream.of(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)
+          .collect(Collectors.toSet()))
       .build();
   public static final DesireKey HOLD_AIR = DesireKey.builder()
       .id(DesireKeys.HOLD_AIR)
-      .parametersTypesForFacts(new HashSet<>(Arrays.asList(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)))
+      .parametersTypesForFacts(Stream.of(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)
+          .collect(Collectors.toSet()))
       .build();
   public static final DesireKey DEFEND = DesireKey.builder()
       .id(DesireKeys.DEFEND)
-      .parametersTypesForFacts(new HashSet<>(Arrays.asList(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)))
+      .parametersTypesForFacts(Stream.of(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)
+          .collect(Collectors.toSet()))
       .build();
 
   //for base
@@ -130,19 +133,22 @@ public class DesiresKeys {
       .build();
   public static final DesireKey MINE_MINERALS_IN_BASE = DesireKey.builder()
       .id(DesireKeys.MINE_MINERALS_IN_BASE)
-      .parametersTypesForFacts(new HashSet<>(Collections.singletonList(IS_BASE_LOCATION)))
-      .parametersTypesForFactSets(new HashSet<>(Arrays.asList(MINERAL, HAS_BASE)))
+      .parametersTypesForFacts(Collections.singleton(IS_BASE_LOCATION))
+      .parametersTypesForFactSets(Stream.of(MINERAL, HAS_BASE)
+          .collect(Collectors.toSet()))
       .build();
   public static final DesireKey MINE_GAS_IN_BASE = DesireKey.builder()
       .id(DesireKeys.MINE_GAS_IN_BASE)
-      .parametersTypesForFacts(new HashSet<>(Collections.singletonList(IS_BASE_LOCATION)))
-      .parametersTypesForFactSets(new HashSet<>(Arrays.asList(HAS_EXTRACTOR, HAS_BASE)))
+      .parametersTypesForFacts(Collections.singleton(IS_BASE_LOCATION))
+      .parametersTypesForFactSets(Stream.of(HAS_EXTRACTOR, HAS_BASE)
+          .collect(Collectors.toSet()))
       .build();
 
   //scouting
   public static final DesireKey VISIT = DesireKey.builder()
       .id(DesireKeys.VISIT)
-      .parametersTypesForFacts(new HashSet<>(Arrays.asList(IS_BASE_LOCATION, LAST_TIME_SCOUTED)))
+      .parametersTypesForFacts(Stream.of(IS_BASE_LOCATION, LAST_TIME_SCOUTED)
+          .collect(Collectors.toSet()))
       .build();
   public static final DesireKey WORKER_SCOUT = DesireKey.builder()
       .id(DesireKeys.WORKER_SCOUT)
@@ -154,45 +160,45 @@ public class DesiresKeys {
       .build();
   public static final DesireKey MORPH_TO_DRONE = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_DRONE)
-      .staticFactValues(new HashSet<>(Collections
-          .singletonList(new Fact<>(() -> AUnitTypeWrapper.DRONE_TYPE, FactKeys.MORPH_TO))))
+      .staticFactValues(Collections
+          .singleton(new Fact<>(() -> AUnitTypeWrapper.DRONE_TYPE, FactKeys.MORPH_TO)))
       .build();
   public static final DesireKey MORPH_TO_OVERLORD = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_OVERLORD)
-      .staticFactValues(new HashSet<>(Collections
-          .singletonList(new Fact<>(() -> AUnitTypeWrapper.OVERLORD_TYPE, FactKeys.MORPH_TO))))
+      .staticFactValues(Collections
+          .singleton(new Fact<>(() -> AUnitTypeWrapper.OVERLORD_TYPE, FactKeys.MORPH_TO)))
       .build();
   public static final DesireKey MORPH_TO_POOL = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_POOL)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
   public static final DesireKey MORPH_TO_SPIRE = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_SPIRE)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
   public static final DesireKey MORPH_TO_EVOLUTION_CHAMBER = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_EVOLUTION_CHAMBER)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
   public static final DesireKey MORPH_TO_HYDRALISK_DEN = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_HYDRALISK_DEN)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
   public static final DesireKey MORPH_TO_EXTRACTOR = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_EXTRACTOR)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
   public static final DesireKey MORPH_TO_SPORE_COLONY = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_SPORE_COLONY)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
   public static final DesireKey MORPH_TO_CREEP_COLONY = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_CREEP_COLONY)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
   public static final DesireKey MORPH_TO_SUNKEN_COLONY = DesireKey.builder()
       .id(DesireKeys.MORPH_TO_SUNKEN_COLONY)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(BASE_TO_MOVE)))
+      .parametersTypesForFacts(Collections.singleton(BASE_TO_MOVE))
       .build();
 
   //for all units
@@ -239,8 +245,8 @@ public class DesiresKeys {
       .build();
   public static final DesireKey MINE_MINERALS = DesireKey.builder()
       .id(DesireKeys.MINE_MINERAL)
-      .parametersTypesForFacts(new HashSet<>(Collections.singleton(IS_BASE_LOCATION)))
-      .parametersTypesForFacts(new HashSet<>(Collections.singletonList(MINERAL_TO_MINE)))
+      .parametersTypesForFacts(Collections.singleton(IS_BASE_LOCATION))
+      .parametersTypesForFacts(Collections.singleton(MINERAL_TO_MINE))
       .build();
   public static final DesireKey UNSELECT_MINERAL = DesireKey.builder()
       .id(DesireKeys.UNSELECT_MINERAL)

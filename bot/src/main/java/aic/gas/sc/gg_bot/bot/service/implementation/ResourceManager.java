@@ -75,7 +75,7 @@ public class ResourceManager implements IResourceManager {
           }
 
           if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() <= minedMinerals
-              && sumOfGas + tuple.reservationMadeOn.gasCost() <= sumOfGas
+              && sumOfGas + tuple.reservationMadeOn.gasCost() <= minedGas
               && sumOfSupply + tuple.reservationMadeOn.supplyRequired() <= supplyAvailable) {
             resourcesAvailableFor.add(tuple);
             sumOfMinerals = sumOfMinerals + tuple.reservationMadeOn.mineralCost();
@@ -84,12 +84,12 @@ public class ResourceManager implements IResourceManager {
             reservationStatuses.add(formMessage(tuple, "R"));
           } else {
             if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() > minedMinerals
-                && sumOfGas + tuple.reservationMadeOn.gasCost() > sumOfGas) {
+                && sumOfGas + tuple.reservationMadeOn.gasCost() > minedGas) {
               reservationStatuses.add(formMessage(tuple, "W"));
               break;
             } else {
               if ((!skippedGasRequest || !extractor.isPresent())
-                  && sumOfGas + tuple.reservationMadeOn.gasCost() > sumOfGas) {
+                  && sumOfGas + tuple.reservationMadeOn.gasCost() > minedGas) {
                 reservationStatuses.add(formMessage(tuple, "W"));
                 skippedGasRequest = true;
               } else {
@@ -114,8 +114,8 @@ public class ResourceManager implements IResourceManager {
     }
   }
 
-  @Override
-  public <T extends AbstractWrapper<?> & TypeToBuy> boolean canSpendResourcesOn(T t, int agentId) {
+  private <T extends AbstractWrapper<?> & TypeToBuy> boolean checkQueue(T t, int agentId,
+      List<Tuple<?>> list) {
     synchronized (MONITOR) {
       try {
         while (updatingResources) {
@@ -123,7 +123,7 @@ public class ResourceManager implements IResourceManager {
           MONITOR.wait();
         }
         readingResources = true;
-        for (Tuple<?> tuple : resourcesAvailableFor) {
+        for (Tuple<?> tuple : list) {
           if (tuple.reservationMadeBy == agentId) {
             if (tuple.reservationMadeOn.equals(t)) {
               return true;
@@ -141,6 +141,11 @@ public class ResourceManager implements IResourceManager {
   }
 
   @Override
+  public <T extends AbstractWrapper<?> & TypeToBuy> boolean canSpendResourcesOn(T t, int agentId) {
+    return checkQueue(t, agentId, resourcesAvailableFor);
+  }
+
+  @Override
   public <T extends AbstractWrapper<?> & TypeToBuy> void makeReservation(T t, int agentId) {
     synchronized (MONITOR) {
       try {
@@ -150,6 +155,11 @@ public class ResourceManager implements IResourceManager {
         }
         readingResources = true;
         Tuple<T> tuple = new Tuple<>(agentId, t);
+
+        if (reservationQueue.contains(tuple)) {
+          log.info("");
+        }
+
         reservationQueue.add(tuple);
         reservationsFrom.add(agentId);
       } catch (InterruptedException e) {
@@ -171,7 +181,7 @@ public class ResourceManager implements IResourceManager {
         }
         readingResources = true;
         if (reservationsFrom.contains(agentId)) {
-          int index = 0;
+          int index = -1;
           for (int i = 0; i < reservationQueue.size(); i++) {
             Tuple<?> tuple = reservationQueue.get(i);
             if (tuple.reservationMadeBy == agentId) {
@@ -224,7 +234,12 @@ public class ResourceManager implements IResourceManager {
     }
   }
 
-  private static final String formMessage(Tuple<?> tuple, String status) {
+  @Override
+  public <T extends AbstractWrapper<?> & TypeToBuy> boolean hasMadeReservationOn(T t, int agentId) {
+    return checkQueue(t, agentId, reservationQueue);
+  }
+
+  private static String formMessage(Tuple<?> tuple, String status) {
     return tuple.reservationMadeBy + ": " + tuple.reservationMadeOn.getName() + " - " + status;
   }
 

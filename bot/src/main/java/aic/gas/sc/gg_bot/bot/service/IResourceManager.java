@@ -21,4 +21,6 @@ public interface IResourceManager {
 
   void removeAllReservations(int agentId);
 
+  <T extends AbstractWrapper<?> & TypeToBuy> boolean hasMadeReservationOn(T t, int agentId);
+
 }

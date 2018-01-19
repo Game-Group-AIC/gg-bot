@@ -292,9 +292,9 @@ public class HeapOfTrees implements PlanningTreeInterface,
 
   @Override
   public Map<DesireKey, Long> collectKeysOfDesiresInTreeCounts() {
-    List<DesireKey> list = new ArrayList<>(getNodesWithDesire().stream()
+    List<DesireKey> list = getNodesWithDesire().stream()
         .map(Node::getDesireKey)
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList());
     getNodesWithIntention()
         .forEach(intentionNode -> intentionNode.collectKeysOfDesiresInSubtree(list));
     return list.stream()

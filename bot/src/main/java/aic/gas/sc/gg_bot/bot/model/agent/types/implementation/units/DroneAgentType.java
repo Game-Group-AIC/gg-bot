@@ -73,6 +73,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
+//TODO problem building extractor
 @Slf4j
 public class DroneAgentType {
 
@@ -116,8 +117,8 @@ public class DroneAgentType {
                 ))
                 .useFactsInMemory(true)
                 .desiresToConsider(Stream.concat(Stream.of(DesiresKeys.WORKER_SCOUT,
-                    DesiresKeys.GO_TO_BASE, DesiresKeys.MINE_MINERALS_IN_BASE,
-                    DesiresKeys.MINE_GAS_IN_BASE), BUILDING_DESIRES.stream())
+                    DesiresKeys.GO_TO_BASE, DesiresKeys.MINE_GAS_IN_BASE),
+                    BUILDING_DESIRES.stream())
                     .collect(Collectors.toSet()))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -276,13 +277,12 @@ public class DroneAgentType {
                     .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE))
                     //is not gathering resources
                     && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false)
-                    && !memory.returnFactValueForGivenKey(IS_GATHERING_GAS).orElse(false)
-                )
+                    && !memory.returnFactValueForGivenKey(IS_GATHERING_GAS).orElse(false))
                 .useFactsInMemory(true)
                 .parameterValueSetTypes(
                     new HashSet<>(Collections.singletonList(COUNT_OF_MINERALS_ON_BASE)))
                 .desiresToConsider(Stream.concat(Stream
-                        .of(DesiresKeys.WORKER_SCOUT, DesiresKeys.MINE_GAS_IN_BASE,
+                        .of(DesiresKeys.WORKER_SCOUT, DesiresKeys.MINE_MINERALS_IN_BASE,
                             DesiresKeys.GO_TO_BASE),
                     BUILDING_DESIRES.stream()).collect(Collectors.toSet()))
                 .build()
@@ -752,7 +752,6 @@ public class DroneAgentType {
           @Override
           public boolean act(WorkingMemory memory) {
             if (intention.returnFactValueForGivenKey(placeForBuilding).isPresent()) {
-              log.info("Morphing to " + typeOfBuilding.getName());
               intention.returnFactValueForGivenKey(IS_UNIT).get().build(typeOfBuilding,
                   intention.returnFactValueForGivenKey(placeForBuilding).get());
             }

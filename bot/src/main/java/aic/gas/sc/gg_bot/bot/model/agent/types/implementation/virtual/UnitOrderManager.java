@@ -43,11 +43,11 @@ public class UnitOrderManager {
 
         //build mutalisks
         ConfigurationWithAbstractPlan trainMuta = createOwnConfigurationWithAbstractPlanToTrainFromTemplate(
-            BOOST_AIR, AUnitTypeWrapper.HYDRALISK_TYPE, AgentTypes.UNIT_ORDER_MANAGER,
+            BOOST_AIR, AUnitTypeWrapper.MUTALISK_TYPE, AgentTypes.UNIT_ORDER_MANAGER,
             BOOSTING_AIR);
         type.addConfiguration(BOOST_AIR, trainMuta, true);
         ConfigurationWithSharedDesire trainMutaShared = createConfigurationWithSharedDesireToTrainFromTemplate(
-            BOOST_AIR, AUnitTypeWrapper.HYDRALISK_TYPE);
+            BOOST_AIR, AUnitTypeWrapper.MUTALISK_TYPE);
         type.addConfiguration(BOOST_AIR, BOOST_AIR, trainMutaShared);
 
         //TODO - abstract plan to build units based on position requests?

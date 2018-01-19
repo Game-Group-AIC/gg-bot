@@ -1,17 +1,11 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EVOLUTION_CHAMBERS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EVOLUTION_CHAMBERS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HYDRALISK_DENS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_LAIRS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_LAIRS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_POOLS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_POOLS_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPIRES;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPIRES_IN_CONSTRUCTION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
@@ -95,21 +89,18 @@ public class BuildingOrderManager {
    * Initialize abstract build plan - make reservation + check conditions (for building).
    * It is unlocked only when building is built
    */
-  private static <T, V> ConfigurationWithAbstractPlan createConfigurationWithAbstractPlanIfBuildingIsMissingFromTemplate(
-      FactWithSetOfOptionalValuesForAgentType<T> currentCount,
-      FactWithSetOfOptionalValuesForAgentType<V> currentCountInConstruction,
-      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
-      Stream<DesireKey> desireKeysWithAbstractIntentionStream) {
+  private static <T> ConfigurationWithAbstractPlan createConfigurationWithAbstractPlanIfBuildingIsMissingFromTemplate(
+      FactWithSetOfOptionalValuesForAgentType<T> currentCount, DesireKey desireKey,
+      AUnitTypeWrapper unitTypeWrapper, Stream<DesireKey> desireKeysWithAbstractIntentionStream) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
-                (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                (dataForDecision, memory) ->
+                    !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                    && !dataForDecision.madeDecisionToAny()
                     && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                    && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
-                    && dataForDecision
-                    .getFeatureValueGlobalBeliefs(currentCountInConstruction) == 0)
-            .globalBeliefTypesByAgentType(Stream.of(currentCountInConstruction, currentCount)
-                .collect(Collectors.toSet()))
+                    && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0)
+            .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -117,11 +108,8 @@ public class BuildingOrderManager {
                 (dataForDecision, memory) ->
                     BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //building exists
-                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0
-                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCountInConstruction)
-                        > 0)
-            .globalBeliefTypesByAgentType(Stream.of(currentCountInConstruction, currentCount)
-                .collect(Collectors.toSet()))
+                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
+            .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
             .build())
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
@@ -141,16 +129,15 @@ public class BuildingOrderManager {
 
         //build pool abstract top - make reservation + check conditions (no pool). unlocked only when pool was built
         ConfigurationWithAbstractPlan buildPoolOwn = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_POOLS, COUNT_OF_POOLS_IN_CONSTRUCTION, ENABLE_GROUND_MELEE,
-            AUnitTypeWrapper.SPAWNING_POOL_TYPE, BUILDING_POOL, Stream.empty(),
-            AgentTypes.BUILDING_ORDER_MANAGER);
+            COUNT_OF_POOLS, ENABLE_GROUND_MELEE, AUnitTypeWrapper.SPAWNING_POOL_TYPE, BUILDING_POOL,
+            Stream.empty(), AgentTypes.BUILDING_ORDER_MANAGER);
         type.addConfiguration(ENABLE_GROUND_MELEE, buildPoolOwn, true);
 
         //build pool abstract common (to meet dependencies) - make reservation + check conditions (no pool). unlocked only when pool was built
         //build pool if not present
         ConfigurationWithAbstractPlan buildPoolIfNotPresent = createConfigurationWithAbstractPlanIfBuildingIsMissingFromTemplate(
-            COUNT_OF_POOLS, COUNT_OF_POOLS_IN_CONSTRUCTION, ENABLE_GROUND_MELEE,
-            AUnitTypeWrapper.SPAWNING_POOL_TYPE, Stream.empty());
+            COUNT_OF_POOLS, ENABLE_GROUND_MELEE, AUnitTypeWrapper.SPAWNING_POOL_TYPE,
+            Stream.empty());
 
         //share desire to build pool with system - there is enough resources
         ConfigurationWithSharedDesire buildPoolShared = createConfigurationWithSharedDesireToBuildFromTemplate(
@@ -165,26 +152,18 @@ public class BuildingOrderManager {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny() &&
-                        !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
-                        && dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS) == 0
-                        && dataForDecision
-                        .getFeatureValueGlobalBeliefs(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION) == 0
-                )
+                        !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(AUnitTypeWrapper.EXTRACTOR_TYPE, memory.getAgentId())
+                        && !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
+                        && dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS)
+                        == 0)
                 .globalBeliefSetTypesByAgentType(Collections.singleton(COUNT_OF_EXTRACTORS))
-                .globalBeliefTypesByAgentType(
-                    Collections.singleton(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION))
                 .desiresToConsider(new HashSet<>(Collections.singleton(BUILD_EXTRACTOR)))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
                     BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
-                        || dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS) > 0
-                        || dataForDecision
-                        .getFeatureValueGlobalBeliefs(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION) > 0
-                )
+                        || dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS) > 0)
                 .globalBeliefSetTypesByAgentType(Collections.singleton(COUNT_OF_EXTRACTORS))
-                .globalBeliefTypesByAgentType(
-                    Collections.singleton(COUNT_OF_EXTRACTORS_IN_CONSTRUCTION))
                 .build())
             .reactionOnChangeStrategy(
                 (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER.makeReservation(
@@ -203,16 +182,15 @@ public class BuildingOrderManager {
 
         //build lair abstract top - make reservation + check conditions (no lair). unlocked only when lair was built
         ConfigurationWithAbstractPlan upgradeToLairAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_LAIRS, COUNT_OF_LAIRS_IN_CONSTRUCTION, UPGRADE_TO_LAIR,
-            AUnitTypeWrapper.LAIR_TYPE, UPGRADING_TO_LAIR,
+            COUNT_OF_LAIRS, UPGRADE_TO_LAIR, AUnitTypeWrapper.LAIR_TYPE, UPGRADING_TO_LAIR,
             Stream.of(ENABLE_GROUND_MELEE, BUILD_EXTRACTOR), AgentTypes.BUILDING_ORDER_MANAGER);
         type.addConfiguration(UPGRADE_TO_LAIR, upgradeToLairAbstract, true);
 
         //build lair abstract common (to meet dependencies) - make reservation + check conditions (no lair). unlocked only when lair was built
         //build lair if not present
         ConfigurationWithAbstractPlan upgradeToLairIfNotPresentAbstract = createConfigurationWithAbstractPlanIfBuildingIsMissingFromTemplate(
-            COUNT_OF_LAIRS, COUNT_OF_LAIRS_IN_CONSTRUCTION, UPGRADE_TO_LAIR,
-            AUnitTypeWrapper.LAIR_TYPE, Stream.of(ENABLE_GROUND_MELEE, BUILD_EXTRACTOR));
+            COUNT_OF_LAIRS, UPGRADE_TO_LAIR, AUnitTypeWrapper.LAIR_TYPE,
+            Stream.of(ENABLE_GROUND_MELEE, BUILD_EXTRACTOR));
 
         //share desire to upgrade hatchery into lair with system - there is enough resources
         ConfigurationWithSharedDesire upgradeToLair = createConfigurationWithSharedDesireToBuildFromTemplate(
@@ -228,9 +206,9 @@ public class BuildingOrderManager {
 
         //hydralisk den as abstract plan. needs to meet dependencies - pool and at least one extractor
         ConfigurationWithAbstractPlan buildHydraliskDenAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION, COUNT_OF_HYDRALISK_DENS, ENABLE_GROUND_RANGED,
-            AUnitTypeWrapper.HYDRALISK_DEN_TYPE, BUILDING_HYDRALISK_DEN,
-            Stream.of(ENABLE_GROUND_MELEE, BUILD_EXTRACTOR), AgentTypes.BUILDING_ORDER_MANAGER);
+            COUNT_OF_HYDRALISK_DENS, ENABLE_GROUND_RANGED, AUnitTypeWrapper.HYDRALISK_DEN_TYPE,
+            BUILDING_HYDRALISK_DEN, Stream.of(ENABLE_GROUND_MELEE, BUILD_EXTRACTOR),
+            AgentTypes.BUILDING_ORDER_MANAGER);
         type.addConfiguration(ENABLE_GROUND_RANGED, buildHydraliskDenAbstract, true);
 
         //share desire to build hydralisk den with system - there is enough resources
@@ -247,8 +225,7 @@ public class BuildingOrderManager {
 
         //spire as abstract plan. needs to meet dependencies - lair and at least one extractor
         ConfigurationWithAbstractPlan buildSpireAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_SPIRES, COUNT_OF_SPIRES_IN_CONSTRUCTION, ENABLE_AIR,
-            AUnitTypeWrapper.SPIRE_TYPE, BUILDING_SPIRE,
+            COUNT_OF_SPIRES, ENABLE_AIR, AUnitTypeWrapper.SPIRE_TYPE, BUILDING_SPIRE,
             Stream.of(UPGRADE_TO_LAIR, BUILD_EXTRACTOR), AgentTypes.BUILDING_ORDER_MANAGER);
         type.addConfiguration(ENABLE_AIR, buildSpireAbstract, true);
 
@@ -266,9 +243,9 @@ public class BuildingOrderManager {
 
         //evolution chamber as abstract plan
         ConfigurationWithAbstractPlan buildEvolutionChamberAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_EVOLUTION_CHAMBERS, COUNT_OF_EVOLUTION_CHAMBERS_IN_CONSTRUCTION,
-            ENABLE_STATIC_ANTI_AIR, AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE,
-            BUILDING_EVOLUTION_CHAMBER, Stream.empty(), AgentTypes.BUILDING_ORDER_MANAGER);
+            COUNT_OF_EVOLUTION_CHAMBERS, ENABLE_STATIC_ANTI_AIR,
+            AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE, BUILDING_EVOLUTION_CHAMBER, Stream.empty(),
+            AgentTypes.BUILDING_ORDER_MANAGER);
         type.addConfiguration(ENABLE_STATIC_ANTI_AIR, buildEvolutionChamberAbstract, true);
 
         //build evolution chamber

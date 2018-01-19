@@ -20,8 +20,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class InternalDesire<T extends Intention<? extends InternalDesire<?>>> extends
-    Desire
-    implements FactContainerInterface, OnChangeActor, OnDestructionActor {
+    Desire implements FactContainerInterface, OnChangeActor, OnCommitmentChangeStrategy {
 
   final CommitmentDeciderInitializer removeCommitment;
   @Getter
@@ -73,28 +72,22 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
 
   @Override
   public void actOnRemoval() {
-    actOnChange(memory, desireParameters);
+    actOnRemoval(memory, desireParameters, reactionOnChangeStrategy);
   }
 
   public boolean shouldCommit(List<DesireKey> madeCommitmentToTypes,
-      List<DesireKey> didNotMakeCommitmentToTypes,
-      List<DesireKey> typesAboutToMakeDecision) {
-
-    //TODO - HACK! does not change return value and enables reaction
+      List<DesireKey> didNotMakeCommitmentToTypes, List<DesireKey> typesAboutToMakeDecision) {
     return commitmentDecider
-        .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
-            typesAboutToMakeDecision,
-            memory) && actOnChange(memory, desireParameters);
+        .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
+            memory);
   }
 
   public boolean shouldCommit(List<DesireKey> madeCommitmentToTypes,
       List<DesireKey> didNotMakeCommitmentToTypes,
       List<DesireKey> typesAboutToMakeDecision, int numberOfCommittedAgents) {
-
-    //TODO - HACK! does not change return value and enables reaction
     return commitmentDecider
         .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
-            memory, numberOfCommittedAgents) && actOnChange(memory, desireParameters);
+            memory, numberOfCommittedAgents);
   }
 
   public <V> Optional<V> returnFactValueForGivenKey(FactKey<V> factKey) {
@@ -155,7 +148,15 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
   /**
    * Return intention induced by this desire for given agent
    */
-  public abstract T formIntention(Agent agent);
+  protected abstract T formIntention(Agent agent);
+
+  /**
+   * Return intention induced by this desire for given agent
+   */
+  public T formIntentionExternal(Agent agent) {
+    actOnRemoval();
+    return formIntention(agent);
+  }
 
   @Override
   public boolean equals(Object o) {

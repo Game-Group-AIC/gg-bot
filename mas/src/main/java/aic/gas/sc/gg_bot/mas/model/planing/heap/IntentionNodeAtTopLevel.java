@@ -33,15 +33,15 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
 
   private IntentionNodeAtTopLevel(HeapOfTrees heapOfTrees, T desire) {
     super(heapOfTrees, desire.getDesireParameters());
-    this.intention = desire.formIntention(heapOfTrees.getAgent());
+    this.intention = desire.formIntentionExternal(heapOfTrees.getAgent());
+  }
+
+  void formDesireNodeToReplaceIntentionNode(){
+    actOnRemoval();
+    formDesireNodeAndReplaceIntentionNode();
   }
 
   abstract void formDesireNodeAndReplaceIntentionNode();
-
-  @Override
-  public void actOnRemoval() {
-    intention.actOnRemoval();
-  }
 
   /**
    * Class to extend template - to define intention node without child
@@ -71,7 +71,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
           didNotMakeCommitmentToTypes,
           typesAboutToMakeDecision
       )) {
-        formDesireNodeAndReplaceIntentionNode();
+        formDesireNodeToReplaceIntentionNode();
         return true;
       }
       return false;
@@ -95,6 +95,11 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
       }
 
       @Override
+      public void actOnRemoval() {
+        intention.actOnRemoval();
+      }
+
+      @Override
       public boolean removeCommitment(List<DesireKey> madeCommitmentToTypes,
           List<DesireKey> didNotMakeCommitmentToTypes,
           List<DesireKey> typesAboutToMakeDecision) {
@@ -108,10 +113,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
           SharedDesireForAgents sharedDesire = intention.getSharedDesireForAgents();
           synchronized (lockMonitor) {
             if (heapOfTrees.getAgent().getDesireMediator()
-                .removeCommitmentToDesire(heapOfTrees.getAgent(),
-                    sharedDesire,
-                    this
-                )) {
+                .removeCommitmentToDesire(heapOfTrees.getAgent(), sharedDesire, this)) {
               try {
                 lockMonitor.wait();
               } catch (InterruptedException e) {
@@ -120,7 +122,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
 
               //is desire register, if so, make intention out of it
               if (registered) {
-                formDesireNodeAndReplaceIntentionNode();
+                formDesireNodeToReplaceIntentionNode();
                 return true;
               } else {
                 log.error(
@@ -181,6 +183,11 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
       }
 
       @Override
+      public void actOnRemoval() {
+        intention.actOnRemoval();
+      }
+
+      @Override
       void formDesireNodeAndReplaceIntentionNode() {
         parent.replaceIntentionByDesire(this,
             new DesireNodeAtTopLevel.Own.WithReasoningCommand(parent,
@@ -228,6 +235,11 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
       }
 
       @Override
+      public void actOnRemoval() {
+        intention.actOnRemoval();
+      }
+
+      @Override
       public ActCommand.Own getCommand() {
         return intention.getCommand();
       }
@@ -258,6 +270,11 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
     }
 
     @Override
+    public void actOnRemoval() {
+      intention.actOnRemoval();
+    }
+
+    @Override
     public boolean removeCommitment(List<DesireKey> madeCommitmentToTypes,
         List<DesireKey> didNotMakeCommitmentToTypes,
         List<DesireKey> typesAboutToMakeDecision) {
@@ -270,7 +287,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
         //share desire and wait for response of registration
         if (sharingDesireRemovalRoutine
             .unregisterSharedDesire(intention.getSharedDesire(), heapOfTrees)) {
-          formDesireNodeAndReplaceIntentionNode();
+          formDesireNodeToReplaceIntentionNode();
           return true;
         }
       }
@@ -342,12 +359,12 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
               .unregisterSharedDesire(sharedDesires, heapOfTrees)) {
             getDesireUpdater().getNodesWithIntention()
                 .forEach(IntentionNodeInterface::actOnRemoval);
-            formDesireNodeAndReplaceIntentionNode();
+            formDesireNodeToReplaceIntentionNode();
             return true;
           }
         } else {
           getDesireUpdater().getNodesWithIntention().forEach(IntentionNodeInterface::actOnRemoval);
-          formDesireNodeAndReplaceIntentionNode();
+          formDesireNodeToReplaceIntentionNode();
           return true;
         }
       }
@@ -356,8 +373,8 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
 
     @Override
     public void actOnRemoval() {
-      intention.actOnRemoval();
       getDesireUpdater().getNodesWithIntention().forEach(IntentionNodeInterface::actOnRemoval);
+      intention.actOnRemoval();
     }
 
     protected abstract boolean shouldRemoveCommitment(List<DesireKey> madeCommitmentToTypes,
@@ -505,11 +522,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
 
       @Override
       void formDesireNodeAndReplaceIntentionNode() {
-        parent.replaceIntentionByDesire(this,
-            new DesireNodeAtTopLevel.FromAnotherAgent.WithAbstractIntention(parent,
-                desire
-            )
-        );
+        parent.replaceIntentionByDesire(this, new DesireNodeAtTopLevel.FromAnotherAgent.WithAbstractIntention(parent, desire));
       }
 
       @Override
@@ -594,10 +607,8 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
 
       @Override
       protected boolean shouldRemoveCommitment(List<DesireKey> madeCommitmentToTypes,
-          List<DesireKey> didNotMakeCommitmentToTypes,
-          List<DesireKey> typesAboutToMakeDecision) {
-        return intention.shouldRemoveCommitment(madeCommitmentToTypes,
-            didNotMakeCommitmentToTypes,
+          List<DesireKey> didNotMakeCommitmentToTypes, List<DesireKey> typesAboutToMakeDecision) {
+        return intention.shouldRemoveCommitment(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
             typesAboutToMakeDecision
         );
       }

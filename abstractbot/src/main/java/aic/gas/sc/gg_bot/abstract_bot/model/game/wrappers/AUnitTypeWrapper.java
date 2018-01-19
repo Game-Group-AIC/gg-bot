@@ -496,12 +496,12 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
 
   @Override
   public int mineralCost() {
-    return mineralPrice;
+    return this.mineralPrice;
   }
 
   @Override
   public int gasCost() {
-    return gasPrice;
+    return this.gasPrice;
   }
 
   @Override

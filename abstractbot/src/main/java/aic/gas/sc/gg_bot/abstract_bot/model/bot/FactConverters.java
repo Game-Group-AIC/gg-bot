@@ -16,7 +16,6 @@ import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
-import bwapi.Order;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
@@ -336,6 +335,16 @@ public class FactConverters {
       optionalStream -> optionalStream.filter(Optional::isPresent)
           .mapToDouble(Optional::get)
           .sum(), AgentTypes.PLAYER);
+  public static final FactWithSetOfOptionalValuesForAgentType<Double> COUNT_OF_MINERALS = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(40, FactKeys.AVAILABLE_MINERALS),
+      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+          .mapToDouble(Optional::get)
+          .sum(), AgentTypes.PLAYER);
+  public static final FactWithSetOfOptionalValuesForAgentType<Double> COUNT_OF_GAS = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(41, FactKeys.AVAILABLE_GAS),
+      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+          .mapToDouble(Optional::get)
+          .sum(), AgentTypes.PLAYER);
 
   //base army stats
   public static final FactWithOptionalValueSet<UnitTypeStatus> SUM_OF_ENEMY_AIR_DMG_BASE = new FactWithOptionalValueSet<>(
@@ -533,171 +542,135 @@ public class FactConverters {
           .map(AUnit::getType)
           .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SUNKEN_COLONY_TYPE))
           .count());
-  public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION = new FactWithOptionalValueSet<>(
-      new FactConverterID<>(331, FactKeys.WORKER_ON_BASE),
-      vStream -> (double) vStream.orElse(Stream.empty())
-          .filter(AUnit::isMorphing)
-          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
-          .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.CREEP_COLONY_TYPE))
-          .count());
-  public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION = new FactWithOptionalValueSet<>(
-      new FactConverterID<>(332, FactKeys.STATIC_DEFENSE),
-      vStream -> (double) vStream.orElse(Stream.empty())
-          .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(CREEP_COLONY_TYPE))
-          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
-          .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SPORE_COLONY_TYPE))
-          .count());
-  public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION = new FactWithOptionalValueSet<>(
-      new FactConverterID<>(333, FactKeys.STATIC_DEFENSE),
-      vStream -> (double) vStream.orElse(Stream.empty())
-          .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(CREEP_COLONY_TYPE))
-          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
-          .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SUNKEN_COLONY_TYPE))
-          .count());
+//  public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION = new FactWithOptionalValueSet<>(
+//      new FactConverterID<>(331, FactKeys.WORKER_ON_BASE),
+//      vStream -> (double) vStream.orElse(Stream.empty())
+//          .filter(AUnit::isMorphing)
+//          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
+//          .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.CREEP_COLONY_TYPE))
+//          .count());
+//  public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_SPORE_COLONIES_AT_BASE_IN_CONSTRUCTION = new FactWithOptionalValueSet<>(
+//      new FactConverterID<>(332, FactKeys.STATIC_DEFENSE),
+//      vStream -> (double) vStream.orElse(Stream.empty())
+//          .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(CREEP_COLONY_TYPE))
+//          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
+//          .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SPORE_COLONY_TYPE))
+//          .count());
+//  public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_SUNKEN_COLONIES_AT_BASE_IN_CONSTRUCTION = new FactWithOptionalValueSet<>(
+//      new FactConverterID<>(333, FactKeys.STATIC_DEFENSE),
+//      vStream -> (double) vStream.orElse(Stream.empty())
+//          .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().equals(CREEP_COLONY_TYPE))
+//          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
+//          .map(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0))
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SUNKEN_COLONY_TYPE))
+//          .count());
   public static final FactWithOptionalValueSet<AUnitOfPlayer> BASE_IS_COMPLETED = new FactWithOptionalValueSet<>(
       new FactConverterID<>(334, FactKeys.HAS_BASE), vStream -> vStream.orElse(Stream.empty())
       .anyMatch(aUnitOfPlayer -> !aUnitOfPlayer.isBeingConstructed() && !aUnitOfPlayer.isMorphing())
       ? 1.0 : 0.0);
 
-
-  //completed bases
-  public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> COMPLETED_BASES = new FactWithOptionalValueSetsForAgentType<>(
-      new FactConverterID<>(351, FactKeys.HAS_BASE), AgentTypes.BASE_LOCATION,
-      optionalStream -> (double) optionalStream
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(aUnitOfPlayerStream -> aUnitOfPlayerStream.anyMatch(
-              aUnitOfPlayer -> !aUnitOfPlayer.isBeingConstructed() && !aUnitOfPlayer.isMorphing()))
-          .count()
-  );
-
   //building
   public static final FactWithOptionalValue<AUnitOfPlayer> IS_BEING_CONSTRUCTED = new FactWithOptionalValue<>(
       new FactConverterID<>(401, FactKeys.REPRESENTS_UNIT),
-      aUnit -> aUnit.get().isBeingConstructed() ? 1.0 : 0.0);
+      aUnit -> aUnit.get().isBeingConstructed() && aUnit.get().getType().isBuilding() ? 1.0 : 0.0);
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_POOLS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(402, FactKeys.REPRESENTS_UNIT),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+      optionalStream -> (double) optionalStream
+          .filter(Optional::isPresent)
           .count(), AgentTypes.SPAWNING_POOL);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_POOLS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(403, FactKeys.IS_MORPHING_TO),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SPAWNING_POOL_TYPE))
-          .count(), AgentTypes.DRONE);
-  public static final FactWithSetOfOptionalValuesForAgentType<Double> COUNT_OF_MINERALS = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(404, FactKeys.AVAILABLE_MINERALS),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .mapToDouble(Optional::get)
-          .sum(), AgentTypes.PLAYER);
-  public static final FactWithSetOfOptionalValuesForAgentType<Double> COUNT_OF_GAS = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(405, FactKeys.AVAILABLE_GAS),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .mapToDouble(Optional::get)
-          .sum(), AgentTypes.PLAYER);
-  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_HATCHERIES_IN_CONSTRUCTION = new FactWithSetOfOptionalValues<>(
-      new FactConverterID<>(406, FactKeys.IS_MORPHING_TO),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.HATCHERY_TYPE))
-          .count());
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HATCHERIES = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(407, FactKeys.REPRESENTS_UNIT),
-      optionalStream -> 2.0 * (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(
-              aUnitOfPlayer -> !aUnitOfPlayer.isBeingConstructed() && !aUnitOfPlayer.isMorphing())
-          .count(), AgentTypes.HATCHERY);
-  public static final FactWithSetOfOptionalValuesForAgentType<Boolean> COUNT_OF_HATCHERIES_BEING_CONSTRUCT = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(408, FactKeys.IS_BEING_CONSTRUCTED),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .filter(Optional::get)
-          .count(), AgentTypes.HATCHERY);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HETCH = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(409, FactKeys.REPRESENTS_UNIT),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .count(), AgentTypes.HATCHERY);
+//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_POOLS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(403, FactKeys.IS_MORPHING_TO),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SPAWNING_POOL_TYPE))
+//          .count(), AgentTypes.DRONE);
+//  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_HATCHERIES_IN_CONSTRUCTION = new FactWithSetOfOptionalValues<>(
+//      new FactConverterID<>(406, FactKeys.IS_MORPHING_TO),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.HATCHERY_TYPE))
+//          .count());
+//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HATCHERIES = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(407, FactKeys.REPRESENTS_UNIT),
+//      optionalStream -> 2.0 * (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(
+//              aUnitOfPlayer -> !aUnitOfPlayer.isBeingConstructed() && !aUnitOfPlayer.isMorphing())
+//          .count(), AgentTypes.HATCHERY);
+//  public static final FactWithSetOfOptionalValuesForAgentType<Boolean> COUNT_OF_HATCHERIES_BEING_CONSTRUCT = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(408, FactKeys.IS_BEING_CONSTRUCTED),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .filter(Optional::get)
+//          .count(), AgentTypes.HATCHERY);
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_LAIRS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(410, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .count(), AgentTypes.LAIR);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_LAIRS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(411, FactKeys.REPRESENTS_UNIT),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
-          .filter(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0)
-              .equals(AUnitTypeWrapper.LAIR_TYPE))
-          .count(), AgentTypes.HATCHERY);
+//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_LAIRS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(411, FactKeys.REPRESENTS_UNIT),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
+//          .filter(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0)
+//              .equals(AUnitTypeWrapper.LAIR_TYPE))
+//          .count(), AgentTypes.HATCHERY);
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_SPIRES = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(412, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .count(), AgentTypes.SPIRE);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_SPIRES_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(413, FactKeys.IS_MORPHING_TO),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SPIRE_TYPE))
-          .count(), AgentTypes.DRONE);
+//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_SPIRES_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(413, FactKeys.IS_MORPHING_TO),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SPIRE_TYPE))
+//          .count(), AgentTypes.DRONE);
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HYDRALISK_DENS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(414, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .count(), AgentTypes.HYDRALISK_DEN);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(415, FactKeys.IS_MORPHING_TO),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.HYDRALISK_DEN_TYPE))
-          .count(), AgentTypes.DRONE);
+//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(415, FactKeys.IS_MORPHING_TO),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.HYDRALISK_DEN_TYPE))
+//          .count(), AgentTypes.DRONE);
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_EVOLUTION_CHAMBERS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(416, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .count(), AgentTypes.EVOLUTION_CHAMBER);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_EVOLUTION_CHAMBERS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(417, FactKeys.IS_MORPHING_TO),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE))
-          .count(), AgentTypes.DRONE);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HATCHERIES_BEGINNING_CONSTRUCTED = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(418, FactKeys.REPRESENTS_UNIT),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
-          .filter(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0)
-              .equals(AUnitTypeWrapper.HATCHERY_TYPE))
-          .count(), AgentTypes.DRONE);
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_EXTRACTORS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(419, FactKeys.IS_MORPHING_TO),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.EXTRACTOR_TYPE))
-          .count(), AgentTypes.DRONE);
+//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_EVOLUTION_CHAMBERS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(417, FactKeys.IS_MORPHING_TO),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE))
+//          .count(), AgentTypes.DRONE);
+//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HATCHERIES_BEGINNING_CONSTRUCTED = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(418, FactKeys.REPRESENTS_UNIT),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getTrainingQueue().isEmpty())
+//          .filter(aUnitOfPlayer -> aUnitOfPlayer.getTrainingQueue().get(0)
+//              .equals(AUnitTypeWrapper.HATCHERY_TYPE))
+//          .count(), AgentTypes.DRONE);
+//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_EXTRACTORS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+//      new FactConverterID<>(419, FactKeys.IS_MORPHING_TO),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.EXTRACTOR_TYPE))
+//          .count(), AgentTypes.DRONE);
 
   //"barracks"
-  public static final FactWithOptionalValue<AUnitOfPlayer> IS_TRAINING_QUEUE_EMPTY = new FactWithOptionalValue<>(
-      new FactConverterID<>(501, FactKeys.REPRESENTS_UNIT),
-      aUnit -> aUnit.get().getTrainingQueue().isEmpty() ? 1.0 : 0.0);
   public static final FactWithOptionalValue<AUnitOfPlayer> IS_MORPHING = new FactWithOptionalValue<>(
       new FactConverterID<>(502, FactKeys.REPRESENTS_UNIT),
       aUnit -> aUnit.get().isMorphing() ? 1.0 : 0.0);
-  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_MORPHING_OVERLORDS = new FactWithSetOfOptionalValues<>(
-      new FactConverterID<>(503, FactKeys.IS_MORPHING_TO),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .map(Optional::get)
-          .filter(typeWrapper -> typeWrapper.equals(OVERLORD_TYPE))
-          .count());
-  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_SUPPLY_BY_OVERLORDS = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(504, FactKeys.REPRESENTS_UNIT), optionalStream -> optionalStream
-      .filter(Optional::isPresent)
-      .map(Optional::get)
-      .filter(AUnit::isAlive)
-      .mapToDouble(aUnitOfPlayer -> aUnitOfPlayer.getType().getSupplyProvided())
-      .sum(), AgentTypes.OVERLORD);
-
+//  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_MORPHING_OVERLORDS = new FactWithSetOfOptionalValues<>(
+//      new FactConverterID<>(503, FactKeys.IS_MORPHING_TO),
+//      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+//          .map(Optional::get)
+//          .filter(typeWrapper -> typeWrapper.equals(OVERLORD_TYPE))
+//          .count());
 
   //scouting
   public static final FactWithSetOfOptionalValuesForAgentType<Integer> COUNT_OF_VISITED_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
@@ -724,36 +697,12 @@ public class FactConverters {
     }
     return 0;
   });
-  public static final FactWithOptionalValue<AUnit> HAS_SELECTED_MINERAL_TO_MINE = new FactWithOptionalValue<>(
-      new FactConverterID<>(703, FactKeys.MINERAL_TO_MINE), aUnit -> {
-    if (aUnit.isPresent()) {
-      return 1;
-    }
-    return 0;
-  });
-  public static final FactWithOptionalValue<Integer> LAST_OBSERVATION = new FactWithOptionalValue<>(
-      new FactConverterID<>(705, FactKeys.MADE_OBSERVATION_IN_FRAME),
-      integer -> integer.orElse(-1));
-  public static final FactWithOptionalValue<AUnitOfPlayer> IS_WAITING_ON_MINERAL = new FactWithOptionalValue<>(
-      new FactConverterID<>(706, FactKeys.REPRESENTS_UNIT), aUnit -> {
-    if (aUnit.isPresent() && aUnit.get().getOrder().isPresent()
-        && aUnit.get().getOrder().get().equals(Order.WaitForMinerals)) {
-      return 1;
-    }
-    return 0;
-  });
   public static final FactWithOptionalValue<AUnitWithCommands> IS_MINING_GAS = new FactWithOptionalValue<>(
       new FactConverterID<>(707, FactKeys.IS_UNIT),
       aUnit -> aUnit.get().isGatheringGas() ? 1.0 : 0.0
   );
   public static final FactWithOptionalValue<AUnitWithCommands> IS_CARRYING_GAS = new FactWithOptionalValue<>(
       new FactConverterID<>(708, FactKeys.IS_UNIT), aUnit -> aUnit.get().isCarryingGas() ? 1.0 : 0.0
-  );
-  public static final FactWithOptionalValue<AUnitWithCommands> IS_WAITING_ON_GAS = new FactWithOptionalValue<>(
-      new FactConverterID<>(709, FactKeys.IS_UNIT), aUnit -> aUnit.get().getOrder().isPresent() && (
-      aUnit.get().getOrder().get().equals(Order.MoveToGas) || aUnit.get().getOrder().get()
-          .equals(Order.WaitForGas)
-          || aUnit.get().getOrder().get().equals(Order.ReturnGas)) ? 1.0 : 0.0
   );
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_IDLE_DRONES = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(710, FactKeys.REPRESENTS_UNIT), optionalStream -> optionalStream

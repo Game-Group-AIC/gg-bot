@@ -23,7 +23,7 @@ public abstract class FactConverter<V, K> implements Converter {
   private final FeatureRawValueObtainingStrategy<V> strategyToObtainValue;
   private final int id;
   @Getter
-  private double value = 0;
+  private Double value = null;
 
   FactConverter(DataForDecision dataForDecision,
       FeatureRawValueObtainingStrategy<V> strategyToObtainValue, int id) {
@@ -65,9 +65,10 @@ public abstract class FactConverter<V, K> implements Converter {
    * Return true if feature value has changed for new belief
    */
   void hasValueChanged(V belief) {
-    double oldValue = this.value;
+    Double oldValue = this.value;
     this.value = strategyToObtainValue.returnRawValue(belief);
-    if (oldValue != this.value && !dataForDecision.isBeliefsChanged()) {
+    if (oldValue == null || (oldValue.doubleValue() != this.value && !dataForDecision
+        .isBeliefsChanged())) {
       dataForDecision.setBeliefsChanged(true);
     }
   }

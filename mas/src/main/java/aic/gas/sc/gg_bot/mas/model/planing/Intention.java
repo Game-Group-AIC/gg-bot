@@ -18,7 +18,7 @@ import lombok.Getter;
  * this intention to be consider.
  */
 public abstract class Intention<T extends InternalDesire<?>> implements FactContainerInterface,
-    DesireKeyIdentificationInterface, OnChangeActor, OnDestructionActor {
+    DesireKeyIdentificationInterface, OnChangeActor, OnCommitmentChangeStrategy {
 
   protected final CommitmentDecider removeCommitment;
   private final T originalDesire;
@@ -59,29 +59,23 @@ public abstract class Intention<T extends InternalDesire<?>> implements FactCont
 
   @Override
   public void actOnRemoval() {
-    actOnChange(originalDesire.memory, originalDesire.desireParameters);
+    actOnRemoval(originalDesire.memory, originalDesire.desireParameters, reactionOnChangeStrategy);
   }
 
   public boolean shouldRemoveCommitment(List<DesireKey> madeCommitmentToTypes,
       List<DesireKey> didNotMakeCommitmentToTypes,
       List<DesireKey> typesAboutToMakeDecision) {
-
-    //TODO - HACK! does not change return value and enables reaction
     return removeCommitment
         .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
-            originalDesire.memory) && actOnChange(originalDesire.memory,
-        originalDesire.desireParameters);
+            originalDesire.memory);
   }
 
   public boolean shouldRemoveCommitment(List<DesireKey> madeCommitmentToTypes,
       List<DesireKey> didNotMakeCommitmentToTypes,
       List<DesireKey> typesAboutToMakeDecision, int numberOfCommittedAgents) {
-
-    //TODO - HACK! does not change return value and enables reaction
     return removeCommitment
         .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
-            originalDesire.memory, numberOfCommittedAgents) && actOnChange(originalDesire.memory,
-        originalDesire.desireParameters);
+            originalDesire.memory, numberOfCommittedAgents);
   }
 
   /**

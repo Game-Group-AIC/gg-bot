@@ -105,7 +105,6 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
     //run main routine in its own thread
     Worker worker = new Worker();
     worker.start();
-    log.info("Agent has started.");
   }
 
   @Override

@@ -18,10 +18,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Template for intention not in top level
  */
+@Slf4j
 public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends InternalDesire<?>>, T extends InternalDesire<? extends V>, K extends Node & IntentionNodeWithChildes & Parent<?, ?>> extends
     Node.NotTopLevel<K> implements IntentionNodeInterface, VisitorAcceptor {
 
@@ -29,15 +31,15 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
 
   private IntentionNodeNotTopLevel(K parent, T desire) {
     super(parent, desire.getDesireParameters());
-    this.intention = desire.formIntention(heapOfTrees.getAgent());
+    this.intention = desire.formIntentionExternal(heapOfTrees.getAgent());
+  }
+
+  void replaceIntentionByDesire() {
+    actOnRemoval();
+    replaceIntentionByDesireInParent();
   }
 
   abstract void replaceIntentionByDesireInParent();
-
-  @Override
-  public void actOnRemoval() {
-    intention.actOnRemoval();
-  }
 
   /**
    * Implementation of top node with desire for other agents
@@ -49,6 +51,11 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
 
     private WithDesireForOthers(K parent, DesireForOthers desire) {
       super(parent, desire);
+    }
+
+    @Override
+    public void actOnRemoval() {
+      intention.actOnRemoval();
     }
 
     @Override
@@ -71,7 +78,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
         //share desire and wait for response of registration
         if (sharingDesireRemovalRoutine
             .unregisterSharedDesire(intention.getSharedDesire(), heapOfTrees)) {
-          replaceIntentionByDesireInParent();
+          replaceIntentionByDesire();
           return true;
         }
       }
@@ -171,7 +178,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
         List<DesireKey> typesAboutToMakeDecision) {
       if (intention.shouldRemoveCommitment(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
           typesAboutToMakeDecision)) {
-        replaceIntentionByDesireInParent();
+        replaceIntentionByDesire();
         return true;
       }
       return false;
@@ -194,6 +201,11 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
       }
 
       @Override
+      public void actOnRemoval() {
+        intention.actOnRemoval();
+      }
+
+      @Override
       void replaceIntentionByDesireInParent() {
         parent.replaceIntentionByDesireReasoning(this,
             new DesireNodeNotTopLevel.WithCommand.ReasoningAtTopLevelParent(parent,
@@ -212,6 +224,11 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
       ActingAtTopLevelParent(IntentionNodeAtTopLevel.WithAbstractPlan parent,
           OwnDesire.Acting desire) {
         super(parent, desire);
+      }
+
+      @Override
+      public void actOnRemoval() {
+        intention.actOnRemoval();
       }
 
       @Override
@@ -240,6 +257,11 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
       }
 
       @Override
+      public void actOnRemoval() {
+        intention.actOnRemoval();
+      }
+
+      @Override
       void replaceIntentionByDesireInParent() {
         parent.replaceIntentionByDesireReasoning(this,
             new DesireNodeNotTopLevel.WithCommand.ReasoningNotTopLevelParent(parent,
@@ -262,6 +284,11 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
 
       ActingNotTopLevelParent(WithAbstractPlan parent, OwnDesire.Acting desire) {
         super(parent, desire);
+      }
+
+      @Override
+      public void actOnRemoval() {
+        intention.actOnRemoval();
       }
 
       @Override
@@ -313,7 +340,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
         if (!sharedDesires.isEmpty()) {
           if (sharingDesireRemovalInSubtreeRoutine
               .unregisterSharedDesire(sharedDesires, heapOfTrees)) {
-            replaceIntentionByDesireInParent();
+            replaceIntentionByDesire();
             getDesireUpdater().getNodesWithIntention()
                 .forEach(IntentionNodeInterface::actOnRemoval);
             return true;
@@ -328,8 +355,8 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
 
     @Override
     public void actOnRemoval() {
-      intention.actOnRemoval();
       getDesireUpdater().getNodesWithIntention().forEach(IntentionNodeInterface::actOnRemoval);
+      intention.actOnRemoval();
     }
 
     @Override

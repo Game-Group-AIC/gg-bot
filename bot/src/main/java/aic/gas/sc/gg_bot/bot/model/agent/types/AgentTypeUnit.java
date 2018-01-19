@@ -24,7 +24,9 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
@@ -51,6 +53,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+
+//(\d)+-(\d)+-(\d)+ (\d)+:(\d)+:(\d)+ \[Thread-(\d)+\] INFO :: (\w)+, constructing: (\w)+, morphing: (\w)+(, in queue: (\w)+)*
 
 /**
  * Type definition - agent type for unit observing game
@@ -138,15 +142,14 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
       })
       .reactionOnChangeStrategy((memory, desireParameters) -> {
         AUnitOfPlayer me = memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
-        if (!me.getTrainingQueue().isEmpty()) {
+        if (me.getType().equals(AUnitTypeWrapper.EGG_TYPE)) {
           memory.updateFact(IS_MORPHING_TO, me.getTrainingQueue().get(0));
         } else {
           memory.updateFact(IS_MORPHING_TO, me.getType());
         }
       })
-      .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
-        memory.eraseFactValueForGivenKey(IS_MORPHING_TO);
-      })
+      .reactionOnChangeStrategyInIntention(
+          (memory, desireParameters) -> memory.eraseFactValueForGivenKey(IS_MORPHING_TO))
       .decisionInDesire(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
               dataForDecision.getFeatureValueBeliefs(FactConverters.IS_CONSTRUCTING_BUILDING) == 1

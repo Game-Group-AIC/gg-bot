@@ -112,10 +112,10 @@ public class CommandExecutor implements TreeVisitorInterface, ResponseReceiverIn
 
     //notify waiting method
     synchronized (lockMonitor) {
-      if (!response) {
-        log.info(this.agent.getAgentType().getName() + " could not execute acting command "
-            + lastCommandName);
-      }
+//      if (!response) {
+//        log.info(this.agent.getAgentType().getName() + " could not execute acting command "
+//            + lastCommandName);
+//      }
       lockMonitor.notify();
     }
   }

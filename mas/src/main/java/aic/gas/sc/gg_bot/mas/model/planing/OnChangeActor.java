@@ -9,24 +9,12 @@ import java.util.Optional;
  */
 interface OnChangeActor {
 
-  ReactionOnChangeStrategy DEFAULT_REACTION_DO_NOTHING = (memory, desireParameters) -> {
-  };
-
-  Optional<ReactionOnChangeStrategy> getReactionOnChangeStrategy();
-
   /**
    * React on commitment
-   *
-   * @return always true
    */
-  default boolean actOnChange(WorkingMemory memory, DesireParameters desireParameters) {
-
-    //execute provided strategy or the default one
-    getReactionOnChangeStrategy().orElse(DEFAULT_REACTION_DO_NOTHING)
-        .updateBeliefs(memory, desireParameters);
-
-    //TODO - !!!HACK!!! - always return true as it is used in condition
-    return true;
+  default void actOnRemoval(WorkingMemory memory, DesireParameters desireParameters,
+      Optional<ReactionOnChangeStrategy> providedReaction) {
+    providedReaction.ifPresent(reaction -> reaction.updateBeliefs(memory, desireParameters));
   }
 
 }
