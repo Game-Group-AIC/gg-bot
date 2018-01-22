@@ -52,6 +52,24 @@ public class Util {
     return Optional.empty();
   }
 
+  public static boolean canBuildHereCheck(AUnitTypeWrapper buildingType, ATilePosition currentTile,
+      AUnit worker, Game game) {
+
+    // Refinery, Assimilator, Extractor
+    if (buildingType.isRefinery()) {
+      for (Unit n : game.neutral().getUnits()) {
+        if ((n.getType() == UnitType.Resource_Vespene_Geyser) &&
+            (Math.abs(n.getTilePosition().getX() - currentTile.getX()) < 10) &&
+            (Math.abs(n.getTilePosition().getY() - currentTile.getY()) < 10)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    return canBuildHere(buildingType, currentTile, worker, game);
+  }
+
   private static boolean canBuildHere(AUnitTypeWrapper buildingType, ATilePosition currentTile,
       AUnit worker, Game game) {
 

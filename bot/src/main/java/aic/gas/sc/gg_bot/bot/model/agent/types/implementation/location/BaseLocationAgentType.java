@@ -10,6 +10,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_M
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPORE_COLONIES_AT_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.CREEP_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
@@ -41,7 +42,9 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND_FORCE
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SPORE_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.STATIC_DEFENSE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SUNKEN_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
@@ -54,6 +57,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
@@ -101,18 +105,29 @@ public class BaseLocationAgentType {
    * It is unlocked only when building is built
    */
   private static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-      FactWithOptionalValueSet<T> completedCount, DesireKey desireKey,
-      AUnitTypeWrapper unitTypeWrapper,
+      FactWithOptionalValueSet<T> completedCount, FactKey<Integer> factCountToTrackPreviousCount,
+      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
       FeatureContainerHeader featureContainerHeader,
       Stream<DesireKey> desireKeysWithSharedIntentionStream,
       Stream<DesireKey> desireKeysWithAbstractIntentionStream,
       SimpleDecisionStrategy forCommitment) {
     return ConfigurationWithAbstractPlan.builder()
-        .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
-            .makeReservation(unitTypeWrapper, memory.getAgentId()))
+        .reactionOnChangeStrategy((memory, desireParameters) -> {
+              BotFacade.RESOURCE_MANAGER
+                  .makeReservation(unitTypeWrapper, memory.getAgentId());
+              memory.updateFact(factCountToTrackPreviousCount,
+                  (int) memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(Stream.empty())
+                      .map(AUnit::getType)
+                      .filter(typeWrapper -> typeWrapper.equals(unitTypeWrapper))
+                      .count());
+            }
+        )
         .reactionOnChangeStrategyInIntention(
-            (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
-                .removeReservation(unitTypeWrapper, memory.getAgentId()))
+            (memory, desireParameters) -> {
+              BotFacade.RESOURCE_MANAGER
+                  .removeReservation(unitTypeWrapper, memory.getAgentId());
+              memory.eraseFactValueForGivenKey(factCountToTrackPreviousCount);
+            })
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
@@ -130,7 +145,7 @@ public class BaseLocationAgentType {
                         .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
                         && Decider
                         .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
-                            featureContainerHeader))
+                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .globalBeliefTypesByAgentType(
@@ -144,13 +159,27 @@ public class BaseLocationAgentType {
                     .collect(Collectors.toSet()))
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
-        //TODO count is greater then before
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        || !memory.returnFactValueForGivenKey(IS_BASE).get())
-            .beliefSetTypes(Collections.singleton(completedCount))
+                    !Decider
+                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
+                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
+                        || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                        || !memory.returnFactValueForGivenKey(IS_BASE).get()
+                        || memory.returnFactValueForGivenKey(factCountToTrackPreviousCount)
+                        .orElse(0) != dataForDecision.getFeatureValueBeliefSets(completedCount))
+            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
+            .globalBeliefTypesByAgentType(
+                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
+            .globalBeliefSetTypesByAgentType(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .beliefTypes(featureContainerHeader.getConvertersForFacts())
+            .beliefSetTypes(
+                Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
+                    Stream.of(BASE_IS_COMPLETED, completedCount))
+                    .collect(Collectors.toSet()))
             .build())
         .desiresWithAbstractIntention(
             desireKeysWithAbstractIntentionStream.collect(Collectors.toSet()))
@@ -163,7 +192,8 @@ public class BaseLocationAgentType {
 
         //build creep colony
         ConfigurationWithAbstractPlan buildCreepColonyAbstractPlan = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_CREEP_COLONIES_AT_BASE, DesiresKeys.BUILD_CREEP_COLONY,
+            COUNT_OF_CREEP_COLONIES_AT_BASE, FactKeys.CREEP_COLONY_COUNT,
+            DesiresKeys.BUILD_CREEP_COLONY,
             AUnitTypeWrapper.CREEP_COLONY_TYPE, DEFENSE, Stream.of(DesiresKeys.BUILD_CREEP_COLONY),
             Stream.empty(), value -> value == 0);
         type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, buildCreepColonyAbstractPlan, true);
@@ -186,8 +216,9 @@ public class BaseLocationAgentType {
                             && memory.returnFactValueForGivenKey(IS_BASE).get()
                             //we have base completed
                             && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                            //hack
                             && dataForDecision
-                            .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) == 0)
+                            .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) < 2)
                 .beliefSetTypes(Stream.of(BASE_IS_COMPLETED, COUNT_OF_CREEP_COLONIES_AT_BASE)
                     .collect(Collectors.toSet()))
                 .desiresToConsider(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY))
@@ -217,7 +248,8 @@ public class BaseLocationAgentType {
 
         //build sunken as abstract plan
         ConfigurationWithAbstractPlan buildSunkenAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_SUNKEN_COLONIES_AT_BASE, DesiresKeys.BUILD_SUNKEN_COLONY,
+            COUNT_OF_SUNKEN_COLONIES_AT_BASE, FactKeys.SUNKEN_COLONY_COUNT,
+            DesiresKeys.BUILD_SUNKEN_COLONY,
             AUnitTypeWrapper.SUNKEN_COLONY_TYPE, DEFENSE,
             Stream.of(DesiresKeys.BUILD_SUNKEN_COLONY),
             Stream.of(DesiresKeys.BUILD_CREEP_COLONY), value -> value <= 3);
@@ -238,7 +270,8 @@ public class BaseLocationAgentType {
 
         //spore colony as abstract plan
         ConfigurationWithAbstractPlan buildSporeColonyAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_SPORE_COLONIES_AT_BASE, DesiresKeys.BUILD_SPORE_COLONY,
+            COUNT_OF_SPORE_COLONIES_AT_BASE, FactKeys.SPORE_COLONY_COUNT,
+            DesiresKeys.BUILD_SPORE_COLONY,
             AUnitTypeWrapper.SPORE_COLONY_TYPE, DEFENSE, Stream.of(DesiresKeys.BUILD_SPORE_COLONY),
             Stream.of(DesiresKeys.BUILD_CREEP_COLONY), value -> value <= 3);
         type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, buildSporeColonyAbstract, true);
@@ -255,6 +288,8 @@ public class BaseLocationAgentType {
             });
         type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, DesiresKeys.BUILD_SPORE_COLONY,
             buildSporeColonyShared);
+
+        //TODO reason about enemy base, send overlord to our base when enemy is present
 
         //reason about last visit
         WithReasoningCommandDesiredBySelf reasonAboutVisit =
@@ -281,9 +316,9 @@ public class BaseLocationAgentType {
                     memory.updateFact(IS_BASE, isBase);
 
                     //todo it is not our base and (it has enemy buildings on it || we haven't visited all base locations and this one is unvisited base location)
-                    memory.updateFact(IS_ENEMY_BASE, !isBase
-                        && memory.returnFactSetValueForGivenKey(ENEMY_BUILDING).map(
-                        Stream::count).orElse(0L) > 0);
+                    memory.updateFact(IS_ENEMY_BASE, !isBase &&
+                        memory.returnFactSetValueForGivenKey(ENEMY_BUILDING).map(Stream::count)
+                            .orElse(0L) > 0);
                     return true;
                   }
                 })
@@ -678,7 +713,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) ->
                     memory.returnFactValueForGivenKey(IS_ENEMY_BASE).get()
                         && Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                        dataForDecision, HOLDING))
+                        dataForDecision, HOLDING, memory.getCurrentClock(), memory.getAgentId()))
                 .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -692,8 +727,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) -> !memory.returnFactValueForGivenKey(
                     IS_ENEMY_BASE).get()
                     || !Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                    dataForDecision, HOLDING)
-                )
+                    dataForDecision, HOLDING, memory.getCurrentClock(), memory.getAgentId()))
                 .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -721,7 +755,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) -> memory.returnFactValueForGivenKey(
                     IS_ENEMY_BASE).get()
                     && Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
-                    dataForDecision, HOLDING))
+                    dataForDecision, HOLDING, memory.getCurrentClock(), memory.getAgentId()))
                 .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -735,7 +769,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) -> !memory.returnFactValueForGivenKey(
                     IS_ENEMY_BASE).get()
                     || !Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
-                    dataForDecision, HOLDING))
+                    dataForDecision, HOLDING, memory.getCurrentClock(), memory.getAgentId()))
                 .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -774,7 +808,9 @@ public class BaseLocationAgentType {
             .build();
         type.addConfiguration(DesiresKeys.DEFEND, defend);
       })
-      .usingTypesForFacts(Stream.of(IS_BASE, IS_ENEMY_BASE, BASE_TO_MOVE, TIME_OF_HOLD_COMMAND)
+      .usingTypesForFacts(Stream
+          .of(IS_BASE, IS_ENEMY_BASE, BASE_TO_MOVE, TIME_OF_HOLD_COMMAND, SUNKEN_COLONY_COUNT,
+              SPORE_COLONY_COUNT, CREEP_COLONY_COUNT)
           .collect(Collectors.toSet()))
       .usingTypesForFactSets(Stream.of(WORKER_ON_BASE, ENEMY_BUILDING, ENEMY_AIR,
           ENEMY_GROUND, HAS_BASE, HAS_EXTRACTOR, OWN_BUILDING, OWN_AIR, OWN_GROUND,

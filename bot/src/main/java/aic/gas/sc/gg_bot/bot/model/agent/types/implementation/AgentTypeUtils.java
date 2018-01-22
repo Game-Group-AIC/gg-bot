@@ -15,10 +15,12 @@ import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Contains templates to initialize desires
  */
+@Slf4j
 public class AgentTypeUtils {
 
   /**
@@ -40,8 +42,9 @@ public class AgentTypeUtils {
                         && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
                         //learnt decision
-                        && (Decider.getDecision(agentTypeID, desireKey.getId(),
-                        dataForDecision, featureContainerHeader)))
+                        && Decider.getDecision(agentTypeID, desireKey.getId(),
+                        dataForDecision, featureContainerHeader, memory.getCurrentClock(),
+                        memory.getAgentId()))
             .globalBeliefTypesByAgentType(Stream.concat(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                 Stream.of(currentCount))
@@ -54,10 +57,19 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                    !Decider.getDecision(agentTypeID, desireKey.getId(),
+                        dataForDecision, featureContainerHeader, memory.getCurrentClock(),
+                        memory.getAgentId())
+                        || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //building exists
                         || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
-            .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
+            .globalBeliefTypesByAgentType(Stream.concat(
+                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
+                Stream.of(currentCount))
+                .collect(Collectors.toSet()))
+            .globalBeliefSetTypesByAgentType(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .build())
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
@@ -86,8 +98,8 @@ public class AgentTypeUtils {
                         && !dataForDecision.madeDecisionToAny() &&
                         !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //learnt decision
-                        && (Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
-                        featureContainerHeader)))
+                        && Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
+                        featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
             .globalBeliefTypesByAgentType(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
             .globalBeliefSetTypesByAgentType(
@@ -98,8 +110,15 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    //has been just trained
-                    BuildLockerService.getInstance().isLocked(unitTypeWrapper))
+                    !Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
+                        featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
+                        //has been just trained
+                        || BuildLockerService.getInstance().isLocked(unitTypeWrapper))
+            .globalBeliefTypesByAgentType(
+                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
+            .globalBeliefSetTypesByAgentType(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .build())
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))

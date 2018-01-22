@@ -9,11 +9,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+//TODO lock buildings when constructing them + units
 public class BuildLockerService implements IBuildLockerService {
 
   private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
   private final Map<AUnitTypeWrapper, Integer> lockRegister = new HashMap<>();
   private static final int lockTypeForDuration = 100;
+  private static final int lockForDroneDuration = 10;
 
   private static final BuildLockerService instance = new BuildLockerService();
 
@@ -27,11 +29,13 @@ public class BuildLockerService implements IBuildLockerService {
 
   @Override
   public void lock(AUnitTypeWrapper unitType) {
-    try {
-      lock.writeLock().lock();
-      lockRegister.put(unitType, 0);
-    } finally {
-      lock.writeLock().unlock();
+    if (!unitType.isLarvaOrEgg()) {
+      try {
+        lock.writeLock().lock();
+        lockRegister.put(unitType, 0);
+      } finally {
+        lock.writeLock().unlock();
+      }
     }
   }
 
@@ -44,7 +48,8 @@ public class BuildLockerService implements IBuildLockerService {
       //handle locks
       while (entryIt.hasNext()) {
         Entry<AUnitTypeWrapper, Integer> entry = entryIt.next();
-        if (entry.getValue() + 1 >= lockTypeForDuration) {
+        if (entry.getValue() + 1 >= (entry.getKey().isWorker() ? lockForDroneDuration
+            : lockTypeForDuration)) {
           entryIt.remove();
         } else {
           entry.setValue(entry.getValue() + 1);

@@ -95,8 +95,6 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
           //try to commit agent and return copy of current instance
           if (desire.commitToDesire(agentWhoWantsToCommitTo)){
             return Optional.of(desire.getCopyOfSharedDesireForAgents());
-          } else {
-            System.out.println();
           }
         }
       }

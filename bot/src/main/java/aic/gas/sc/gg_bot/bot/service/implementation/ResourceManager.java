@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.TypeToBuy;
 import aic.gas.sc.gg_bot.bot.service.IRequirementsChecker;
@@ -8,10 +9,8 @@ import bwapi.Player;
 import bwapi.Unit;
 import bwapi.UnitType;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,7 +29,6 @@ public class ResourceManager implements IResourceManager {
   private boolean readingResources = false;
   private final List<Tuple<?>> resourcesAvailableFor = new ArrayList<>();
   private final List<Tuple<?>> reservationQueue = new ArrayList<>();
-  private final Set<Integer> reservationsFrom = new HashSet<>();
 
   @Getter
   private List<String> reservationStatuses = new ArrayList<>();
@@ -38,7 +36,7 @@ public class ResourceManager implements IResourceManager {
   //todo hack to check for extractor
   private Optional<Unit> extractor = Optional.empty();
 
-  public ResourceManager(IRequirementsChecker requirementsChecker) {
+  ResourceManager(IRequirementsChecker requirementsChecker) {
     this.requirementsChecker = requirementsChecker;
   }
 
@@ -63,46 +61,67 @@ public class ResourceManager implements IResourceManager {
         }
 
         reservationStatuses.clear();
-        int lastIndex = 0;
-        for (int i = 0; i < reservationQueue.size(); i++) {
-          lastIndex = i;
-          Tuple<?> tuple = reservationQueue.get(i);
 
-          //skip when dependencies are not met
-          if (!requirementsChecker.areDependenciesMeet(tuple.reservationMadeOn)) {
-            reservationStatuses.add(formMessage(tuple, "UD"));
-            continue;
-          }
+        //emergency case, no supply are available - prioritize overlord
+        if (supplyAvailable <= 0 && player.getUnits().stream()
+            .filter(unit -> unit.getType() == UnitType.Zerg_Egg
+                || unit.getType() == UnitType.Zerg_Larva)
+            .noneMatch(unit -> unit.isConstructing() && !unit.getTrainingQueue().isEmpty()
+                && unit.getTrainingQueue().get(0) == UnitType.Zerg_Overlord)) {
 
-          if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() <= minedMinerals
-              && sumOfGas + tuple.reservationMadeOn.gasCost() <= minedGas
-              && sumOfSupply + tuple.reservationMadeOn.supplyRequired() <= supplyAvailable) {
-            resourcesAvailableFor.add(tuple);
-            sumOfMinerals = sumOfMinerals + tuple.reservationMadeOn.mineralCost();
-            sumOfGas = sumOfGas + tuple.reservationMadeOn.gasCost();
-            sumOfSupply = sumOfSupply + tuple.reservationMadeOn.supplyRequired();
-            reservationStatuses.add(formMessage(tuple, "R"));
-          } else {
-            if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() > minedMinerals
-                && sumOfGas + tuple.reservationMadeOn.gasCost() > minedGas) {
-              reservationStatuses.add(formMessage(tuple, "W"));
-              break;
-            } else {
-              if ((!skippedGasRequest || !extractor.isPresent())
-                  && sumOfGas + tuple.reservationMadeOn.gasCost() > minedGas) {
-                reservationStatuses.add(formMessage(tuple, "W"));
-                skippedGasRequest = true;
-              } else {
-                reservationStatuses.add(formMessage(tuple, "W"));
+          for (Tuple<?> tuple : reservationQueue) {
+            if (tuple.reservationMadeOn instanceof AUnitTypeWrapper) {
+              if (tuple.reservationMadeOn.equals(AUnitTypeWrapper.OVERLORD_TYPE)) {
+                if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() <= minedMinerals) {
+                  reservationStatuses.add(formMessage(tuple, "P"));
+                  resourcesAvailableFor.add(tuple);
+                }
                 break;
               }
             }
           }
-        }
+        } else {
+          int lastIndex = 0;
+          for (int i = 0; i < reservationQueue.size(); i++) {
+            lastIndex = i;
+            Tuple<?> tuple = reservationQueue.get(i);
 
-        //check rest
-        for (int i = lastIndex + 1; i < reservationQueue.size(); i++) {
-          reservationStatuses.add(formMessage(reservationQueue.get(i), "W"));
+            //skip when dependencies are not met
+            if (!requirementsChecker.areDependenciesMeet(tuple.reservationMadeOn)) {
+              reservationStatuses.add(formMessage(tuple, "UD"));
+              continue;
+            }
+
+            if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() <= minedMinerals
+                && sumOfGas + tuple.reservationMadeOn.gasCost() <= minedGas
+                && sumOfSupply + tuple.reservationMadeOn.supplyRequired() <= supplyAvailable) {
+              resourcesAvailableFor.add(tuple);
+              sumOfMinerals = sumOfMinerals + tuple.reservationMadeOn.mineralCost();
+              sumOfGas = sumOfGas + tuple.reservationMadeOn.gasCost();
+              sumOfSupply = sumOfSupply + tuple.reservationMadeOn.supplyRequired();
+              reservationStatuses.add(formMessage(tuple, "R"));
+            } else {
+              if (sumOfMinerals + tuple.reservationMadeOn.mineralCost() > minedMinerals
+                  && sumOfGas + tuple.reservationMadeOn.gasCost() > minedGas) {
+                reservationStatuses.add(formMessage(tuple, "W"));
+                break;
+              } else {
+                if ((!skippedGasRequest || !extractor.isPresent())
+                    && sumOfGas + tuple.reservationMadeOn.gasCost() > minedGas) {
+                  reservationStatuses.add(formMessage(tuple, "W"));
+                  skippedGasRequest = true;
+                } else {
+                  reservationStatuses.add(formMessage(tuple, "W"));
+                  break;
+                }
+              }
+            }
+          }
+
+          //check rest
+          for (int i = lastIndex + 1; i < reservationQueue.size(); i++) {
+            reservationStatuses.add(formMessage(reservationQueue.get(i), "W"));
+          }
         }
 
       } catch (InterruptedException e) {
@@ -155,13 +174,7 @@ public class ResourceManager implements IResourceManager {
         }
         readingResources = true;
         Tuple<T> tuple = new Tuple<>(agentId, t);
-
-        if (reservationQueue.contains(tuple)) {
-          log.info("");
-        }
-
         reservationQueue.add(tuple);
-        reservationsFrom.add(agentId);
       } catch (InterruptedException e) {
         log.error(e.getMessage());
       } finally {
@@ -180,27 +193,13 @@ public class ResourceManager implements IResourceManager {
           MONITOR.wait();
         }
         readingResources = true;
-        if (reservationsFrom.contains(agentId)) {
-          int index = -1;
-          for (int i = 0; i < reservationQueue.size(); i++) {
-            Tuple<?> tuple = reservationQueue.get(i);
-            if (tuple.reservationMadeBy == agentId) {
-              if (tuple.reservationMadeOn.equals(t)) {
-                reservationQueue.remove(i);
-                index = i;
-                break;
-              }
-            }
-          }
-          boolean isPresent = false;
-          for (int i = index; i < reservationQueue.size(); i++) {
-            if (reservationQueue.get(i).reservationMadeBy == agentId) {
-              isPresent = true;
+        for (int i = 0; i < reservationQueue.size(); i++) {
+          Tuple<?> tuple = reservationQueue.get(i);
+          if (tuple.reservationMadeBy == agentId) {
+            if (tuple.reservationMadeOn.equals(t)) {
+              reservationQueue.remove(i);
               break;
             }
-          }
-          if (!isPresent) {
-            reservationsFrom.remove(agentId);
           }
         }
       } catch (InterruptedException e) {
@@ -221,10 +220,7 @@ public class ResourceManager implements IResourceManager {
           MONITOR.wait();
         }
         readingResources = true;
-        if (reservationsFrom.contains(agentId)) {
-          reservationQueue.removeIf(tuple -> tuple.reservationMadeBy == agentId);
-          reservationsFrom.remove(agentId);
-        }
+        reservationQueue.removeIf(tuple -> tuple.reservationMadeBy == agentId);
       } catch (InterruptedException e) {
         log.error(e.getMessage());
       } finally {

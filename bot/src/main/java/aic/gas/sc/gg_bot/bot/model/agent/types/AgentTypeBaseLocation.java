@@ -67,29 +67,30 @@ public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
         //add facts related to agent
         Stream.concat(usingTypesForFacts.stream(), Arrays.stream(new FactKey<?>[]{IS_BASE_LOCATION,
             MADE_OBSERVATION_IN_FRAME, IS_MINERAL_ONLY, IS_ISLAND, IS_START_LOCATION,
-            IS_BASE_LOCATION,
-            LAST_TIME_SCOUTED, BASE_TO_MOVE}))
+            IS_BASE_LOCATION, LAST_TIME_SCOUTED, BASE_TO_MOVE}))
             .collect(Collectors.toSet()),
 
         //add fact set related to resources
         Stream.concat(usingTypesForFactSets.stream(),
-            Arrays.stream(new FactKey<?>[]{MINERAL, GEYSER})).collect(Collectors.toSet()),
-        initializationStrategy, OBSERVING_COMMAND,
-        skipTurnsToMakeObservation);
+            Arrays.stream(new FactKey<?>[]{MINERAL, GEYSER}))
+            .collect(Collectors.toSet()),
+        initializationStrategy, OBSERVING_COMMAND, skipTurnsToMakeObservation);
   }
 
   /**
    * Method to update base info about resources. DO NOT CALL OUTSIDE MAIN GAME THREAD!
    */
-  public static void updateKnowledgeAboutResources(BaseLocation location, WorkingMemory memory,
+  private static void updateKnowledgeAboutResources(BaseLocation location, WorkingMemory memory,
       int frameCount) {
     Set<AUnit> minerals = location.getMinerals().stream()
         .map(unit -> UnitWrapperFactory.wrapResourceUnits(unit, frameCount, false))
+        .filter(AUnit::isExists)
         .collect(Collectors.toSet());
     memory.updateFactSetByFacts(MINERAL, minerals);
 
     Set<AUnit> geysers = location.getGeysers().stream()
         .map(unit -> UnitWrapperFactory.wrapResourceUnits(unit, frameCount, false))
+        .filter(AUnit::isExists)
         .collect(Collectors.toSet());
     memory.updateFactSetByFacts(GEYSER, geysers);
   }

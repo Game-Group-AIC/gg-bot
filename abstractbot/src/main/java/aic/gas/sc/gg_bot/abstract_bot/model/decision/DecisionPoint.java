@@ -5,12 +5,16 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumeratio
 
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.utils.Configuration;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import jsat.linear.DenseVector;
 import jsat.linear.Vec;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +29,7 @@ public class DecisionPoint {
 
   private final List<StateWithTransition> states;
   private final List<FeatureNormalizer> normalizers;
+  private final Map<Integer, DecisionInState> cache = new HashMap<>();
 
   public DecisionPoint(DecisionPointDataStructure dataStructure) {
     this.states = dataStructure.states.stream()
@@ -36,14 +41,37 @@ public class DecisionPoint {
   /**
    * For given state (represented by feature vector) return optimal action based on policy
    */
-  public boolean nextAction(double[] featureVector) {
-    return getState(featureVector).commit();
+  public boolean nextAction(double[] featureVector, int frame, int agentId,
+      int forHowLongToCacheDecision) {
+    DecisionInState decisionInState = cache.get(agentId);
+    if (decisionInState == null || decisionInState
+        .canChangeDecision(featureVector, frame, forHowLongToCacheDecision)) {
+      decisionInState = new DecisionInState(featureVector, frame, getState(featureVector).commit());
+      cache.put(agentId, decisionInState);
+    }
+    return decisionInState.isCommit();
   }
 
   private StateWithTransition getState(double[] featureVector) {
     Vec anotherInstance = new DenseVector((Configuration
         .normalizeFeatureVector(featureVector, normalizers)));
     return states.stream().min(Comparator.comparingDouble(o -> o.distance(anotherInstance))).get();
+  }
+
+  @AllArgsConstructor
+  private static class DecisionInState {
+
+    private final double[] featureVector;
+    private final int madeInFrame;
+    @Getter
+    private final boolean commit;
+
+    public boolean canChangeDecision(double[] currentFeatureVector, int currentFrame,
+        int forHowLongToCacheDecision) {
+      return currentFrame - madeInFrame >= forHowLongToCacheDecision && !Arrays
+          .equals(featureVector, currentFeatureVector);
+    }
+
   }
 
   /**

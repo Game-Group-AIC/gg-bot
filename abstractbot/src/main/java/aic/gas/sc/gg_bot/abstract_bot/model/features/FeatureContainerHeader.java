@@ -41,6 +41,7 @@ public class FeatureContainerHeader {
   private final boolean trackCommittedOtherAgents;
   private final List<StrategyToFillValueInVectorUsingBeliefs<?>> strategiesToFillVectorOrdered = new ArrayList<>();
   private final List<DesireKeyID> desiresToFillVectorOrdered;
+  private final int forHowLongToCacheDecision;
 
   @Builder
   private FeatureContainerHeader(Set<FactWithOptionalValue<?>> convertersForFacts,
@@ -49,7 +50,8 @@ public class FeatureContainerHeader {
       Set<FactWithOptionalValueSets<?>> convertersForFactSetsForGlobalBeliefs,
       Set<FactWithSetOfOptionalValuesForAgentType<?>> convertersForFactsForGlobalBeliefsByAgentType,
       Set<FactWithOptionalValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType,
-      Set<DesireKeyID> interestedInCommitments, boolean trackCommittedOtherAgents) {
+      Set<DesireKeyID> interestedInCommitments, boolean trackCommittedOtherAgents,
+      int forHowLongToCacheDecision) {
     this.convertersForFacts = convertersForFacts;
     this.convertersForFactSets = convertersForFactSets;
     this.convertersForFactsForGlobalBeliefs = convertersForFactsForGlobalBeliefs;
@@ -57,6 +59,7 @@ public class FeatureContainerHeader {
     this.convertersForFactsForGlobalBeliefsByAgentType = convertersForFactsForGlobalBeliefsByAgentType;
     this.convertersForFactSetsForGlobalBeliefsByAgentType = convertersForFactSetsForGlobalBeliefsByAgentType;
     this.trackCommittedOtherAgents = trackCommittedOtherAgents;
+    this.forHowLongToCacheDecision = forHowLongToCacheDecision;
 
     Set<Integer> indexesSet = new HashSet<>();
 
@@ -165,6 +168,7 @@ public class FeatureContainerHeader {
     private Set<FactWithOptionalValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType = new HashSet<>();
     private Set<DesireKeyID> interestedInCommitments = new HashSet<>();
     private boolean trackCommittedOtherAgents = false;
+    private int forHowLongToCacheDecision = 10;
   }
 
   /**

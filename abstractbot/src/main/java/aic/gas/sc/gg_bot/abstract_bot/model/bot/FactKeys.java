@@ -166,12 +166,6 @@ public class FactKeys {
       return false;
     }
   };
-  public static final FactKey<Integer> IDLE_SINCE = new FactKey<Integer>("IDLE_SINCE", false) {
-    @Override
-    public Integer getInitValue() {
-      return null;
-    }
-  };
 
   //surrounding enemy units for agent
   public static final FactKey<AUnit.Enemy> ENEMY_BUILDING = new FactKey<AUnit.Enemy>(

@@ -1,6 +1,5 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CURRENT_POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.MAX_POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
@@ -81,7 +80,7 @@ public class EcoManagerAgentType {
       .agentTypeID(AgentTypes.ECO_MANAGER)
       .usingTypesForFacts(
           new HashSet<>(Collections.singletonList(BASE_TO_MOVE)))
-      .initializationStrategy(type -> {
+      .initializationStrategy((AgentType type) -> {
 
         //train drone
         ConfigurationWithAbstractPlan trainDroneAbstractPlan = createOwnConfigurationWithAbstractPlanToTrainFromTemplate(
@@ -97,10 +96,12 @@ public class EcoManagerAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) ->
                         !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.HATCHERY_TYPE)
-                            && !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(HATCHERY_TYPE, memory.getAgentId())
+                            && !BotFacade.RESOURCE_MANAGER
+                            .hasMadeReservationOn(HATCHERY_TYPE, memory.getAgentId())
                             // Hatchery has not been built recently
                             && Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
-                            dataForDecision, EXPANDING)
+                            dataForDecision, EXPANDING, memory.getCurrentClock(),
+                            memory.getAgentId())
                 )
                 .globalBeliefTypes(EXPANDING.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -110,7 +111,15 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.HATCHERY_TYPE))
+                    !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
+                        dataForDecision, EXPANDING, memory.getCurrentClock(), memory.getAgentId())
+                        || BuildLockerService.getInstance()
+                        .isLocked(AUnitTypeWrapper.HATCHERY_TYPE))
+                .globalBeliefTypes(EXPANDING.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypesByAgentType(
+                    EXPANDING.getConvertersForFactsForGlobalBeliefsByAgentType())
+                .globalBeliefSetTypesByAgentType(
+                    EXPANDING.getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .build())
             .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
                 .makeReservation(HATCHERY_TYPE, memory.getAgentId()))
@@ -181,7 +190,9 @@ public class EcoManagerAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) ->
                         !dataForDecision.madeDecisionToAny()
-                            && !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(AUnitTypeWrapper.EXTRACTOR_TYPE, memory.getAgentId())
+                            && !BotFacade.RESOURCE_MANAGER
+                            .hasMadeReservationOn(AUnitTypeWrapper.EXTRACTOR_TYPE,
+                                memory.getAgentId())
                             && !BuildLockerService.getInstance()
                             .isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
                             //there is base without extractor
@@ -189,7 +200,8 @@ public class EcoManagerAgentType {
                             //there are no extractors in construction
                             && Decider
                             .getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_EXTRACTOR,
-                                dataForDecision, BUILDING_EXTRACTOR)
+                                dataForDecision, BUILDING_EXTRACTOR, memory.getCurrentClock(),
+                                memory.getAgentId())
                 )
                 .globalBeliefTypes(BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
@@ -201,8 +213,16 @@ public class EcoManagerAgentType {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
-                        BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
+                        !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_EXTRACTOR,
+                            dataForDecision, BUILDING_EXTRACTOR, memory.getCurrentClock(),
+                            memory.getAgentId()) || BuildLockerService.getInstance()
+                            .isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
                             || !getOurBaseWithoutExtractor(memory).isPresent())
+                .globalBeliefTypes(BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypesByAgentType(
+                    BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefsByAgentType())
+                .globalBeliefSetTypesByAgentType(
+                    BUILDING_EXTRACTOR.getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .build())
             .desiresForOthers(Collections.singleton(BUILD_EXTRACTOR))
             .build();
@@ -233,11 +253,18 @@ public class EcoManagerAgentType {
                 .decisionStrategy((dataForDecision, memory) ->
                     !BotFacade.RESOURCE_MANAGER
                         .hasMadeReservationOn(AUnitTypeWrapper.OVERLORD_TYPE, memory.getAgentId())
-                    && !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.OVERLORD_TYPE)
+                        && !BuildLockerService.getInstance()
+                        .isLocked(AUnitTypeWrapper.OVERLORD_TYPE)
                         && (dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION) >=
                         dataForDecision.getFeatureValueGlobalBeliefs(MAX_POPULATION)
-                        || Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
-                        dataForDecision, INCREASING_CAPACITY)))
+                        || (
+                        Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
+                            dataForDecision, INCREASING_CAPACITY, memory.getCurrentClock(),
+                            memory.getAgentId()) &&
+                            //do not build overlord when there is gap
+                            dataForDecision.getFeatureValueGlobalBeliefs(MAX_POPULATION)
+                                - dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION)
+                                < AUnitTypeWrapper.OVERLORD_TYPE.getSupplyProvided())))
                 .globalBeliefTypesByAgentType(Stream.concat(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                     Stream.of(CURRENT_POPULATION, MAX_POPULATION))
@@ -248,7 +275,15 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> BuildLockerService.getInstance()
-                    .isLocked(AUnitTypeWrapper.OVERLORD_TYPE))
+                    .isLocked(AUnitTypeWrapper.OVERLORD_TYPE)
+                    || !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
+                    dataForDecision, INCREASING_CAPACITY, memory.getCurrentClock(),
+                    memory.getAgentId()))
+                .globalBeliefTypesByAgentType(
+                    INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefsByAgentType())
+                .globalBeliefSetTypesByAgentType(
+                    INCREASING_CAPACITY.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .globalBeliefTypes(INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefs())
                 .build())
             .desiresForOthers(Collections.singleton(INCREASE_CAPACITY))
             .build();

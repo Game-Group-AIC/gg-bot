@@ -73,7 +73,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
-//TODO problem building extractor
 @Slf4j
 public class DroneAgentType {
 
@@ -107,17 +106,20 @@ public class DroneAgentType {
                     //committed agents
                     && dataForDecision.getNumberOfCommittedAgents() < 3
                     //is in base location
-                    && dataForDecision.returnFactSetValueForGivenKey(HAS_EXTRACTOR).get().findAny()
-                    .get().getNearestBaseLocation().get().equals(
+                    && dataForDecision.returnFactSetValueForGivenKey(HAS_EXTRACTOR)
+                    .orElse(Stream.empty())
+                    .map(AUnit::getNearestBaseLocation)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .anyMatch(aBaseLocationWrapper -> aBaseLocationWrapper.equals(
                         memory.returnFactValueForGivenKey(IS_UNIT).get().getNearestBaseLocation()
-                            .orElse(null))
+                            .orElse(null)))
                     //is not gathering resources
-                    && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false)
-                    && !memory.returnFactValueForGivenKey(IS_GATHERING_GAS).orElse(false)
-                ))
-                .useFactsInMemory(true)
+//                    && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false)
+                    && !memory.returnFactValueForGivenKey(IS_GATHERING_GAS).orElse(false)))
                 .desiresToConsider(Stream.concat(Stream.of(DesiresKeys.WORKER_SCOUT,
-                    DesiresKeys.GO_TO_BASE, DesiresKeys.MINE_GAS_IN_BASE),
+                    DesiresKeys.GO_TO_BASE, DesiresKeys.MINE_GAS_IN_BASE,
+                    DesiresKeys.MINE_MINERALS_IN_BASE),
                     BUILDING_DESIRES.stream())
                     .collect(Collectors.toSet()))
                 .build())
@@ -125,21 +127,23 @@ public class DroneAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) -> dataForDecision.madeDecisionToAny()
                         || dataForDecision.getNumberOfCommittedAgents() > 3
-                        //or no body is mining minerals
-                        || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION).filter(
-                        readOnlyMemory -> readOnlyMemory
+                        //or no body is mining minerals even though there are some
+                        || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        .filter(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_BASE_LOCATION).get()
                             .equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
                                 .getNearestBaseLocation().orElse(null))).anyMatch(readOnlyMemory ->
-                        readOnlyMemory.returnFactSetValueForGivenKey(WORKER_MINING_MINERALS)
-                            .orElse(Stream.empty()).count() == 0)
+                            readOnlyMemory.returnFactSetValueForGivenKey(WORKER_MINING_MINERALS)
+                                .orElse(Stream.empty()).count() == 0
+                                && readOnlyMemory.returnFactSetValueForGivenKey(MINERAL)
+                                .orElse(Stream.empty()).count() > 0)
                 )
                 .desiresToConsider(Stream.concat(Stream.of(DesiresKeys.WORKER_SCOUT,
                     DesiresKeys.GO_TO_BASE, DesiresKeys.MINE_MINERALS_IN_BASE),
                     BUILDING_DESIRES.stream()).collect(Collectors.toSet()))
                 .useFactsInMemory(true)
                 .build())
-            .desiresWithIntentionToAct(new HashSet<>(Collections.singleton(DesiresKeys.MINE_GAS)))
+            .desiresWithIntentionToAct(Collections.singleton(DesiresKeys.MINE_GAS))
             .build();
         type.addConfiguration(DesiresKeys.MINE_GAS_IN_BASE, mineGas, false);
 
@@ -167,6 +171,7 @@ public class DroneAgentType {
             .build();
         type.addConfiguration(DesiresKeys.MINE_GAS, DesiresKeys.MINE_GAS_IN_BASE, sendForGas);
 
+        //TODO needs some refactoring
         //go scouting
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent goScouting = ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent
             .builder()
@@ -269,55 +274,51 @@ public class DroneAgentType {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                     //is in same base
-                    && (dataForDecision.returnFactValueForGivenKey(IS_BASE_LOCATION).get().equals(
-                    memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
+                    && (dataForDecision.returnFactValueForGivenKey(IS_BASE_LOCATION).get()
+                    .equals(memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
                         .getNearestBaseLocation().orElse(null))
                     //resources are under saturated
                     && dataForDecision.getNumberOfCommittedAgents() <= 1.5 * dataForDecision
                     .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE))
                     //is not gathering resources
-                    && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false)
-                    && !memory.returnFactValueForGivenKey(IS_GATHERING_GAS).orElse(false))
-                .useFactsInMemory(true)
-                .parameterValueSetTypes(
-                    new HashSet<>(Collections.singletonList(COUNT_OF_MINERALS_ON_BASE)))
+                    && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false))
+//                    && !memory.returnFactValueForGivenKey(IS_GATHERING_GAS).orElse(false))
+                .parameterValueSetTypes(Collections.singleton(COUNT_OF_MINERALS_ON_BASE))
                 .desiresToConsider(Stream.concat(Stream
                         .of(DesiresKeys.WORKER_SCOUT, DesiresKeys.MINE_MINERALS_IN_BASE,
-                            DesiresKeys.GO_TO_BASE),
-                    BUILDING_DESIRES.stream()).collect(Collectors.toSet()))
-                .build()
-            )
+                            DesiresKeys.MINE_GAS_IN_BASE, DesiresKeys.GO_TO_BASE),
+                    BUILDING_DESIRES.stream())
+                    .collect(Collectors.toSet()))
+                .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) -> dataForDecision.madeDecisionToAny() ||
                         //minerals are over saturated
                         dataForDecision.getNumberOfCommittedAgents() >= 2 * dataForDecision
                             .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE)
-                        //nobody is mining gas at same location
-                        || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        //nobody is mining gas at same location and at least somebody is mining minerals
+                        || (dataForDecision.getNumberOfCommittedAgents() > 1 && memory
+                        .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
                         .filter(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_BASE_LOCATION)
                             .get().equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
                                 .getNearestBaseLocation().orElse(null)))
                         .anyMatch(readOnlyMemory ->
                             readOnlyMemory.returnFactSetValueForGivenKey(HAS_EXTRACTOR)
-                                .orElse(Stream.empty()).count() > 0
-                                && readOnlyMemory.returnFactSetValueForGivenKey(WORKER_MINING_GAS)
-                                .orElse(Stream.empty()).count() == 0))
-                .parameterValueSetTypes(
-                    new HashSet<>(Collections.singletonList(COUNT_OF_MINERALS_ON_BASE)))
+                                .orElse(Stream.empty()).count() > 0 &&
+                                readOnlyMemory.returnFactSetValueForGivenKey(WORKER_MINING_GAS)
+                                    .orElse(Stream.empty()).count() == 0)))
+                .parameterValueSetTypes(Collections.singleton(COUNT_OF_MINERALS_ON_BASE))
                 .desiresToConsider(Stream.concat(Stream
                     .of(DesiresKeys.WORKER_SCOUT, DesiresKeys.GO_TO_BASE,
-                        DesiresKeys.MINE_GAS_IN_BASE), BUILDING_DESIRES.stream()).collect(
-                    Collectors.toSet()))
-                .useFactsInMemory(true)
+                        DesiresKeys.MINE_GAS_IN_BASE), BUILDING_DESIRES.stream())
+                    .collect(Collectors.toSet()))
                 .build()
             )
-            .desiresWithIntentionToAct(
-                new HashSet<>(Collections.singletonList(DesiresKeys.MINE_MINERALS)))
+            .desiresWithIntentionToAct(Collections.singleton(DesiresKeys.MINE_MINERALS))
             .desiresWithIntentionToReason(
-                new HashSet<>(
-                    Arrays.asList(DesiresKeys.SELECT_MINERAL, DesiresKeys.UNSELECT_MINERAL)))
+                Stream.of(DesiresKeys.SELECT_MINERAL, DesiresKeys.UNSELECT_MINERAL)
+                    .collect(Collectors.toSet()))
             .build();
         type.addConfiguration(DesiresKeys.MINE_MINERALS_IN_BASE, mineInBase, false);
 
@@ -679,14 +680,20 @@ public class DroneAgentType {
           AUnitWithCommands me = memory.returnFactValueForGivenKey(IS_UNIT).get();
           if (me.getNearestBaseLocation().isPresent()) {
             BotFacade.ADDITIONAL_OBSERVATIONS_PROCESSOR.requestObservation((mem, environment) -> {
-              Optional<ATilePosition> place = Util.getBuildTile(typeOfBuilding,
-                  me.getNearestBaseLocation().get().getTilePosition(), me, environment);
 
-              //keep unoccupied place
-              if (place.isPresent()) {
-                memory.updateFact(placeForBuilding, place.get());
-              } else {
-                memory.eraseFactValueForGivenKey(placeForBuilding);
+              //quick check if it is not buildable anymore
+              if (!memory.returnFactValueForGivenKey(placeForBuilding).isPresent()
+                  || !Util.canBuildHereCheck(typeOfBuilding,
+                  memory.returnFactValueForGivenKey(placeForBuilding).get(), me, environment)) {
+                Optional<ATilePosition> place = Util.getBuildTile(typeOfBuilding,
+                    me.getNearestBaseLocation().get().getTilePosition(), me, environment);
+
+                //keep unoccupied place
+                if (place.isPresent()) {
+                  memory.updateFact(placeForBuilding, place.get());
+                } else {
+                  memory.eraseFactValueForGivenKey(placeForBuilding);
+                }
               }
               return true;
             }, memory, DRONE);
