@@ -14,6 +14,7 @@ import lombok.Getter;
  * Agent for unit in game
  */
 public class AgentUnit extends AgentObservingGame<AgentTypeUnit> {
+
   @Getter
   private final AUnit unit;
 

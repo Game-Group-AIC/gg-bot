@@ -5,12 +5,14 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import java.util.stream.Stream;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
  * Contains statistics for given AUnitTypeWrapper
  */
 @Getter
+@EqualsAndHashCode(of = "unitTypeWrapper")
 public class UnitTypeStatus {
 
   private final long count;
@@ -20,25 +22,6 @@ public class UnitTypeStatus {
     this.unitTypeWrapper = unitTypeWrapper;
     this.count = unitSet.filter(unit -> unit.getType().equals(unitTypeWrapper))
         .count();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    UnitTypeStatus that = (UnitTypeStatus) o;
-
-    return unitTypeWrapper.equals(that.unitTypeWrapper);
-  }
-
-  @Override
-  public int hashCode() {
-    return unitTypeWrapper.hashCode();
   }
 
   /**

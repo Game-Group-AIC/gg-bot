@@ -32,7 +32,8 @@ public interface StorageService {
   /**
    * Get stored trajectories for given parameters
    */
-  List<TrajectoryWrapper> getRandomListOfTrajectories(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
+  List<TrajectoryWrapper> getRandomListOfTrajectories(AgentTypeID agentTypeID,
+      DesireKeyID desireKeyID,
       MapSizeEnums mapSize, ARace race, int limit);
 
   /**

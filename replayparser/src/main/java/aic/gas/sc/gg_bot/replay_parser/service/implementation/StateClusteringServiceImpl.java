@@ -84,7 +84,7 @@ public class StateClusteringServiceImpl implements StateClusteringService {
 //            log.info("Estimated #" + clusterNumberEstimation + " clusters.");
       int num_clusters = clusters;
 
-      while(num_clusters > 1) {
+      while (num_clusters > 1) {
         try {
           MiniBatchKMeans batchKMeans = new MiniBatchKMeans(DISTANCE_FUNCTION, batchSize,
               iterations,
@@ -93,7 +93,7 @@ public class StateClusteringServiceImpl implements StateClusteringService {
           return batchKMeans.getMeans();
         } catch (IndexOutOfBoundsException e) {
           num_clusters /= 2;
-          log.warn("decreasing cluster size to "+num_clusters);
+          log.warn("decreasing cluster size to " + num_clusters);
         }
       }
     }

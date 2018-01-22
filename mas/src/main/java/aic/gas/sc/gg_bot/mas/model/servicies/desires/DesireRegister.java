@@ -1,18 +1,14 @@
 package aic.gas.sc.gg_bot.mas.model.servicies.desires;
 
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
-import aic.gas.sc.gg_bot.mas.model.planing.Desire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireInRegister;
 import aic.gas.sc.gg_bot.mas.model.servicies.Register;
 import aic.gas.sc.gg_bot.mas.service.MASFacade;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -93,7 +89,7 @@ public class DesireRegister extends Register<Map<SharedDesire, SharedDesireInReg
           }
 
           //try to commit agent and return copy of current instance
-          if (desire.commitToDesire(agentWhoWantsToCommitTo)){
+          if (desire.commitToDesire(agentWhoWantsToCommitTo)) {
             return Optional.of(desire.getCopyOfSharedDesireForAgents());
           }
         }

@@ -10,6 +10,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EVOLUTION_CHAMBER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_HYDRALISK_DEN;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_POOL;
@@ -96,10 +97,11 @@ public class BuildingOrderManager {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
-                    && !dataForDecision.madeDecisionToAny()
-                    && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                    && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0)
+                    !BotFacade.RESOURCE_MANAGER
+                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                        && !dataForDecision.madeDecisionToAny()
+                        && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                        && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0)
             .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
@@ -124,7 +126,8 @@ public class BuildingOrderManager {
 
   public static final AgentType BUILDING_ORDER_MANAGER = AgentType.builder()
       .agentTypeID(AgentTypes.BUILDING_ORDER_MANAGER)
-      .usingTypesForFacts(new HashSet<>(Collections.singletonList(BASE_TO_MOVE)))
+      .usingTypesForFacts(Stream.of(BASE_TO_MOVE, LOCATION)
+          .collect(Collectors.toSet()))
       .initializationStrategy(type -> {
 
         //build pool abstract top - make reservation + check conditions (no pool). unlocked only when pool was built
@@ -152,8 +155,11 @@ public class BuildingOrderManager {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny() &&
-                        !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(AUnitTypeWrapper.EXTRACTOR_TYPE, memory.getAgentId())
-                        && !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
+                        !BotFacade.RESOURCE_MANAGER
+                            .hasMadeReservationOn(AUnitTypeWrapper.EXTRACTOR_TYPE,
+                                memory.getAgentId())
+                        && !BuildLockerService.getInstance()
+                        .isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
                         && dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS)
                         == 0)
                 .globalBeliefSetTypesByAgentType(Collections.singleton(COUNT_OF_EXTRACTORS))

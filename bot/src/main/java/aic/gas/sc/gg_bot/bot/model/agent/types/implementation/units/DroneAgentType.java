@@ -73,6 +73,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
+//TODO stop on failed building command. refactor scouting
 @Slf4j
 public class DroneAgentType {
 

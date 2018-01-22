@@ -9,7 +9,12 @@ import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import java.io.File;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import jsat.linear.distancemetrics.DistanceMetric;
 import jsat.linear.distancemetrics.EuclideanDistance;
@@ -49,7 +54,7 @@ public class Configuration {
   public static Set<AgentTypeID> getParsedAgentTypesContainedInStorage(String folder,
       MapSizeEnums mapSize, ARace race) {
     File directory = new File(folder + "/" + mapSize.name() + "/" + race.name());
-    if(!directory.exists()) {
+    if (!directory.exists()) {
       return new HashSet<>();
     }
 

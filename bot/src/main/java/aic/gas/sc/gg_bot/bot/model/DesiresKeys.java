@@ -27,11 +27,17 @@ public class DesiresKeys {
   public static final DesireKey READ_PLAYERS_DATA = DesireKey.builder()
       .id(DesireKeys.READ_PLAYERS_DATA)
       .build();
-  public static final DesireKey ESTIMATE_ENEMY_FORCE = DesireKey.builder()
-      .id(DesireKeys.ESTIMATE_ENEMY_FORCE)
+  public static final DesireKey ESTIMATE_ENEMY_FORCE_IN_BUILDINGS = DesireKey.builder()
+      .id(DesireKeys.ESTIMATE_ENEMY_FORCE_IN_BUILDINGS)
       .build();
-  public static final DesireKey ESTIMATE_OUR_FORCE = DesireKey.builder()
-      .id(DesireKeys.ESTIMATE_OUR_FORCE)
+  public static final DesireKey ESTIMATE_ENEMY_FORCE_IN_UNITS = DesireKey.builder()
+      .id(DesireKeys.ESTIMATE_ENEMY_FORCE_IN_UNITS)
+      .build();
+  public static final DesireKey ESTIMATE_OUR_FORCE_IN_BUILDINGS = DesireKey.builder()
+      .id(DesireKeys.ESTIMATE_OUR_FORCE_IN_BUILDINGS)
+      .build();
+  public static final DesireKey ESTIMATE_OUR_FORCE_IN_UNITS = DesireKey.builder()
+      .id(DesireKeys.ESTIMATE_OUR_FORCE_IN_UNITS)
       .build();
   public static final DesireKey UPDATE_ENEMY_RACE = DesireKey.builder()
       .id(DesireKeys.UPDATE_ENEMY_RACE)

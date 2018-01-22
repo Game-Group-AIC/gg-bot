@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BOOSTING_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BOOSTING_GROUND_MELEE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BOOSTING_GROUND_RANGED;
@@ -14,6 +15,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +23,7 @@ public class UnitOrderManager {
 
   public static final AgentType UNIT_ORDER_MANAGER = AgentType.builder()
       .agentTypeID(AgentTypes.UNIT_ORDER_MANAGER)
+      .usingTypesForFacts(Collections.singleton(LOCATION))
       .initializationStrategy(type -> {
 
         //build zerglings

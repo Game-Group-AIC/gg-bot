@@ -36,7 +36,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
     this.intention = desire.formIntentionExternal(heapOfTrees.getAgent());
   }
 
-  void formDesireNodeToReplaceIntentionNode(){
+  void formDesireNodeToReplaceIntentionNode() {
     actOnRemoval();
     formDesireNodeAndReplaceIntentionNode();
   }
@@ -522,7 +522,8 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
 
       @Override
       void formDesireNodeAndReplaceIntentionNode() {
-        parent.replaceIntentionByDesire(this, new DesireNodeAtTopLevel.FromAnotherAgent.WithAbstractIntention(parent, desire));
+        parent.replaceIntentionByDesire(this,
+            new DesireNodeAtTopLevel.FromAnotherAgent.WithAbstractIntention(parent, desire));
       }
 
       @Override

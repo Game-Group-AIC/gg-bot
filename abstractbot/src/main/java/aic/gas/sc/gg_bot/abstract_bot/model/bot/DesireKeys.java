@@ -58,11 +58,16 @@ public class DesireKeys {
 
   //desires of agent representing player
   public static final DesireKeyID READ_PLAYERS_DATA = new DesireKeyID("READ_PLAYERS_DATA", 41);
-  public static final DesireKeyID ESTIMATE_ENEMY_FORCE = new DesireKeyID("ESTIMATE_ENEMY_FORCE",
-      42);
-  public static final DesireKeyID ESTIMATE_OUR_FORCE = new DesireKeyID("ESTIMATE_OUR_FORCE", 43);
-  public static final DesireKeyID UPDATE_ENEMY_RACE = new DesireKeyID("UPDATE_ENEMY_RACE", 44);
-  public static final DesireKeyID REASON_ABOUT_BASES = new DesireKeyID("REASON_ABOUT_BASES", 45);
+  public static final DesireKeyID ESTIMATE_ENEMY_FORCE_IN_BUILDINGS = new DesireKeyID(
+      "ESTIMATE_ENEMY_FORCE_IN_BUILDINGS", 42);
+  public static final DesireKeyID ESTIMATE_ENEMY_FORCE_IN_UNITS = new DesireKeyID(
+      "ESTIMATE_ENEMY_FORCE_IN_UNITS", 43);
+  public static final DesireKeyID ESTIMATE_OUR_FORCE_IN_BUILDINGS = new DesireKeyID(
+      "ESTIMATE_OUR_FORCE_IN_BUILDINGS", 44);
+  public static final DesireKeyID ESTIMATE_OUR_FORCE_IN_UNITS = new DesireKeyID(
+      "ESTIMATE_OUR_FORCE_IN_UNITS", 45);
+  public static final DesireKeyID UPDATE_ENEMY_RACE = new DesireKeyID("UPDATE_ENEMY_RACE", 46);
+  public static final DesireKeyID REASON_ABOUT_BASES = new DesireKeyID("REASON_ABOUT_BASES", 47);
 
   //desires for agent representing base
   public static final DesireKeyID ECO_STATUS_IN_LOCATION = new DesireKeyID("ECO_STATUS_IN_LOCATION",

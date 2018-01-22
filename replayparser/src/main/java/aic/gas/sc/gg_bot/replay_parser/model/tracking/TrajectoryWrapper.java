@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class TrajectoryWrapper {
+
   @Getter
   private final Trajectory trajectory;
 

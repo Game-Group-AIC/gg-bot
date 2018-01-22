@@ -193,9 +193,9 @@ public class DecisionLearnerServiceImpl implements DecisionLearnerService {
         File file = new File(path);
         file.getParentFile().mkdirs();
         Files.createFile(file.toPath());
-        log.info("Created placeholder "+path);
+        log.info("Created placeholder " + path);
       } catch (IOException e) {
-        log.warn("Failed to create "+path);
+        log.warn("Failed to create " + path);
       }
 
       log.info("Starting computation for " + path);

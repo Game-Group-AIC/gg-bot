@@ -184,5 +184,4 @@ public class AgentTypeUtils {
             .build())
         .build();
   }
-
 }

@@ -8,6 +8,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.EXPANDING;
@@ -43,7 +44,6 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -78,8 +78,8 @@ public class EcoManagerAgentType {
 
   public static final AgentType ECO_MANAGER = AgentType.builder()
       .agentTypeID(AgentTypes.ECO_MANAGER)
-      .usingTypesForFacts(
-          new HashSet<>(Collections.singletonList(BASE_TO_MOVE)))
+      .usingTypesForFacts(Stream.of(BASE_TO_MOVE, LOCATION)
+          .collect(Collectors.toSet()))
       .initializationStrategy((AgentType type) -> {
 
         //train drone

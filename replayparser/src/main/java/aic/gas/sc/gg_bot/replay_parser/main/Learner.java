@@ -19,10 +19,10 @@ public class Learner {
 
     int num_proc = 8;
     String NUM_PROC = System.getenv("NUM_PROC");
-    if(NUM_PROC != null) {
+    if (NUM_PROC != null) {
       num_proc = Integer.parseInt(NUM_PROC);
     }
-    log.info("Using numproc "+num_proc);
+    log.info("Using numproc " + num_proc);
     learnerService.learnDecisionMakers(num_proc);
   }
 

@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 
+//TODO refactor
 public class OverlordAgentType {
 
   public static final AgentTypeUnit OVERLORD = AgentTypeUnit.builder()

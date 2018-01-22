@@ -26,7 +26,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
@@ -222,6 +221,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
     private int skipTurnsToMakeObservation = 5;
   }
 
+  //TODO refactor - do not be so suicidal :)
   public static void initAttackPlan(AgentType type, DesireKey desireKey,
       boolean isScaredOfAntiAir) {
 

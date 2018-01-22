@@ -1,8 +1,5 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.CREEP_COLONY_TYPE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.OVERLORD_TYPE;
-
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
@@ -542,7 +539,7 @@ public class FactConverters {
           .map(AUnit::getType)
           .filter(typeWrapper -> typeWrapper.equals(AUnitTypeWrapper.SUNKEN_COLONY_TYPE))
           .count());
-//  public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION = new FactWithOptionalValueSet<>(
+  //  public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_CREEP_COLONIES_AT_BASE_IN_CONSTRUCTION = new FactWithOptionalValueSet<>(
 //      new FactConverterID<>(331, FactKeys.WORKER_ON_BASE),
 //      vStream -> (double) vStream.orElse(Stream.empty())
 //          .filter(AUnit::isMorphing)
@@ -580,7 +577,7 @@ public class FactConverters {
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
           .count(), AgentTypes.SPAWNING_POOL);
-//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_POOLS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+  //  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_POOLS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
 //      new FactConverterID<>(403, FactKeys.IS_MORPHING_TO),
 //      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
 //          .map(Optional::get)
@@ -608,7 +605,7 @@ public class FactConverters {
       new FactConverterID<>(410, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .count(), AgentTypes.LAIR);
-//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_LAIRS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+  //  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_LAIRS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
 //      new FactConverterID<>(411, FactKeys.REPRESENTS_UNIT),
 //      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
 //          .map(Optional::get)
@@ -620,7 +617,7 @@ public class FactConverters {
       new FactConverterID<>(412, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .count(), AgentTypes.SPIRE);
-//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_SPIRES_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+  //  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_SPIRES_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
 //      new FactConverterID<>(413, FactKeys.IS_MORPHING_TO),
 //      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
 //          .map(Optional::get)
@@ -630,7 +627,7 @@ public class FactConverters {
       new FactConverterID<>(414, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .count(), AgentTypes.HYDRALISK_DEN);
-//  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
+  //  public static final FactWithSetOfOptionalValuesForAgentType<AUnitTypeWrapper> COUNT_OF_HYDRALISK_DENS_IN_CONSTRUCTION = new FactWithSetOfOptionalValuesForAgentType<>(
 //      new FactConverterID<>(415, FactKeys.IS_MORPHING_TO),
 //      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
 //          .map(Optional::get)
