@@ -670,12 +670,9 @@ public class FactConverters {
 //          .count());
 
   //scouting
-  public static final FactWithSetOfOptionalValuesForAgentType<Integer> COUNT_OF_VISITED_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
-      new FactConverterID<>(601, FactKeys.LAST_TIME_SCOUTED), optionalStream -> optionalStream
-      .filter(Optional::isPresent)
-      .count(), AgentTypes.BASE_LOCATION);
-  public static final FactWithOptionalValue<Integer> LAST_TIME_SCOUTED = new FactWithOptionalValue<>(
-      new FactConverterID<>(602, FactKeys.LAST_TIME_SCOUTED), integer -> integer.orElse(-1));
+  public static final FactWithOptionalValue<Boolean> WAS_VISITED = new FactWithOptionalValue<>(
+      new FactConverterID<>(602, FactKeys.WAS_VISITED),
+      integer -> integer.orElse(false) ? 1.0 : 0.0);
 
   //worker
   public static final FactWithOptionalValue<AUnit> IS_MINING_MINERAL = new FactWithOptionalValue<>(

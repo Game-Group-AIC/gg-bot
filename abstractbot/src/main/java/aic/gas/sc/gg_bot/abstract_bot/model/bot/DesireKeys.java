@@ -70,6 +70,8 @@ public class DesireKeys {
   public static final DesireKeyID REASON_ABOUT_BASES = new DesireKeyID("REASON_ABOUT_BASES", 47);
 
   //desires for agent representing base
+  public static final DesireKeyID REASON_ABOUT_BASE_TYPE = new DesireKeyID("REASON_ABOUT_BASE_TYPE",
+      51);
   public static final DesireKeyID ECO_STATUS_IN_LOCATION = new DesireKeyID("ECO_STATUS_IN_LOCATION",
       52);
   public static final DesireKeyID ESTIMATE_ENEMY_FORCE_IN_LOCATION = new DesireKeyID(
@@ -82,6 +84,8 @@ public class DesireKeys {
   public static final DesireKeyID MINE_MINERALS_IN_BASE = new DesireKeyID("MINE_MINERALS_IN_BASE",
       57);
   public static final DesireKeyID MINE_GAS_IN_BASE = new DesireKeyID("MINE_GAS_IN_BASE", 58);
+  public static final DesireKeyID REASON_ABOUT_OUR_BASE = new DesireKeyID("REASON_ABOUT_OUR_BASE",
+      59);
 
   //desires for agent's representing unit
   public static final DesireKeyID SURROUNDING_UNITS_AND_LOCATION = new DesireKeyID(

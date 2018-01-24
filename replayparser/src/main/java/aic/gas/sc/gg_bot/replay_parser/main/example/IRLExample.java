@@ -66,8 +66,8 @@ public class IRLExample {
 
 //        ex.launchExplorer(); //choose this to record demonstrations
 //        ex.launchSavedEpisodeSequenceVis("irl_demos"); //choose this review the demonstrations that you've recorded
-    ex.runIRL(
-        "irl_demos"); //choose this to run MLIRL on the demonstrations and visualize the learned reward function and policy
+    //choose this to run MLIRL on the demonstrations and visualize the learned reward function and policy
+    ex.runIRL("irl_demos");
 
 
   }

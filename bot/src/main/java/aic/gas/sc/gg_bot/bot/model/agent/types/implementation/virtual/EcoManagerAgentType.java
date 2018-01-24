@@ -111,8 +111,10 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
+                    (!Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
                         dataForDecision, EXPANDING, memory.getCurrentClock(), memory.getAgentId())
+                        && !BotFacade.RESOURCE_MANAGER
+                        .canSpendResourcesOn(HATCHERY_TYPE, memory.getAgentId()))
                         || BuildLockerService.getInstance()
                         .isLocked(AUnitTypeWrapper.HATCHERY_TYPE))
                 .globalBeliefTypes(EXPANDING.getConvertersForFactsForGlobalBeliefs())
@@ -213,9 +215,11 @@ public class EcoManagerAgentType {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) ->
-                        !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_EXTRACTOR,
+                        (!Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_EXTRACTOR,
                             dataForDecision, BUILDING_EXTRACTOR, memory.getCurrentClock(),
-                            memory.getAgentId()) || BuildLockerService.getInstance()
+                            memory.getAgentId()) && !BotFacade.RESOURCE_MANAGER
+                            .canSpendResourcesOn(EXTRACTOR_TYPE, memory.getAgentId()))
+                            || BuildLockerService.getInstance()
                             .isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
                             || !getOurBaseWithoutExtractor(memory).isPresent())
                 .globalBeliefTypes(BUILDING_EXTRACTOR.getConvertersForFactsForGlobalBeliefs())
@@ -276,9 +280,10 @@ public class EcoManagerAgentType {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> BuildLockerService.getInstance()
                     .isLocked(AUnitTypeWrapper.OVERLORD_TYPE)
-                    || !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
+                    || (!Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
                     dataForDecision, INCREASING_CAPACITY, memory.getCurrentClock(),
-                    memory.getAgentId()))
+                    memory.getAgentId()) && !BotFacade.RESOURCE_MANAGER
+                    .canSpendResourcesOn(OVERLORD_TYPE, memory.getAgentId())))
                 .globalBeliefTypesByAgentType(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(

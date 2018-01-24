@@ -71,38 +71,6 @@ public class PlayerAgentType {
           .collect(Collectors.toSet()))
       .initializationStrategy(type -> {
 
-        //TODO refactor
-//        //send worker to scout
-//        ConfigurationWithSharedDesire sendWorkerScouting = ConfigurationWithSharedDesire.builder()
-//            .sharedDesireKey(WORKER_SCOUT)
-//            .decisionInDesire(CommitmentDeciderInitializer.builder()
-//                .decisionStrategy(
-//                    (dataForDecision, memory) -> memory.getReadOnlyMemoriesForAgentType(
-//                        AgentTypes.BASE_LOCATION)
-//                        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-//                            IS_START_LOCATION).get())
-//                        .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(
-//                            LAST_TIME_SCOUTED).isPresent())
-//                        .count() > 0
-//                        && memory.getReadOnlyMemoriesForAgentType(AgentTypes.DRONE).count() > 8)
-//                .useFactsInMemory(true)
-//                .build()
-//            )
-//            .decisionInIntention(CommitmentDeciderInitializer.builder()
-//                .decisionStrategy(
-//                    (dataForDecision, memory) -> memory.getReadOnlyMemoriesForAgentType(
-//                        AgentTypes.BASE_LOCATION)
-//                        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-//                            IS_START_LOCATION).get())
-//                        .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(
-//                            LAST_TIME_SCOUTED).isPresent())
-//                        .count() == 0)
-//                .useFactsInMemory(true)
-//                .build())
-//            .counts(1)
-//            .build();
-//        type.addConfiguration(WORKER_SCOUT, sendWorkerScouting);
-
         //read data from player
         ConfigurationWithCommand.WithReasoningCommandDesiredBySelf readPlayersData = ConfigurationWithCommand.
             WithReasoningCommandDesiredBySelf.builder()

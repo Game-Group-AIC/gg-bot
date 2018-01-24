@@ -4,7 +4,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_TIME_SCOUTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL_TO_MINE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
@@ -116,6 +115,12 @@ public class DesiresKeys {
   public static final DesireKey ECO_STATUS_IN_LOCATION = DesireKey.builder()
       .id(DesireKeys.ECO_STATUS_IN_LOCATION)
       .build();
+  public static final DesireKey REASON_ABOUT_BASE_TYPE = DesireKey.builder()
+      .id(DesireKeys.REASON_ABOUT_BASE_TYPE)
+      .build();
+  public static final DesireKey REASON_ABOUT_OUR_BASE = DesireKey.builder()
+      .id(DesireKeys.REASON_ABOUT_OUR_BASE)
+      .build();
   public static final DesireKey ESTIMATE_ENEMY_FORCE_IN_LOCATION = DesireKey.builder()
       .id(DesireKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION)
       .build();
@@ -153,8 +158,7 @@ public class DesiresKeys {
   //scouting
   public static final DesireKey VISIT = DesireKey.builder()
       .id(DesireKeys.VISIT)
-      .parametersTypesForFacts(Stream.of(IS_BASE_LOCATION, LAST_TIME_SCOUTED)
-          .collect(Collectors.toSet()))
+      .parametersTypesForFacts(Collections.singleton(IS_BASE_LOCATION))
       .build();
   public static final DesireKey WORKER_SCOUT = DesireKey.builder()
       .id(DesireKeys.WORKER_SCOUT)

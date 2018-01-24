@@ -14,11 +14,8 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_START_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_TIME_SCOUTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL_TO_MINE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINING_IN_EXTRACTOR;
@@ -73,7 +70,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
-//TODO stop on failed building command. refactor scouting
+//TODO refactor scouting
 @Slf4j
 public class DroneAgentType {
 
@@ -171,70 +168,6 @@ public class DroneAgentType {
                 .build())
             .build();
         type.addConfiguration(DesiresKeys.MINE_GAS, DesiresKeys.MINE_GAS_IN_BASE, sendForGas);
-
-        //TODO needs some refactoring
-        //go scouting
-        ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent goScouting = ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent
-            .builder()
-            .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> true)
-                .build())
-            .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> false)
-                .useFactsInMemory(true)
-                .build())
-            .reactionOnChangeStrategy((memory, desireParameters) -> {
-              Optional<ABaseLocationWrapper> baseToScout = memory.getReadOnlyMemoriesForAgentType(
-                  AgentTypes.BASE_LOCATION)
-                  .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(
-                      LAST_TIME_SCOUTED).isPresent())
-                  .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(
-                      IS_ISLAND).get())
-                  .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                      IS_START_LOCATION).get())
-                  .map(
-                      readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE_LOCATION))
-                  .filter(Optional::isPresent)
-                  .map(Optional::get)
-                  .findAny();
-              baseToScout
-                  .ifPresent(aBaseLocationWrapper -> memory.updateFact(BASE_TO_SCOUT_BY_WORKER,
-                      aBaseLocationWrapper));
-            })
-            .reactionOnChangeStrategyInIntention(
-                (memory, desireParameters) -> memory
-                    .eraseFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER))
-            .commandCreationStrategy(intention -> new ActCommand.DesiredByAnotherAgent(intention) {
-              @Override
-              public boolean act(WorkingMemory memory) {
-
-                //todo hack...
-                AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
-                if (intention.returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER).get().distanceTo(
-                    me.getPosition()) < 10) {
-                  Optional<ABaseLocationWrapper> baseToScout = memory
-                      .getReadOnlyMemoriesForAgentType(
-                          AgentTypes.BASE_LOCATION)
-                      .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(
-                          LAST_TIME_SCOUTED).isPresent())
-                      .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(
-                          IS_ISLAND).get())
-                      .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                          IS_START_LOCATION).get())
-                      .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                          IS_BASE_LOCATION))
-                      .filter(Optional::isPresent)
-                      .map(Optional::get)
-                      .findAny();
-                  baseToScout.ifPresent(
-                      aBaseLocationWrapper -> memory.updateFact(BASE_TO_SCOUT_BY_WORKER,
-                          aBaseLocationWrapper));
-                }
-                return me.move(intention.returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER).get());
-              }
-            })
-            .build();
-        type.addConfiguration(DesiresKeys.WORKER_SCOUT, goScouting);
 
         //reason about activities related to worker
         ConfigurationWithCommand.WithReasoningCommandDesiredBySelf workerConcerns = ConfigurationWithCommand.

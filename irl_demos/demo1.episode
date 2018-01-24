@@ -1,6 +1,5 @@
 !!burlap.behavior.singleagent.Episode
 actionSequence:
-- &id002 !!burlap.mdp.core.action.SimpleAction {name: east}
 - &id001 !!burlap.mdp.core.action.SimpleAction {name: north}
 - *id001
 - *id001
@@ -8,17 +7,24 @@ actionSequence:
 - *id001
 - *id001
 - *id001
+- &id002 !!burlap.mdp.core.action.SimpleAction {name: east}
 - *id001
 - *id001
-- *id002
 - *id001
-- *id002
+- *id001
+- *id001
+- *id001
+- *id001
+- *id001
+- *id001
 - *id002
 - *id002
 - &id003 !!burlap.mdp.core.action.SimpleAction {name: south}
 - *id002
 - *id002
 - *id002
+- *id001
+- *id002
 - *id002
 - *id003
 - *id003
@@ -27,41 +33,51 @@ actionSequence:
 - *id003
 - *id003
 - *id003
+- *id003
+- *id002
 - *id003
 - *id002
 - *id002
 rewardSequence: [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
   -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
-  -1.0, -1.0, -1.0, -1.0, -1.0]
+  -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
 stateSequence:
-- !!cz.jan.maly.main.example.EXGridState {x: 0, y: 0}
-- !!cz.jan.maly.main.example.EXGridState {x: 1, y: 0}
-- !!cz.jan.maly.main.example.EXGridState {x: 1, y: 1}
-- !!cz.jan.maly.main.example.EXGridState {x: 1, y: 2}
-- !!cz.jan.maly.main.example.EXGridState {x: 1, y: 3}
-- !!cz.jan.maly.main.example.EXGridState {x: 1, y: 4}
-- !!cz.jan.maly.main.example.EXGridState {x: 1, y: 5}
-- !!cz.jan.maly.main.example.EXGridState {x: 1, y: 6}
-- !!cz.jan.maly.main.example.EXGridState {x: 2, y: 6}
-- !!cz.jan.maly.main.example.EXGridState {x: 2, y: 7}
-- !!cz.jan.maly.main.example.EXGridState {x: 2, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 2, y: 7}
-- !!cz.jan.maly.main.example.EXGridState {x: 2, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 3, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 4, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 4, y: 9}
-- !!cz.jan.maly.main.example.EXGridState {x: 4, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 5, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 6, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 7, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 8}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 7}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 6}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 5}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 4}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 3}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 2}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 1}
-- !!cz.jan.maly.main.example.EXGridState {x: 8, y: 0}
-- !!cz.jan.maly.main.example.EXGridState {x: 9, y: 0}
-- !!cz.jan.maly.main.example.EXGridState {x: 9, y: 1}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 0, y: 0}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 0}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 1}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 2}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 3}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 4}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 0, y: 4}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 0, y: 4}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 4}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 5}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 6}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 5}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 6}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 5}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 6}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 7}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 8}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 1, y: 9}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 2, y: 9}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 3, y: 9}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 3, y: 8}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 4, y: 8}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 5, y: 8}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 5, y: 8}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 6, y: 8}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 7, y: 8}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 8, y: 8}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 8, y: 7}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 8, y: 6}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 8, y: 5}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 8, y: 4}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 8, y: 3}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 7, y: 3}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 7, y: 2}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 7, y: 1}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 8, y: 1}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 8, y: 0}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 9, y: 0}
+- !!aic.gas.sc.gg_bot.replay_parser.main.example.EXGridState {x: 10, y: 0}

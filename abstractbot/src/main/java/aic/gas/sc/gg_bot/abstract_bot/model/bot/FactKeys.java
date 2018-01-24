@@ -483,10 +483,10 @@ public class FactKeys {
   };
 
   //scouting
-  public static final FactKey<Integer> LAST_TIME_SCOUTED = new FactKey<Integer>("LAST_TIME_SCOUTED",
+  public static final FactKey<Boolean> WAS_VISITED = new FactKey<Boolean>("WAS_VISITED",
       false) {
     @Override
-    public Integer getInitValue() {
+    public Boolean getInitValue() {
       return null;
     }
   };

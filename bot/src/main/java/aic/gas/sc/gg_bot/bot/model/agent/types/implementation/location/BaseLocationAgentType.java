@@ -24,7 +24,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LAST_TIME_SCOUTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
@@ -42,6 +41,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SPORE_COLONY_COU
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.STATIC_DEFENSE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SUNKEN_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
@@ -78,10 +78,9 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.OptionalInt;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -156,9 +155,11 @@ public class BaseLocationAgentType {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    !Decider
+                    (!Decider
                         .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
                             featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
+                        && !BotFacade.RESOURCE_MANAGER
+                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         || !memory.returnFactValueForGivenKey(IS_BASE).get()
                         || memory.returnFactValueForGivenKey(factCountToTrackPreviousCount)
@@ -283,140 +284,178 @@ public class BaseLocationAgentType {
         type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, DesiresKeys.BUILD_SPORE_COLONY,
             buildSporeColonyShared);
 
-        //TODO reason about enemy base, send overlord to our base when enemy is present
+        //reason if it is base + if is base, set visited
+        WithReasoningCommandDesiredBySelf reasonAboutOurBase = WithReasoningCommandDesiredBySelf
+            .builder()
+            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+              @Override
+              public boolean act(WorkingMemory memory) {
 
-        //reason about last visit
-        WithReasoningCommandDesiredBySelf reasonAboutVisit =
-            WithReasoningCommandDesiredBySelf.builder()
-                .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
-                  @Override
-                  public boolean act(WorkingMemory memory) {
-                    ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                        .get();
-                    OptionalInt frameWhenLastVisited = UnitWrapperFactory
-                        .getStreamOfAllAlivePlayersUnits()
-                        .filter(aUnitOfPlayer -> {
-                          APosition aPosition = aUnitOfPlayer.getPosition();
-                          return aPosition.distanceTo(base) < 5;
-                        })
-                        .mapToInt(AUnit::getFrameCount)
-                        .max();
-                    frameWhenLastVisited.ifPresent(
-                        integer -> memory.updateFact(LAST_TIME_SCOUTED, integer));
+                //base status
+                boolean isBase = memory.returnFactSetValueForGivenKey(HAS_BASE)
+                    .orElse(Stream.empty()).findAny().isPresent();
+                memory.updateFact(IS_BASE, isBase);
 
-                    //base status
-                    boolean isBase = memory.returnFactSetValueForGivenKey(HAS_BASE).map(
-                        Stream::count).orElse(0L) > 0;
-                    memory.updateFact(IS_BASE, isBase);
+                //set visited for our base
+                if (isBase && !memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false)) {
+                  memory.updateFact(WAS_VISITED, true);
+                }
 
-                    //todo it is not our base and (it has enemy buildings on it || we haven't visited all base locations and this one is unvisited base location)
-                    memory.updateFact(IS_ENEMY_BASE, !isBase &&
-                        memory.returnFactSetValueForGivenKey(ENEMY_BUILDING).map(Stream::count)
-                            .orElse(0L) > 0);
-                    return true;
+                return true;
+              }
+            })
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy(
+                    (dataForDecision, memory) -> memory.returnFactSetValueForGivenKey(HAS_BASE)
+                        .orElse(Stream.empty()).findAny().isPresent() != memory
+                        .returnFactValueForGivenKey(IS_BASE).orElse(false))
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build())
+            .build();
+        type.addConfiguration(DesiresKeys.REASON_ABOUT_OUR_BASE, reasonAboutOurBase);
+
+        //reason about type of this base - is our/enemy base
+        WithReasoningCommandDesiredBySelf reasonAboutTypeOfBase = WithReasoningCommandDesiredBySelf
+            .builder()
+            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+              @Override
+              public boolean act(WorkingMemory memory) {
+
+                //set is visited when it is set as not and we have unit on this base
+                if (!memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false)
+                    && memory.returnFactSetValueForGivenKey(OUR_UNIT).orElse(Stream.empty())
+                    .findAny().isPresent()) {
+
+                  //consider visited when there is one unit in radius of center
+                  APosition aPosition = memory.returnFactValueForGivenKey(IS_BASE_LOCATION).get()
+                      .getPosition();
+                  double closestDistance = memory.returnFactSetValueForGivenKey(OUR_UNIT)
+                      .orElse(Stream.empty())
+                      .mapToDouble(
+                          aUnitOfPlayer -> aUnitOfPlayer.getPosition().distanceTo(aPosition))
+                      .min().orElse(Double.MAX_VALUE);
+                  if (closestDistance < 3) {
+                    memory.updateFact(WAS_VISITED, true);
                   }
-                })
-                .decisionInDesire(CommitmentDeciderInitializer.builder()
-                    .decisionStrategy((dataForDecision, memory) -> true)
-                    .build())
-                .decisionInIntention(CommitmentDeciderInitializer.builder()
-                    .decisionStrategy((dataForDecision, memory) -> true)
-                    .build())
-                .build();
-        type.addConfiguration(DesiresKeys.VISIT, reasonAboutVisit);
+                }
 
-        //tell system to visit me
+                //is not visited + other start base location were visited - set as enemy base
+                if (!memory.returnFactValueForGivenKey(IS_BASE).orElse(false)
+                    && !memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false)
+                    && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .filter(
+                        readOnlyMemory -> readOnlyMemory.getAgentId() != memory.getAgentId())
+                    .filter(readOnlyMemory -> readOnlyMemory
+                        .returnFactValueForGivenKey(IS_BASE_LOCATION).get().isStartLocation())
+                    .noneMatch(
+                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(WAS_VISITED)
+                            .orElse(false))) {
+                  memory.updateFact(IS_ENEMY_BASE, true);
+                } else {
+
+                  //when there is an enemy building, consider it as enemy base
+                  memory.updateFact(IS_ENEMY_BASE,
+                      memory.returnFactSetValueForGivenKey(ENEMY_BUILDING)
+                          .orElse(Stream.empty())
+                          .findAny().isPresent());
+                }
+
+                return true;
+              }
+            })
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build())
+            .build();
+        type.addConfiguration(DesiresKeys.REASON_ABOUT_BASE_TYPE, reasonAboutTypeOfBase);
+
+        //send desire to be visited - was not visited yet, it is our base and there is enemy, it is enemy base and there are our units, or every base was visited and there are not our unit nor enemy
         ConfigurationWithSharedDesire visitMe = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(DesiresKeys.VISIT)
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> {
 
-                  //do not visit our base location
-                  if (dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 1.0) {
-                    return false;
-                  }
-
-                  //if everything is visited desire visit
-                  if (dataForDecision.getFeatureValueGlobalBeliefs(
-                      FactConverters.COUNT_OF_VISITED_BASES)
-                      == dataForDecision.getFeatureValueGlobalBeliefs(
-                      FactConverters.AVAILABLE_BASES)) {
+                  //is unvisited and is base location
+                  if (!memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false) && memory
+                      .returnFactValueForGivenKey(IS_BASE_LOCATION).get().isStartLocation()) {
                     return true;
                   }
 
-                  //visit bases first
-                  long countOfUnvisitedStartingPositions = memory.getReadOnlyMemoriesForAgentType(
-                      AgentTypes.BASE_LOCATION)
-                      .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(IS_BASE))
-                      .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(
-                          IS_BASE).get())
-                      .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                          IS_BASE_LOCATION).get().isStartLocation())
-                      .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
-                          LAST_TIME_SCOUTED))
-                      .filter(integer -> !integer.isPresent())
-                      .count();
-
-                  //visit bases first
-                  if (countOfUnvisitedStartingPositions > 0) {
-                    return memory.returnFactValueForGivenKey(
-                        IS_BASE_LOCATION).get().isStartLocation();
+                  //it is our base and there is enemy
+                  if (memory.returnFactValueForGivenKey(IS_BASE).orElse(false)
+                      && memory.returnFactSetValueForGivenKey(ENEMY_UNIT).orElse(Stream.empty())
+                      .findAny().isPresent()) {
+                    return true;
                   }
 
-                  //all starting positions have been visit so desire to visit everything from now on
-                  return true;
+                  List<ABaseLocationWrapper> unvisitedBases = memory
+                      .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                      .filter(
+                          readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(WAS_VISITED)
+                              .orElse(false))
+                      .map(readOnlyMemory -> readOnlyMemory
+                          .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                      .filter(Optional::isPresent)
+                      .map(Optional::get)
+                      .collect(Collectors.toList());
+
+                  //every start position was visited and this one is unvisited
+                  if (!memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false) &&
+                      unvisitedBases.stream().noneMatch(ABaseLocationWrapper::isStartLocation)) {
+                    return true;
+                  }
+
+                  //every base was visited and there are not our units - may send scouts to enemy base
+                  if (unvisitedBases.isEmpty() && !memory.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                      .orElse(Stream.empty()).findAny().isPresent() && !memory
+                      .returnFactSetValueForGivenKey(OUR_UNIT).orElse(Stream.empty()).findAny()
+                      .isPresent()) {
+                    return true;
+                  }
+
+                  //there are our units and enemy units
+                  if (memory.returnFactSetValueForGivenKey(ENEMY_UNIT).orElse(Stream.empty())
+                      .findAny().isPresent() && memory.returnFactSetValueForGivenKey(OUR_UNIT)
+                      .orElse(Stream.empty())
+                      .findAny().isPresent()) {
+                    return true;
+                  }
+
+                  return false;
                 })
-                .globalBeliefTypesByAgentType(new HashSet<>(
-                    Arrays.asList(FactConverters.COUNT_OF_VISITED_BASES,
-                        FactConverters.AVAILABLE_BASES)))
-                .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BASE)))
-                .useFactsInMemory(true)
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> {
 
-                  //do not visit our base location
-                  if (dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 1.0) {
+                  //there are our units and there is no enemy
+                  if (!memory.returnFactSetValueForGivenKey(ENEMY_UNIT).orElse(Stream.empty())
+                      .findAny().isPresent() && memory.returnFactSetValueForGivenKey(OUR_UNIT)
+                      .orElse(Stream.empty())
+                      .findAny().isPresent()) {
                     return true;
                   }
 
-                  //stay if it is enemy base
-                  if (dataForDecision.getFeatureValueBeliefs(FactConverters.IS_ENEMY_BASE) == 1.0) {
-                    return false;
-                  }
-
-                  //not visit anything
-                  if (dataForDecision.getFeatureValueDesireBeliefs(
-                      FactConverters.LAST_TIME_SCOUTED) == -1
-                      && dataForDecision.getFeatureValueBeliefs(
-                      FactConverters.LAST_TIME_SCOUTED) == -1) {
-                    return false;
-                  }
-
-                  ///we made first visit
-                  if (dataForDecision.getFeatureValueDesireBeliefs(
-                      FactConverters.LAST_TIME_SCOUTED) == -1
-                      && dataForDecision.getFeatureValueBeliefs(
-                      FactConverters.LAST_TIME_SCOUTED) > 0) {
+                  //it was visited, it is not enemy base and there exist position which was not visited
+                  if (memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false)
+                      && !memory.returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false)
+                      && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                      .anyMatch(
+                          readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(WAS_VISITED)
+                              .orElse(false))) {
                     return true;
                   }
 
-                  //new visit
-                  return (dataForDecision.getFeatureValueDesireBeliefs(
-                      FactConverters.LAST_TIME_SCOUTED) < dataForDecision.getFeatureValueBeliefs(
-                      FactConverters.LAST_TIME_SCOUTED));
+                  return false;
                 })
-                .beliefTypes(new HashSet<>(
-                    Arrays.asList(FactConverters.IS_BASE, FactConverters.LAST_TIME_SCOUTED,
-                        FactConverters.IS_ENEMY_BASE)))
-                .parameterValueTypes(
-                    new HashSet<>(Collections.singleton(FactConverters.LAST_TIME_SCOUTED)))
                 .build())
             .counts(1)
             .build();
         type.addConfiguration(DesiresKeys.VISIT, visitMe);
-
-        //TODO
 
         //enemy's units
         WithReasoningCommandDesiredBySelf enemyUnits =
@@ -576,8 +615,7 @@ public class BaseLocationAgentType {
                   }
                 })
                 .decisionInDesire(CommitmentDeciderInitializer.builder()
-                    .decisionStrategy(
-                        (dataForDecision, memory) -> true)
+                    .decisionStrategy((dataForDecision, memory) -> true)
                     .build())
                 .decisionInIntention(CommitmentDeciderInitializer.builder()
                     .decisionStrategy((dataForDecision, memory) -> true)
@@ -589,23 +627,20 @@ public class BaseLocationAgentType {
         ConfigurationWithSharedDesire mineMinerals = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(DesiresKeys.MINE_MINERALS_IN_BASE)
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 1
-                            && dataForDecision
-                            .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE) > 0)
+                .decisionStrategy((dataForDecision, memory) ->
+                    dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 1 &&
+                        dataForDecision.getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE)
+                            > 0)
                 .beliefTypes(Collections.singleton(FactConverters.IS_BASE))
                 .parameterValueSetTypes(Collections.singleton(COUNT_OF_MINERALS_ON_BASE))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 0
-                            || dataForDecision.getFeatureValueBeliefSets(COUNT_OF_MINERALS_ON_BASE)
-                            == 0
-                            || dataForDecision.getFeatureValueBeliefSets(COUNT_OF_MINERALS_ON_BASE)
-                            != dataForDecision
-                            .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE))
+                .decisionStrategy((dataForDecision, memory) ->
+                    dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 0
+                        || dataForDecision.getFeatureValueBeliefSets(COUNT_OF_MINERALS_ON_BASE) == 0
+                        || dataForDecision.getFeatureValueBeliefSets(COUNT_OF_MINERALS_ON_BASE)
+                        != dataForDecision
+                        .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE))
                 .beliefTypes(Collections.singleton(FactConverters.IS_BASE))
                 .beliefSetTypes(Collections.singleton(COUNT_OF_MINERALS_ON_BASE))
                 .parameterValueSetTypes(Collections.singleton(COUNT_OF_MINERALS_ON_BASE))
@@ -618,26 +653,22 @@ public class BaseLocationAgentType {
             .sharedDesireKey(DesiresKeys.MINE_GAS_IN_BASE)
             .counts(3)
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 1
-                            && dataForDecision
-                            .getFeatureValueDesireBeliefSets(COUNT_OF_EXTRACTORS_ON_BASE) > 0)
+                .decisionStrategy((dataForDecision, memory) ->
+                    dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 1
+                        &&
+                        dataForDecision.getFeatureValueDesireBeliefSets(COUNT_OF_EXTRACTORS_ON_BASE)
+                            > 0)
                 .beliefTypes(Collections.singleton(FactConverters.IS_BASE))
                 .parameterValueSetTypes(Collections.singleton(COUNT_OF_EXTRACTORS_ON_BASE))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 0
-                            ||
-                            dataForDecision.getFeatureValueBeliefSets(COUNT_OF_EXTRACTORS_ON_BASE)
-                                == 0
-                )
+                .decisionStrategy((dataForDecision, memory) ->
+                    dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BASE) == 0
+                        || dataForDecision.getFeatureValueBeliefSets(COUNT_OF_EXTRACTORS_ON_BASE)
+                        == 0)
                 .beliefTypes(Collections.singleton(FactConverters.IS_BASE))
                 .beliefSetTypes(Collections.singleton(COUNT_OF_EXTRACTORS_ON_BASE))
-                .build()
-            )
+                .build())
             .build();
         type.addConfiguration(DesiresKeys.MINE_GAS_IN_BASE, mineGas);
 
@@ -726,7 +757,8 @@ public class BaseLocationAgentType {
       .desiresWithIntentionToReason(Stream
           .of(DesiresKeys.ECO_STATUS_IN_LOCATION, DesiresKeys.FRIENDLIES_IN_LOCATION,
               DesiresKeys.ENEMIES_IN_LOCATION, DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION,
-              DesiresKeys.ESTIMATE_OUR_FORCE_IN_LOCATION, DesiresKeys.VISIT)
+              DesiresKeys.ESTIMATE_OUR_FORCE_IN_LOCATION, DesiresKeys.REASON_ABOUT_BASE_TYPE,
+              DesiresKeys.REASON_ABOUT_OUR_BASE)
           .collect(Collectors.toSet())
       )
       .desiresForOthers(Stream

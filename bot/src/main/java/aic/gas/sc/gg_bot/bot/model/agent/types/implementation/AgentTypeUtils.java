@@ -57,9 +57,11 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    !Decider.getDecision(agentTypeID, desireKey.getId(),
+                    (!Decider.getDecision(agentTypeID, desireKey.getId(),
                         dataForDecision, featureContainerHeader, memory.getCurrentClock(),
                         memory.getAgentId())
+                        && !BotFacade.RESOURCE_MANAGER
+                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //building exists
                         || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
@@ -110,8 +112,10 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    !Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
+                    (!Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
                         featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
+                        && !BotFacade.RESOURCE_MANAGER
+                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
                         //has been just trained
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper))
             .globalBeliefTypesByAgentType(

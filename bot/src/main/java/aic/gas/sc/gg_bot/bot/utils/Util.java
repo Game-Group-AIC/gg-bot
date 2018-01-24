@@ -7,6 +7,7 @@ import bwapi.Game;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import java.util.Comparator;
 import java.util.Optional;
 
 /**
@@ -25,14 +26,12 @@ public class Util {
 
     // Refinery, Assimilator, Extractor
     if (buildingType.isRefinery()) {
-      for (Unit n : game.neutral().getUnits()) {
-        if ((n.getType() == UnitType.Resource_Vespene_Geyser) &&
-            (Math.abs(n.getTilePosition().getX() - currentTile.getX()) < stopDist) &&
-            (Math.abs(n.getTilePosition().getY() - currentTile.getY()) < stopDist)) {
-          return Optional.ofNullable(ATilePosition.wrap(n.getTilePosition()));
-        }
-      }
-      return Optional.empty();
+      return game.neutral().getUnits().stream()
+          .filter(unit -> unit.getType() == UnitType.Resource_Vespene_Geyser)
+          .map(Unit::getTilePosition)
+          .min(Comparator.comparing(tilePosition -> tilePosition
+              .getDistance(worker.getPosition().getATilePosition().getWrappedPosition())))
+          .map(ATilePosition::wrap);
     }
 
     while (maxDist < stopDist) {
@@ -57,14 +56,12 @@ public class Util {
 
     // Refinery, Assimilator, Extractor
     if (buildingType.isRefinery()) {
-      for (Unit n : game.neutral().getUnits()) {
-        if ((n.getType() == UnitType.Resource_Vespene_Geyser) &&
-            (Math.abs(n.getTilePosition().getX() - currentTile.getX()) < 10) &&
-            (Math.abs(n.getTilePosition().getY() - currentTile.getY()) < 10)) {
-          return true;
-        }
-      }
-      return false;
+      return game.neutral().getUnits().stream()
+          .filter(unit -> unit.getType() == UnitType.Resource_Vespene_Geyser)
+          .map(Unit::getTilePosition)
+          .anyMatch(
+              position -> position.getX() == currentTile.getX() && position.getY() == currentTile
+                  .getY());
     }
 
     return canBuildHere(buildingType, currentTile, worker, game);

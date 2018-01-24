@@ -221,7 +221,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
     private int skipTurnsToMakeObservation = 5;
   }
 
-  //TODO refactor - do not be so suicidal :)
+  //TODO refactor - do not be so suicidal :). prefer our bases under attack. else move to to enemy
   public static void initAttackPlan(AgentType type, DesireKey desireKey,
       boolean isScaredOfAntiAir) {
 
@@ -270,13 +270,14 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
                 .min(Comparator.comparingDouble(
                     value -> value.getPosition().distanceTo(me.getPosition())));
             if (enemyToFleeFrom.isPresent()) {
-              return me.move(positionToMove(me.getPosition(), enemyToFleeFrom.get().getPosition()));
+              return me
+                  .move(moveFromPosition(me.getPosition(), enemyToFleeFrom.get().getPosition()));
             } else {
               Optional<AUnit.Enemy> enemy = me.getEnemyUnitsInRadiusOfSight().stream()
                   .min(Comparator.comparingDouble(
                       value -> value.getPosition().distanceTo(me.getPosition())));
               if (enemy.isPresent()) {
-                return me.move(positionToMove(me.getPosition(), enemy.get().getPosition()));
+                return me.move(moveFromPosition(me.getPosition(), enemy.get().getPosition()));
               }
             }
             return true;
@@ -368,8 +369,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
   }
 
-  //TODO improve
-  public static APosition positionToMove(APosition myPosition, APosition dangerPosition) {
+  //TODO refactor
+  public static APosition moveFromPosition(APosition myPosition, APosition dangerPosition) {
     int difX = (myPosition.getX() - dangerPosition.getY()) * 4, difY =
         (myPosition.getY() - dangerPosition.getY()) * 4;
     if (difX > 0) {
