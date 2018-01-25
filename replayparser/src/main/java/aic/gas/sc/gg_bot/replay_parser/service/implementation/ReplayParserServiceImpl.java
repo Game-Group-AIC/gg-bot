@@ -54,11 +54,15 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
 
   private static final Pattern lineWithMatchPattern = Pattern.compile("^map\\s*=\\s*.+$");
   // paths
-  private static final String bwapiIniPath = "c:\\sc\\bwapi-data\\bwapi.ini";
-  private static final String starcraftPath = "c:\\sc";
+  private static final String BWAPI_INI_PATH_WIN = "C:\\Program Files (x86)\\Starcraft\\bwapi-data\\bwapi.ini";
+  private static final String BWAPI_INI_PATH_DOCKER = "c:\\sc\\bwapi-data\\bwapi.ini";
+  private static final String WIN_RUN_COMMAND = "cmd /c start \"\" \"" + "C:\\Program Files (x86)\\BWAPI\\Chaoslauncher\\Chaoslauncher.exe"
+          + "\"";
+  private static final String DOCKER_RUN_COMMAND = "cmd /c start \"\" \"" + "C:\\Program Files (x86)\\BWAPI\\Chaoslauncher\\Chaoslauncher.exe"
+      + "\"";
+  private final String runCommand;
   // files
-  private static final File bwapiIni = new File(bwapiIniPath);
-  private static final File starcraftFolder = new File(starcraftPath);
+  private final File bwapiIni;
   private final WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl
       .getInstance();
   private ReplayLoaderService replayLoaderService;
@@ -68,8 +72,10 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
   private Set<Player> players;
   private AgentUnitHandler agentUnitHandler;
 
-  public ReplayParserServiceImpl(ReplayLoaderService replayLoader) {
-    replayLoaderService = replayLoader;
+  public ReplayParserServiceImpl(ReplayLoaderService replayLoader, boolean isForWin) {
+    this.replayLoaderService = replayLoader;
+    this.bwapiIni = new File(isForWin ? BWAPI_INI_PATH_WIN : BWAPI_INI_PATH_DOCKER);
+    this.runCommand = isForWin ? WIN_RUN_COMMAND : DOCKER_RUN_COMMAND;
   }
 
   /**
@@ -85,7 +91,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     //  echo "$pathext_orig" | grep -qE '(^|;)\.(;|$)' || wine reg add "$k" /v PATHEXT /f /d "${pathext_orig};."
     log.info("Starting game...");
     Runtime rt = Runtime.getRuntime();
-    rt.exec("/usr/bin/launch_game --headful");
+    rt.exec(runCommand);
   }
 
   /**
@@ -120,9 +126,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
    */
   private void setupReplayInConfigurationFile(File replayFile) throws IOException {
     Path pathToReplay = replayFile.toPath();
-    Path pathOfSC = starcraftFolder.toPath();
-    String pathToReplayRelativeToSCFolder = pathOfSC.relativize(pathToReplay)
-        .toString().replace("\\", "/");
+    String pathToReplayRelativeToSCFolder = ("maps/replays/" + pathToReplay);
     log.info("setupReplayInConfigurationFile.pathToReplayRelativeToSCFolder "
         + pathToReplayRelativeToSCFolder);
 

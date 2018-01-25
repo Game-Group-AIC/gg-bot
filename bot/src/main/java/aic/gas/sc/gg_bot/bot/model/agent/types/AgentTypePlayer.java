@@ -74,7 +74,7 @@ public class AgentTypePlayer extends AgentTypeMakingObservations<Game> {
     private Set<DesireKey> desiresWithIntentionToReason = new HashSet<>();
     private Set<FactKey<?>> usingTypesForFacts = new HashSet<>();
     private Set<FactKey<?>> usingTypesForFactSets = new HashSet<>();
-    private int skipTurnsToMakeObservation = 5;
+    private int skipTurnsToMakeObservation = 1;
   }
 
 }

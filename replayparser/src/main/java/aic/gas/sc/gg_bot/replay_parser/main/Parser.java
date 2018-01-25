@@ -17,14 +17,15 @@ public class Parser {
 
     ReplayLoaderService replayLoader = createReplayLoader(args);
 
-    ReplayParserServiceImpl replayParserService = new ReplayParserServiceImpl(replayLoader);
+    ReplayParserServiceImpl replayParserService = new ReplayParserServiceImpl(replayLoader,
+        args.length == 3 && args[2].equals("-w"));
     replayParserService.parseReplays();
   }
 
   private static ReplayLoaderService createReplayLoader(String[] args) throws IOException {
     ReplayLoaderService replayLoader;
 
-    if (args.length < 1 || args.length > 2) {
+    if (args.length < 1 || args.length > 3) {
       showHelp(args);
     }
 
@@ -68,6 +69,7 @@ public class Parser {
     System.out.println("--rabbit");
     System.out.println("--folder <folder>");
     System.out.println("--file <file>");
+    System.out.println("-w ... to run with default WIN configuration at the end of command");
 
     System.exit(1);
   }

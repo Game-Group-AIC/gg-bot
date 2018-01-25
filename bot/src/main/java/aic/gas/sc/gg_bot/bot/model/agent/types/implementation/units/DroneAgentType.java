@@ -462,7 +462,7 @@ public class DroneAgentType {
                 .decisionStrategy((dataForDecision, memory) -> true)
                 .build())
             .build();
-//        type.addConfiguration(DesiresKeys.RETURN_TO_BASE, goToNearestBase);
+        type.addConfiguration(DesiresKeys.RETURN_TO_BASE, goToNearestBase);
 
         //build pool
         initAbstractBuildingPlan(type, AUnitTypeWrapper.SPAWNING_POOL_TYPE, PLACE_FOR_POOL,
@@ -618,8 +618,7 @@ public class DroneAgentType {
       .desiresWithIntentionToReason(Stream.of(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION,
           DesiresKeys.UPDATE_BELIEFS_ABOUT_WORKER_ACTIVITIES, DesiresKeys.MORPHING_TO)
           .collect(Collectors.toSet()))
-      //TODO refactor
-//      .desiresWithIntentionToAct(Collections.singleton(DesiresKeys.RETURN_TO_BASE))
+      .desiresWithIntentionToAct(Collections.singleton(DesiresKeys.RETURN_TO_BASE))
       .build();
 
   /**
@@ -641,10 +640,10 @@ public class DroneAgentType {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                 && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()
-                //is idle or no one is idle
-                && (memory.returnFactValueForGivenKey(IS_UNIT).get().isIdle()
-                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_IDLE_DRONES) == 0)
-                //is on location or no one is on location
+//                //is idle or no one is idle
+//                && (memory.returnFactValueForGivenKey(IS_UNIT).get().isIdle()
+//                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_IDLE_DRONES) == 0)
+//                //is on location or no one is on location
                 && (dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get().equals(
                 memory.returnFactValueForGivenKey(IS_UNIT).get().getNearestBaseLocation()
                     .orElse(null))
