@@ -31,6 +31,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_FOR_SPIRE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_TO_GO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_TO_REACH;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
@@ -70,7 +71,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
-//TODO refactor scouting
 @Slf4j
 public class DroneAgentType {
 
@@ -462,73 +462,164 @@ public class DroneAgentType {
                 .decisionStrategy((dataForDecision, memory) -> true)
                 .build())
             .build();
-        type.addConfiguration(DesiresKeys.RETURN_TO_BASE, goToNearestBase);
+//        type.addConfiguration(DesiresKeys.RETURN_TO_BASE, goToNearestBase);
 
         //build pool
         initAbstractBuildingPlan(type, AUnitTypeWrapper.SPAWNING_POOL_TYPE, PLACE_FOR_POOL,
-            DesiresKeys.MORPH_TO_POOL, DesiresKeys.FIND_PLACE_FOR_POOL, new HashSet<>(Arrays.asList(
+            DesiresKeys.MORPH_TO_POOL, DesiresKeys.FIND_PLACE_FOR_POOL, Stream.of(
                 DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
                 DesiresKeys.MORPH_TO_EXTRACTOR, DesiresKeys.MORPH_TO_SPIRE,
                 DesiresKeys.MORPH_TO_HYDRALISK_DEN, DesiresKeys.MORPH_TO_CREEP_COLONY,
-                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)));
+                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)
+                .collect(Collectors.toSet()));
 
         //build spire
         initAbstractBuildingPlan(type, AUnitTypeWrapper.SPIRE_TYPE, PLACE_FOR_SPIRE,
-            DesiresKeys.MORPH_TO_SPIRE,
-            DesiresKeys.FIND_PLACE_FOR_SPIRE,
-            new HashSet<>(Arrays.asList(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
+            DesiresKeys.MORPH_TO_SPIRE, DesiresKeys.FIND_PLACE_FOR_SPIRE,
+            Stream.of(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
                 DesiresKeys.MORPH_TO_EXTRACTOR, DesiresKeys.MORPH_TO_POOL,
                 DesiresKeys.MORPH_TO_HYDRALISK_DEN, DesiresKeys.MORPH_TO_CREEP_COLONY,
-                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)));
+                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)
+                .collect(Collectors.toSet()));
 
         //build hydralisk den
         initAbstractBuildingPlan(type, AUnitTypeWrapper.HYDRALISK_DEN_TYPE, PLACE_FOR_HYDRALISK_DEN,
             DesiresKeys.MORPH_TO_HYDRALISK_DEN, DesiresKeys.FIND_PLACE_FOR_HYDRALISK_DEN,
-            new HashSet<>(Arrays.asList(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
+            Stream.of(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
                 DesiresKeys.MORPH_TO_EXTRACTOR, DesiresKeys.MORPH_TO_POOL,
                 DesiresKeys.MORPH_TO_SPIRE, DesiresKeys.MORPH_TO_CREEP_COLONY,
-                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)));
+                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)
+                .collect(Collectors.toSet()));
 
         //build expansion
         initAbstractBuildingPlan(type, AUnitTypeWrapper.HATCHERY_TYPE, PLACE_FOR_EXPANSION,
-            DesiresKeys.EXPAND,
-            DesiresKeys.FIND_PLACE_FOR_HATCHERY,
-            new HashSet<>(Arrays.asList(DesiresKeys.WORKER_SCOUT, DesiresKeys.MORPH_TO_POOL,
+            DesiresKeys.EXPAND, DesiresKeys.FIND_PLACE_FOR_HATCHERY,
+            Stream.of(DesiresKeys.WORKER_SCOUT, DesiresKeys.MORPH_TO_POOL,
                 DesiresKeys.MORPH_TO_EXTRACTOR, DesiresKeys.MORPH_TO_SPIRE,
                 DesiresKeys.MORPH_TO_HYDRALISK_DEN, DesiresKeys.MORPH_TO_CREEP_COLONY,
-                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)));
+                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)
+                .collect(Collectors.toSet()));
 
         //build extractor
         initAbstractBuildingPlan(type, AUnitTypeWrapper.EXTRACTOR_TYPE, PLACE_FOR_EXTRACTOR,
-            DesiresKeys.MORPH_TO_EXTRACTOR,
-            DesiresKeys.FIND_PLACE_FOR_EXTRACTOR,
-            new HashSet<>(Arrays.asList(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
+            DesiresKeys.MORPH_TO_EXTRACTOR, DesiresKeys.FIND_PLACE_FOR_EXTRACTOR,
+            Stream.of(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
                 DesiresKeys.MORPH_TO_POOL, DesiresKeys.MORPH_TO_SPIRE,
                 DesiresKeys.MORPH_TO_HYDRALISK_DEN, DesiresKeys.MORPH_TO_CREEP_COLONY,
-                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)));
+                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)
+                .collect(Collectors.toSet()));
 
         //build creep colony
         initAbstractBuildingPlan(type, AUnitTypeWrapper.CREEP_COLONY_TYPE, PLACE_FOR_CREEP_COLONY,
             DesiresKeys.MORPH_TO_CREEP_COLONY, DesiresKeys.FIND_PLACE_FOR_CREEP_COLONY,
-            new HashSet<>(Arrays.asList(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
+            Stream.of(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND,
                 DesiresKeys.MORPH_TO_POOL, DesiresKeys.MORPH_TO_SPIRE,
                 DesiresKeys.MORPH_TO_HYDRALISK_DEN, DesiresKeys.MORPH_TO_EXTRACTOR,
-                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)));
+                DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER)
+                .collect(Collectors.toSet()));
 
         //build evolution chamber
         initAbstractBuildingPlan(type, AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE,
             PLACE_FOR_EVOLUTION_CHAMBER, DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER,
-            DesiresKeys.FIND_PLACE_FOR_EVOLUTION_CHAMBER, new HashSet<>(Arrays
-                .asList(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND, DesiresKeys.MORPH_TO_POOL,
-                    DesiresKeys.MORPH_TO_SPIRE, DesiresKeys.MORPH_TO_HYDRALISK_DEN,
-                    DesiresKeys.MORPH_TO_EXTRACTOR, DesiresKeys.MORPH_TO_CREEP_COLONY)));
+            DesiresKeys.FIND_PLACE_FOR_EVOLUTION_CHAMBER,
+            Stream.of(DesiresKeys.WORKER_SCOUT, DesiresKeys.EXPAND, DesiresKeys.MORPH_TO_POOL,
+                DesiresKeys.MORPH_TO_SPIRE, DesiresKeys.MORPH_TO_HYDRALISK_DEN,
+                DesiresKeys.MORPH_TO_EXTRACTOR, DesiresKeys.MORPH_TO_CREEP_COLONY)
+                .collect(Collectors.toSet()));
+
+        //abstract plan to scout
+        ConfigurationWithAbstractPlan scoutingAbstract = ConfigurationWithAbstractPlan.builder()
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
+                .desiresToConsider(new HashSet<>(BUILDING_DESIRES))
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy(
+                    (dataForDecision, memory) -> false)
+                .build())
+            .desiresWithIntentionToAct(Collections.singleton(DesiresKeys.WORKER_SCOUT))
+            .desiresWithIntentionToReason(Collections.singleton(DesiresKeys.WORKER_SCOUT))
+            .build();
+        type.addConfiguration(DesiresKeys.WORKER_SCOUT, scoutingAbstract, false);
+
+        //reason about place to go - select closest unvisited start base location
+        ConfigurationWithCommand.WithReasoningCommandDesiredBySelf selectBaseToScout = ConfigurationWithCommand.
+            WithReasoningCommandDesiredBySelf.builder()
+            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+              @Override
+              public boolean act(WorkingMemory memory) {
+
+                AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
+
+                //select the closest unvisited main base
+                Optional<ABaseLocationWrapper> closestUnvisitedMainBase = memory
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .filter(readOnlyMemory -> !readOnlyMemory
+                        .returnFactValueForGivenKey(WAS_VISITED)
+                        .orElse(false))
+                    .map(readOnlyMemory -> readOnlyMemory
+                        .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .filter(ABaseLocationWrapper::isStartLocation)
+                    .min(Comparator.comparing(
+                        aBaseLocationWrapper -> me.getPosition().distanceTo(aBaseLocationWrapper)));
+
+                if (closestUnvisitedMainBase.isPresent()) {
+                  if (!closestUnvisitedMainBase.get().equals(
+                      memory.returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER).orElse(null))) {
+                    memory.updateFact(BASE_TO_SCOUT_BY_WORKER, closestUnvisitedMainBase.get());
+                  }
+                } else {
+                  memory.eraseFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER);
+                }
+                return true;
+              }
+            })
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build()
+            )
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build()
+            )
+            .build();
+        type.addConfiguration(DesiresKeys.WORKER_SCOUT, DesiresKeys.WORKER_SCOUT,
+            selectBaseToScout);
+
+        //go scout there
+        ConfigurationWithCommand.WithActingCommandDesiredBySelf goScout = ConfigurationWithCommand.
+            WithActingCommandDesiredBySelf.builder()
+            .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+              @Override
+              public boolean act(WorkingMemory memory) {
+                AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
+                intention.returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER).ifPresent(me::move);
+                return true;
+              }
+            })
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy(
+                    (dataForDecision, memory) -> memory
+                        .returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER)
+                        .isPresent())
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy(
+                    (dataForDecision, memory) -> !memory
+                        .returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER)
+                        .isPresent())
+                .build())
+            .build();
+        type.addConfiguration(DesiresKeys.WORKER_SCOUT, DesiresKeys.WORKER_SCOUT, goScout);
 
       })
-      .desiresWithIntentionToReason(
-          new HashSet<>(Arrays.asList(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION,
-              DesiresKeys.UPDATE_BELIEFS_ABOUT_WORKER_ACTIVITIES, DesiresKeys.MORPHING_TO)))
-      .desiresWithIntentionToAct(
-          new HashSet<>(Collections.singletonList(DesiresKeys.RETURN_TO_BASE)))
+      .desiresWithIntentionToReason(Stream.of(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION,
+          DesiresKeys.UPDATE_BELIEFS_ABOUT_WORKER_ACTIVITIES, DesiresKeys.MORPHING_TO)
+          .collect(Collectors.toSet()))
+      //TODO refactor
+//      .desiresWithIntentionToAct(Collections.singleton(DesiresKeys.RETURN_TO_BASE))
       .build();
 
   /**
@@ -655,6 +746,8 @@ public class DroneAgentType {
                         .returnFactSetValueForGivenKey(OWN_BUILDING)
                         .orElse(Stream.empty())
                         .collect(Collectors.toList());
+
+                    //TODO this can be optimized - for placing buildings
                     if (unitsOnLocation.isEmpty()) {
                       memory.updateFact(PLACE_TO_GO, intention.returnFactValueForGivenKey(
                           BASE_TO_MOVE).get().getPosition());

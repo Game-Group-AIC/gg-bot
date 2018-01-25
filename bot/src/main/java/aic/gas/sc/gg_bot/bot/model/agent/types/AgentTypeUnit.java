@@ -58,6 +58,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Type definition - agent type for unit observing game
  */
+//TODO refactor
 @Slf4j
 public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
@@ -227,10 +228,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
     //attack
     ConfigurationWithAbstractPlan attackPlan = ConfigurationWithAbstractPlan.builder()
-        .reactionOnChangeStrategy((memory, desireParameters) -> {
-          memory.updateFact(PLACE_TO_REACH,
-              desireParameters.returnFactValueForGivenKey(IS_BASE_LOCATION).get().getPosition());
-        })
+        .reactionOnChangeStrategy((memory, desireParameters) -> memory.updateFact(PLACE_TO_REACH,
+            desireParameters.returnFactValueForGivenKey(IS_BASE_LOCATION).get().getPosition()))
         .reactionOnChangeStrategyInIntention(
             (memory, desireParameters) -> memory.eraseFactValueForGivenKey(PLACE_TO_REACH))
         .decisionInDesire(CommitmentDeciderInitializer.builder()
