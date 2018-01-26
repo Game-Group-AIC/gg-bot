@@ -10,6 +10,7 @@ import java.util.stream.Stream;
  */
 //TODO army supply without worker supply
 //TODO add cap to some features - after the amount is reached - represent by cap
+//TODO BUILDING_EXTRACTOR, INCREASING_CAPACITY a TRAINING_WORKER - is pool built
 public class FeatureContainerHeaders {
 
   //ECO manager

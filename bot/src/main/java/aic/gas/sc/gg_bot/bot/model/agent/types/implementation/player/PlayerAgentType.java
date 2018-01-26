@@ -29,6 +29,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION_LIMIT
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TECH_TO_RESEARCH;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_BUILDINGS;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_UNITS;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_OUR_FORCE_IN_BUILDINGS;
@@ -36,23 +37,31 @@ import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_OUR_FORCE_IN_UNIT
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.READ_PLAYERS_DATA;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.REASON_ABOUT_BASES;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.UPDATE_ENEMY_RACE;
+import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.WORKER_SCOUT;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypePlayer;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PlayerAgentType {
+
+  private static final boolean SEND_SIXTH_WORKER = (new Random()).nextBoolean();
 
   public static final AgentTypePlayer PLAYER = AgentTypePlayer.builder()
       .agentTypeID(AgentTypes.PLAYER)
@@ -188,6 +197,51 @@ public class PlayerAgentType {
             .build();
         type.addConfiguration(UPDATE_ENEMY_RACE, updateEnemyRace);
 
+        //not all main bases are visited - send 6th or 7th drone to scout
+        ConfigurationWithSharedDesire tellWorkerToScout = ConfigurationWithSharedDesire.builder()
+            .sharedDesireKey(WORKER_SCOUT)
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) ->
+                    //we haven't found enemy base
+                    memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        .noneMatch(readOnlyMemory -> readOnlyMemory
+                            .returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false))
+                        //there are unvisited main bases
+                        && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        .filter(readOnlyMemory -> !readOnlyMemory
+                            .returnFactValueForGivenKey(WAS_VISITED)
+                            .orElse(false))
+                        .map(readOnlyMemory -> readOnlyMemory
+                            .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .anyMatch(ABaseLocationWrapper::isStartLocation)
+                        //there is more workers then 6 or 7
+                        && (SEND_SIXTH_WORKER ? 6 : 7) <= memory
+                        .getReadOnlyMemoriesForAgentType(AgentTypes.DRONE).count())
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) ->
+                    //we have found enemy base
+                    memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        .anyMatch(readOnlyMemory -> readOnlyMemory
+                            .returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false))
+                        //all main bases were visited
+                        || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        .filter(readOnlyMemory -> !readOnlyMemory
+                            .returnFactValueForGivenKey(WAS_VISITED)
+                            .orElse(false))
+                        .map(readOnlyMemory -> readOnlyMemory
+                            .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .noneMatch(ABaseLocationWrapper::isStartLocation)
+                )
+                .build())
+            .counts(1)
+            .build();
+        type.addConfiguration(WORKER_SCOUT, tellWorkerToScout);
+
         //bases
         ConfigurationWithCommand.WithReasoningCommandDesiredBySelf reasonAboutBases = ConfigurationWithCommand.
             WithReasoningCommandDesiredBySelf.builder()
@@ -225,8 +279,7 @@ public class PlayerAgentType {
           ESTIMATE_ENEMY_FORCE_IN_UNITS, ESTIMATE_OUR_FORCE_IN_BUILDINGS,
           ESTIMATE_OUR_FORCE_IN_UNITS, UPDATE_ENEMY_RACE, REASON_ABOUT_BASES)
           .collect(Collectors.toSet()))
-      //TODO
-//      .desiresForOthers(Collections.singleton(WORKER_SCOUT))
+      .desiresForOthers(Collections.singleton(WORKER_SCOUT))
       .build();
 
   private interface GetUnitsStreamStrategy<V extends AUnit> {

@@ -10,6 +10,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.bot.model.agent.AbstractAgent;
+import aic.gas.sc.gg_bot.bot.model.agent.AgentBaseLocation;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentPlayer;
 import aic.gas.sc.gg_bot.bot.model.agent.AgentUnit;
 import aic.gas.sc.gg_bot.bot.service.IAgentUnitHandler;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -56,6 +58,7 @@ public class BotFacade extends DefaultBWListener {
   private final long maxFrameExecutionTime;
   private final boolean annotateMap;
   private final boolean drawDebug;
+  private final boolean issueCommandFromGUI;
 
   private long time, execution;
 
@@ -74,6 +77,7 @@ public class BotFacade extends DefaultBWListener {
   private IPlayerInitializer playerInitializer;
   private ILocationInitializer locationInitializer;
   private List<AbstractAgent> abstractAgents = new ArrayList<>();
+  private List<AgentBaseLocation> agentBaseLocations = new ArrayList<>();
 
   //game related fields
   private Mirror mirror = new Mirror();
@@ -86,7 +90,9 @@ public class BotFacade extends DefaultBWListener {
 
   private Annotator annotator;
 
-  public BotFacade(long maxFrameExecutionTime, boolean annotateMap, boolean drawDebug) {
+  public BotFacade(long maxFrameExecutionTime, boolean annotateMap, boolean drawDebug,
+      boolean issueCommandFromGUI) {
+    this.issueCommandFromGUI = issueCommandFromGUI;
     long start = System.currentTimeMillis();
 
     this.maxFrameExecutionTime = maxFrameExecutionTime;
@@ -130,7 +136,10 @@ public class BotFacade extends DefaultBWListener {
           .map(location -> locationInitializer.createAgent(location, botFacade))
           .filter(Optional::isPresent)
           .map(Optional::get)
-          .forEach(agentBaseLocation -> masFacade.addAgentToSystem(agentBaseLocation));
+          .forEach(agentBaseLocation -> {
+            masFacade.addAgentToSystem(agentBaseLocation);
+            agentBaseLocations.add(agentBaseLocation);
+          });
 
       //run abstract agents
       abstractAgents.forEach(abstractAgent -> masFacade.addAgentToSystem(abstractAgent));
@@ -142,6 +151,7 @@ public class BotFacade extends DefaultBWListener {
   @Override
   public void onStart() {
     try {
+
       long start = System.currentTimeMillis();
       log.info("Game initialization.");
 
@@ -163,6 +173,12 @@ public class BotFacade extends DefaultBWListener {
       BWTA.readMap();
       BWTA.analyze();
       log.info("Map data ready");
+
+//      BWTA.getRegions().forEach(region -> {
+//        log.info(region.getCenter().toString()+" with bases: "+region.getBaseLocations().stream()
+//            .map(baseLocation -> baseLocation.getPosition().toString()+" - "+baseLocation.isStartLocation())
+//            .collect(Collectors.joining(",")));
+//      });
 
       //get player
       Optional<APlayer> me = APlayer
@@ -203,6 +219,10 @@ public class BotFacade extends DefaultBWListener {
       }
 
       REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);
+
+      if (issueCommandFromGUI) {
+        game.enableFlag(1);
+      }
 
       log.info("System ready. It took " + (System.currentTimeMillis() - start));
     } catch (Exception e) {
@@ -365,6 +385,19 @@ public class BotFacade extends DefaultBWListener {
     Annotator.printMessage(
         RESOURCE_MANAGER.getReservationStatuses().stream().collect(Collectors.joining("\n")),
         400, 10, game);
+
+    //show region desires
+    agentBaseLocations.forEach(
+        agent -> Annotator.paintText(agent.getLocation().getPosition().getWrappedPosition(),
+            agent.getCommitmentsAsText(), game));
+
+    //show desires of selected unit
+    self.getUnits().stream()
+        .filter(Unit::isSelected)
+        .map(unit -> agentsWithGameRepresentation.get(unit.getID()))
+        .filter(Objects::nonNull)
+        .forEach(agent -> Annotator.paintText(agent.getUnit().getPosition().getWrappedPosition(),
+            agent.getCommitmentsAsText(), game));
   }
 
   //TODO handle more events - unit renegade, visibility

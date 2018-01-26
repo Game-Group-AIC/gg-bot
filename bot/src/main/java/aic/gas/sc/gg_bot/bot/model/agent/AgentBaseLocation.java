@@ -10,6 +10,8 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeBaseLocation;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
+import java.util.stream.Collectors;
+import lombok.Getter;
 
 /**
  * Agent for base location in game INSTANCE OF THIS AGENT SHOULD NOT SEND ANY COMMAND TO GAME. ONLY
@@ -17,9 +19,14 @@ import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
  */
 public class AgentBaseLocation extends AgentObservingGame<AgentTypeBaseLocation> {
 
+  @Getter
+  private final ABaseLocationWrapper location;
+
   public AgentBaseLocation(AgentTypeBaseLocation agentType, BotFacade botFacade,
       ABaseLocationWrapper location) {
     super(agentType, botFacade);
+
+    this.location = location;
 
     //add itself to knowledge
     beliefs.updateFact(IS_BASE_LOCATION, location);
@@ -28,5 +35,12 @@ public class AgentBaseLocation extends AgentObservingGame<AgentTypeBaseLocation>
     beliefs.updateFact(IS_ISLAND, location.isIsland());
     beliefs.updateFact(IS_START_LOCATION, location.isStartLocation());
     beliefs.updateFact(BASE_TO_MOVE, beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION).get());
+  }
+
+  public String getCommitmentsAsText() {
+    return "Location: " + location.getPosition().getWrappedPosition().toString() + "\n"
+        + getTopCommitments().entrySet().stream()
+        .map(entry -> (entry.getValue() ? "C" : "D") + " : " + entry.getKey().getName())
+        .collect(Collectors.joining("\n"));
   }
 }

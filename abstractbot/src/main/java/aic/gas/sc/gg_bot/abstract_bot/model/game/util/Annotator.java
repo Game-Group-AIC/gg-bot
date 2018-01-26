@@ -61,7 +61,7 @@ public class Annotator {
     bwapi.drawLineMap(start, end, color);
   }
 
-  static void paintText(Position position, String text, Game bwapi) {
+  public static void paintText(Position position, String text, Game bwapi) {
     bwapi.drawTextMap(position, text);
   }
 
