@@ -8,22 +8,12 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BaseWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BuildOrderManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.EcoManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitOrderManagerWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.WatcherPlayer;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.*;
 import aic.gas.sc.gg_bot.replay_parser.service.AgentUnitHandler;
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
 import aic.gas.sc.gg_bot.replay_parser.service.ReplayParserService;
 import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
-import bwapi.DefaultBWListener;
-import bwapi.Game;
-import bwapi.Mirror;
-import bwapi.Player;
-import bwapi.Race;
-import bwapi.Unit;
+import bwapi.*;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import com.google.common.io.Files;
@@ -33,14 +23,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -54,17 +38,15 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
 
   private static final Pattern lineWithMatchPattern = Pattern.compile("^map\\s*=\\s*.+$");
   // paths
-  private static final String bwapiIniPath = "c:\\sc\\bwapi-data\\bwapi.ini";
-  private static final String starcraftPath = "c:\\sc";
+  private static final String bwapiIniPath = "z:\\app\\sc\\bwapi-data\\bwapi.ini";
   // files
   private static final File bwapiIni = new File(bwapiIniPath);
-  private static final File starcraftFolder = new File(starcraftPath);
+  //  Alternatively use this loader:
+  //   private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
+  private static Optional<Replay> replay;
   private final WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl
       .getInstance();
   private ReplayLoaderService replayLoaderService;
-  //  Alternatively use this loader:
-  //   private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
-  private Optional<Replay> replay;
   private Set<Player> players;
   private AgentUnitHandler agentUnitHandler;
 
@@ -83,7 +65,6 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     //  k='HKLM\System\CurrentControlSet\Control\Session Manager\Environment'
     //  pathext_orig=$( wine reg query "$k" /v PATHEXT | tr -d '\r' | awk '/^  /{ print $3 }' )
     //  echo "$pathext_orig" | grep -qE '(^|;)\.(;|$)' || wine reg add "$k" /v PATHEXT /f /d "${pathext_orig};."
-    log.info("Starting game...");
     Runtime rt = Runtime.getRuntime();
     rt.exec("/usr/bin/launch_game --headful");
   }
@@ -92,6 +73,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
    * Return next replay to parse
    */
   private Replay getNextReplay() throws Exception {
+    log.info("getNextReplay");
     File nextReplay = replayLoaderService.returnNextReplayToPlay();
     return new Replay(nextReplay);
   }
@@ -101,12 +83,15 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
    */
   private void setNextReplay() {
     try {
-      log.info("setNextReplay");
       replay = Optional.of(getNextReplay());
+      log.info("setNextReplay " + replay);
 
       log.info("setupReplayInConfigurationFile");
       setupReplayInConfigurationFile(replay.get().getRawFile());
-
+    } catch (IndexOutOfBoundsException e) {
+      // this should be all replays finished
+      e.printStackTrace();
+      System.exit(0);
     } catch (Exception e) {
       e.printStackTrace();
 
@@ -119,10 +104,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
    * Set up configuration bwapi.ini on given replay file
    */
   private void setupReplayInConfigurationFile(File replayFile) throws IOException {
-    Path pathToReplay = replayFile.toPath();
-    Path pathOfSC = starcraftFolder.toPath();
-    String pathToReplayRelativeToSCFolder = pathOfSC.relativize(pathToReplay)
-        .toString().replace("\\", "/");
+    String pathToReplayRelativeToSCFolder = "maps/replays/" + replayFile.getPath();
     log.info("setupReplayInConfigurationFile.pathToReplayRelativeToSCFolder "
         + pathToReplayRelativeToSCFolder);
 
@@ -156,16 +138,16 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
 
   @Override
   public void parseReplays() {
-    Thread gameListener = new Thread(new GameListener(), "GameListener");
-
     //  load all not parsed replays
     log.info("load replays to parse");
     replayLoaderService.loadReplaysToParse();
-
     setNextReplay();
 
+    Thread gameListener = new Thread(new GameListener(), "GameListener");
     try {
+      log.info("GameListener start");
       gameListener.start();
+      log.info("Start game");
       startGame();
     } catch (IOException e) {
       // terminate process
@@ -190,7 +172,7 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
     @Override
     public void onStart() {
       try {
-        log.info("New game from replay " + replay.get().getFile().get());
+        log.info("New game from replay " + replay.get().getRawFile());
 
         UnitWrapperFactory.clearCache();
         WrapperTypeFactory.clearCache();
@@ -236,6 +218,12 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
             .filter(p -> p.allUnitCount() == 9)
             .map(Player::getID)
             .collect(Collectors.toSet());
+
+        if(playersToParse.size() == 0) {
+          log.error("No zerg player found in this replay");
+          System.exit(2);
+        }
+
         parsingPlayer = currentGame.getPlayers().stream()
             .filter(p -> playersToParse.contains(p.getID()))
             .findFirst()

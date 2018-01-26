@@ -56,12 +56,13 @@ public class RabbitMQReplayLoaderServiceImpl implements ReplayLoaderService {
 
     String replay_specification = producerConsumer.consumeStart();
 
-    System.out.println(" [x] Consumed '" + replay_specification + "'");
+    System.out.println(" [x] Consume start '" + replay_specification + "'");
     return processRmqMsg(replay_specification);
   }
 
   @Override
   public void finishedProcessing(File replay) {
+    System.out.println(" [x] Consume finish '" + replay.getName() + "'");
     producerConsumer.consumeFinish();
   }
 
