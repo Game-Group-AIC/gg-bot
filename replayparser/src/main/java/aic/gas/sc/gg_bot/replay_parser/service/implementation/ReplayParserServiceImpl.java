@@ -37,29 +37,30 @@ import lombok.extern.slf4j.Slf4j;
 public class ReplayParserServiceImpl extends DefaultBWListener implements ReplayParserService {
 
   private static final Pattern lineWithMatchPattern = Pattern.compile("^map\\s*=\\s*.+$");
+
   // paths
   private static final String BWAPI_INI_PATH_WIN = "C:\\Program Files (x86)\\Starcraft\\bwapi-data\\bwapi.ini";
-  private static final String BWAPI_INI_PATH_DOCKER = "c:\\sc\\bwapi-data\\bwapi.ini";
-  private static final String WIN_RUN_COMMAND = "cmd /c start \"\" \"" + "C:\\Program Files (x86)\\BWAPI\\Chaoslauncher\\Chaoslauncher.exe"
-          + "\"";
-  private static final String DOCKER_RUN_COMMAND = "cmd /c start \"\" \"" + "C:\\Program Files (x86)\\BWAPI\\Chaoslauncher\\Chaoslauncher.exe"
-      + "\"";
+  private static final String BWAPI_INI_PATH_DOCKER = "z:\\app\\sc\\bwapi-data\\bwapi.ini";
+  private static final String WIN_RUN_COMMAND = "cmd /c start \"\" \"C:\\Program Files (x86)\\BWAPI\\Chaoslauncher\\Chaoslauncher.exe\"";
+  private static final String DOCKER_RUN_COMMAND = "/usr/bin/launch_game --headful";
   private final String runCommand;
+
   // files
   private final File bwapiIni;
   private final WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl
       .getInstance();
   private ReplayLoaderService replayLoaderService;
+
   //  Alternatively use this loader:
   //   private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
   private Optional<Replay> replay;
   private Set<Player> players;
   private AgentUnitHandler agentUnitHandler;
 
-  public ReplayParserServiceImpl(ReplayLoaderService replayLoader, boolean isForWin) {
+  public ReplayParserServiceImpl(ReplayLoaderService replayLoader, boolean isForWindows) {
     this.replayLoaderService = replayLoader;
-    this.bwapiIni = new File(isForWin ? BWAPI_INI_PATH_WIN : BWAPI_INI_PATH_DOCKER);
-    this.runCommand = isForWin ? WIN_RUN_COMMAND : DOCKER_RUN_COMMAND;
+    this.bwapiIni = new File(isForWindows ? BWAPI_INI_PATH_WIN : BWAPI_INI_PATH_DOCKER);
+    this.runCommand = isForWindows ? WIN_RUN_COMMAND : DOCKER_RUN_COMMAND;
   }
 
   /**
