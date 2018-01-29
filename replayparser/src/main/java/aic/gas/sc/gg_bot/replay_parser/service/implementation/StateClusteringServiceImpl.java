@@ -80,8 +80,6 @@ public class StateClusteringServiceImpl implements StateClusteringService {
   public List<Vec> computeStateRepresentatives(List<Trajectory> trajectories, List<State> states,
       List<FeatureNormalizer> normalizers) {
     if (states.size() > sampleStates) {
-//            int clusterNumberEstimation = estimateClusters(trajectories, normalizers);
-//            log.info("Estimated #" + clusterNumberEstimation + " clusters.");
       int num_clusters = clusters;
 
       while (num_clusters > 1) {

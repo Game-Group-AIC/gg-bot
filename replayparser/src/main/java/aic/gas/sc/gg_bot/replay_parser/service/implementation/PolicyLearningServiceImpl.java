@@ -36,6 +36,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
   //set time budget to 30 minutes
   //TODO increase
   private static final long timeBudget = 1000 * 60 * 30;
+  private static final double gamma = 0.99;
 
   @Override
   public Policy learnPolicy(SADomain domain, List<Episode> episodes, int numberOfStates,
@@ -57,7 +58,7 @@ public class PolicyLearningServiceImpl implements PolicyLearningService {
     //but you will probably want to use a fairly large horizon for this kind of reward function.
     HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 //        DifferentiableVI dplanner = new DifferentiableVI(domain, rf, 0.99, beta, hashingFactory, 0.01, 100);
-    DifferentiableSparseSampling dplanner = new DifferentiableSparseSampling(domain, rf, 0.99,
+    DifferentiableSparseSampling dplanner = new DifferentiableSparseSampling(domain, rf, gamma,
         hashingFactory, (int) Math.sqrt(numberOfStates), batchIterator.getSizeOfBatch(), beta);
 
     dplanner.toggleDebugPrinting(doNotPrintDebug);
