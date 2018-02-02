@@ -2,8 +2,7 @@ package aic.gas.sc.gg_bot.bot.service.implementation;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
-import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPoint;
-import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPointDataStructure;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
@@ -22,8 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 public class DecisionLoadingServiceImpl implements DecisionLoadingService {
 
   private static DecisionLoadingServiceImpl instance = new DecisionLoadingServiceImpl();
-  private final Map<MapSizeEnums, Map<ARace, Map<AgentTypeID, Map<DesireKeyID, DecisionPoint>>>> cache = new ConcurrentHashMap<>();
-  private Map<AgentTypeID, Map<DesireKeyID, DecisionPoint>> loaded = new HashMap<>();
+  private final Map<MapSizeEnums, Map<ARace, Map<AgentTypeID, Map<DesireKeyID, MDPForDecisionWithPolicy>>>> cache = new ConcurrentHashMap<>();
+  private Map<AgentTypeID, Map<DesireKeyID, MDPForDecisionWithPolicy>> loaded = new HashMap<>();
 
   /**
    * Initialize cache (loads models from resources)
@@ -60,19 +59,18 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
       String fileName =
           "/" + mapSize.name() + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID
               .getName() + ".db";
-      DecisionPointDataStructure decisionPointDataStructure = SerializationUtil.deserialize(
+      MDPForDecisionWithPolicy mdpForDecisionWithPolicy = SerializationUtil.deserialize(
           DecisionLoadingServiceImpl.class.getResourceAsStream(fileName));
-      DecisionPoint decisionPoint = new DecisionPoint(decisionPointDataStructure);
       cache.computeIfAbsent(mapSize, id -> new HashMap<>())
           .computeIfAbsent(race, id -> new HashMap<>())
-          .computeIfAbsent(agentTypeID, id -> new HashMap<>()).put(desireKeyID, decisionPoint);
+          .computeIfAbsent(agentTypeID, id -> new HashMap<>()).put(desireKeyID, mdpForDecisionWithPolicy);
       if (!loaded.containsKey(agentTypeID)) {
-        Map<DesireKeyID, DecisionPoint> toAdd = new HashMap<>();
-        toAdd.put(desireKeyID, decisionPoint);
+        Map<DesireKeyID, MDPForDecisionWithPolicy> toAdd = new HashMap<>();
+        toAdd.put(desireKeyID, mdpForDecisionWithPolicy);
         loaded.put(agentTypeID, toAdd);
       } else {
         if (!loaded.get(agentTypeID).containsKey(desireKeyID)) {
-          loaded.get(agentTypeID).put(desireKeyID, decisionPoint);
+          loaded.get(agentTypeID).put(desireKeyID, mdpForDecisionWithPolicy);
         }
       }
 
@@ -84,21 +82,21 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
   }
 
   @Override
-  public DecisionPoint getDecisionPoint(AgentTypeID agentTypeID, DesireKeyID desireKeyID) {
+  public MDPForDecisionWithPolicy getDecisionPoint(AgentTypeID agentTypeID, DesireKeyID desireKeyID) {
     try {
-      DecisionPoint decisionPoint = cache.get(DecisionConfiguration.getMapSize())
+      MDPForDecisionWithPolicy mdpForDecisionWithPolicy = cache.get(DecisionConfiguration.getMapSize())
           .get(DecisionConfiguration.getRace())
           .get(agentTypeID).get(desireKeyID);
 
       //TODO hack
-      if (decisionPoint == null) {
+      if (mdpForDecisionWithPolicy == null) {
         //try to load at least some
         if (loaded.containsKey(agentTypeID) && loaded.get(agentTypeID).containsKey(desireKeyID)) {
           return loaded.get(agentTypeID).get(desireKeyID);
         }
       }
 
-      return decisionPoint;
+      return mdpForDecisionWithPolicy;
     } catch (Exception e) {
 
       //try to load at least some

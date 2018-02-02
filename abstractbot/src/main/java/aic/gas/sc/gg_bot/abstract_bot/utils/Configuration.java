@@ -26,28 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Configuration {
 
-  public static final DistanceMetric DISTANCE_FUNCTION = new EuclideanDistance();
-  public static final Random RANDOM = new Random();
-
-  /**
-   * Standardize each part of feature vector according to normalizers
-   */
-  public static double[] normalizeFeatureVector(double[] featureVector,
-      List<FeatureNormalizer> normalizers) {
-    double[] normalizeFeatureVector = new double[featureVector.length];
-    for (int i = 0; i < featureVector.length; i++) {
-      Double normalizedValue = normalizers.get(i).rescaling(featureVector[i]);
-
-      //nasty hack. due to division by zero when all values of this feature are same...
-      if (Double.isNaN(normalizedValue)) {
-        normalizedValue = RANDOM.nextDouble();
-      }
-
-      normalizeFeatureVector[i] = normalizedValue;
-    }
-    return normalizeFeatureVector;
-  }
-
   /**
    * Map static fields of agentTypeId from AgentTypes to folders in storage
    */

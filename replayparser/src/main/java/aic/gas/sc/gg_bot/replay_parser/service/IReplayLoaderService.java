@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * Interface to describe service for replays file parser
  */
-public interface ReplayLoaderService {
+public interface IReplayLoaderService {
 
   void loadReplaysToParse();
 

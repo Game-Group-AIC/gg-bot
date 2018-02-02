@@ -27,7 +27,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.FeatureContainer;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.BuildOrderManagerWatcherType;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -46,7 +46,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                 () -> new PlanWatcher(() -> new FeatureContainer(BUILDING_POOL), ENABLE_GROUND_MELEE) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //pool being build
@@ -78,7 +78,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                 () -> new PlanWatcher(() -> new FeatureContainer(UPGRADING_TO_LAIR), UPGRADE_TO_LAIR) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //lair being build
@@ -101,7 +101,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                 () -> new PlanWatcher(() -> new FeatureContainer(BUILDING_SPIRE), ENABLE_AIR) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //spire being build
@@ -133,7 +133,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                     ENABLE_GROUND_RANGED) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //spire being build
@@ -166,7 +166,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
                     ENABLE_STATIC_ANTI_AIR) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //spire being build

@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
-import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
+import aic.gas.sc.gg_bot.replay_parser.service.IReplayLoaderService;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
@@ -13,12 +13,12 @@ import lombok.extern.slf4j.Slf4j;
  * Concrete implementation of service to load replays files
  */
 @Slf4j
-public class FolderReplayLoaderServiceImpl implements ReplayLoaderService {
+public class FolderReplayLoaderService implements IReplayLoaderService {
 
   String replaySource = "c:\\sc\\Maps\\replays";
   Iterator<File> replayIterator = (new HashSet<File>()).iterator();
 
-  public FolderReplayLoaderServiceImpl(String replaySource) throws IOException {
+  public FolderReplayLoaderService(String replaySource) throws IOException {
     this.replaySource = replaySource;
     System.out.println(new File(replaySource));
 //    if(!new File(replaySource).exists()) {

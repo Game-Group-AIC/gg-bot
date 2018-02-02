@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
-import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
+import aic.gas.sc.gg_bot.replay_parser.service.IReplayLoaderService;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-public class RabbitMQReplayLoaderServiceImpl implements ReplayLoaderService {
+public class RabbitMQReplayLoaderService implements IReplayLoaderService {
 
   private static final String TASK_QUEUE_NAME = "parse";
   private static final int PREFETCH_COUNT = 1;
@@ -29,7 +29,7 @@ public class RabbitMQReplayLoaderServiceImpl implements ReplayLoaderService {
   private boolean processedMessage = false;
   private String parseReplay;
 
-  public RabbitMQReplayLoaderServiceImpl(
+  public RabbitMQReplayLoaderService(
       String host,
       String user,
       String password,

@@ -9,10 +9,10 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.*;
-import aic.gas.sc.gg_bot.replay_parser.service.AgentUnitHandler;
-import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
-import aic.gas.sc.gg_bot.replay_parser.service.ReplayParserService;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IAgentUnitHandler;
+import aic.gas.sc.gg_bot.replay_parser.service.IReplayLoaderService;
+import aic.gas.sc.gg_bot.replay_parser.service.IReplayParserService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import bwapi.*;
 import bwta.BWTA;
 import bwta.BaseLocation;
@@ -24,7 +24,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  * Concrete implementation of service to parse replays
  */
 @Slf4j
-public class ReplayParserServiceImpl extends DefaultBWListener implements ReplayParserService {
+public class ReplayParserService extends DefaultBWListener implements IReplayParserService {
 
   private static final Pattern lineWithMatchPattern = Pattern.compile("^map\\s*=\\s*.+$");
 
@@ -47,17 +46,17 @@ public class ReplayParserServiceImpl extends DefaultBWListener implements Replay
 
   // files
   private final File bwapiIni;
-  private final WatcherMediatorService watcherMediatorService = WatcherMediatorServiceImpl
+  private final IWatcherMediatorService watcherMediatorService = WatcherMediatorService
       .getInstance();
-  private ReplayLoaderService replayLoaderService;
+  private IReplayLoaderService replayLoaderService;
 
   //  Alternatively use this loader:
-  //   private ReplayLoaderService replayLoaderService = new FileReplayLoaderServiceImpl();
+  //   private IReplayLoaderService replayLoaderService = new FileReplayLoaderService();
   private Optional<Replay> replay;
   private Set<Player> players;
-  private AgentUnitHandler agentUnitHandler;
+  private IAgentUnitHandler agentUnitHandler;
 
-  public ReplayParserServiceImpl(ReplayLoaderService replayLoader, boolean isForWindows) {
+  public ReplayParserService(IReplayLoaderService replayLoader, boolean isForWindows) {
     this.replayLoaderService = replayLoader;
     this.bwapiIni = new File(isForWindows ? BWAPI_INI_PATH_WIN : BWAPI_INI_PATH_DOCKER);
     this.runCommand = isForWindows ? WIN_RUN_COMMAND : DOCKER_RUN_COMMAND;

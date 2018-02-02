@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class FileReplayLoaderServiceImpl extends FolderReplayLoaderServiceImpl {
+public class FileReplayLoaderService extends FolderReplayLoaderService {
 
-  public FileReplayLoaderServiceImpl(String replaySource) throws IOException {
+  public FileReplayLoaderService(String replaySource) throws IOException {
     super(replaySource);
   }
 

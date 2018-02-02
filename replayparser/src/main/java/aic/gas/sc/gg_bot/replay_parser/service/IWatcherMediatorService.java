@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 /**
  * Contract for service to track watchers
  */
-public interface WatcherMediatorService {
+public interface IWatcherMediatorService {
 
   /**
    * Add new watcher (for example new unit was created)

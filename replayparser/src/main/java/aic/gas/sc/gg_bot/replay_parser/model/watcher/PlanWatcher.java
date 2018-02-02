@@ -3,7 +3,7 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.State;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -44,7 +44,7 @@ public abstract class PlanWatcher {
   /**
    * Decide if agent is committed based on handcrafted rules
    */
-  protected abstract boolean isAgentCommitted(WatcherMediatorService mediatorService,
+  protected abstract boolean isAgentCommitted(IWatcherMediatorService mediatorService,
       Beliefs beliefs);
 
   /**
@@ -57,7 +57,7 @@ public abstract class PlanWatcher {
    * to trajectory
    */
   public void addNewStateIfAgentHasTransitedToOne(Beliefs beliefs,
-      WatcherMediatorService mediatorService, Set<Integer> committedToIDs) {
+      IWatcherMediatorService mediatorService, Set<Integer> committedToIDs) {
     double[] currentFeatureState = container.getFeatureVector().clone();
     boolean hasStatusChanged = false;
     if (isCommitted != isAgentCommitted(mediatorService, beliefs)) {

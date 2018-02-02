@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.main;
 
-import aic.gas.sc.gg_bot.replay_parser.service.implementation.DecisionLearnerServiceImpl;
+import aic.gas.sc.gg_bot.replay_parser.service.implementation.DecisionLearnerService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Learner {
 
-  private static final DecisionLearnerServiceImpl learnerService = new DecisionLearnerServiceImpl();
+  private static final DecisionLearnerService learnerService = new DecisionLearnerService();
 
   public static void main(String[] args) throws Exception {
 

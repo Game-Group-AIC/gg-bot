@@ -8,8 +8,8 @@ import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValu
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
-import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IStorageService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,21 +22,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Implementation of WatcherMediatorService
+ * Implementation of IWatcherMediatorService
  */
-public class WatcherMediatorServiceImpl implements WatcherMediatorService {
+public class WatcherMediatorService implements IWatcherMediatorService {
 
-  private static WatcherMediatorService instance = null;
+  private static IWatcherMediatorService instance = null;
   private final Set<AgentWatcher<?>> watchers = new HashSet<>(), allWatchers = new HashSet<>();
-  private final StorageService storageService = StorageServiceImp.getInstance();
+  private final IStorageService storageService = StorageService.getInstance();
 
-  private WatcherMediatorServiceImpl() {
+  private WatcherMediatorService() {
     //singleton
   }
 
-  public static WatcherMediatorService getInstance() {
+  public static IWatcherMediatorService getInstance() {
     if (instance == null) {
-      instance = new WatcherMediatorServiceImpl();
+      instance = new WatcherMediatorService();
     }
     return instance;
   }

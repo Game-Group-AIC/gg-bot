@@ -1,9 +1,11 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
+import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.BatchIterator;
+import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionDomainGenerator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionState;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.OurMLIRL;
-import aic.gas.sc.gg_bot.replay_parser.service.PolicyLearningService;
+import aic.gas.sc.gg_bot.replay_parser.service.IPolicyLearningService;
 import burlap.behavior.functionapproximation.dense.DenseStateFeatures;
 import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.policy.Policy;
@@ -13,7 +15,6 @@ import burlap.behavior.singleagent.learnfromdemo.mlirl.MLIRLRequest;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.commonrfs.LinearStateDifferentiableRF;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.differentiableplanners.DifferentiableSparseSampling;
 import burlap.behavior.valuefunction.QProvider;
-import burlap.debugtools.RandomFactory;
 import burlap.mdp.core.state.State;
 import burlap.mdp.singleagent.SADomain;
 import burlap.statehashing.HashableStateFactory;
@@ -21,55 +22,47 @@ import burlap.statehashing.simple.SimpleHashableStateFactory;
 import java.util.List;
 
 /**
- * Implementation of PolicyLearningService. To learn policy IRL is used. Policy is learnt using
+ * Implementation of IPolicyLearningService. To learn policy IRL is used. Policy is learnt using
  * provided "experts'" episodes
  */
-public class PolicyLearningServiceImpl implements PolicyLearningService {
+public class PolicyLearningService implements IPolicyLearningService {
 
-  private static final double beta = 10;
   private static final boolean doNotPrintDebug = false;
-  private static final int steps = 1000;
-  //set last "dummy state" to large negative number as we do not want to go there
-  private static final int minReward = -1, maxReward = 1;
-  private static final double learningRate = 0.01;
-  private static final double maxLikelihoodChange = 0.1;
-  //set time budget to 30 minutes
-  //TODO increase
-  private static final long timeBudget = 1000 * 60 * 30;
-  private static final double gamma = 0.99;
 
   @Override
-  public Policy learnPolicy(SADomain domain, List<Episode> episodes, int numberOfStates,
-      BatchIterator batchIterator) {
+  public Policy learnPolicy(SADomain domain, List<Episode> episodes, Configuration configuration) {
 
     //create reward function features to use
-    LocationFeatures features = new LocationFeatures(numberOfStates);
+    LocationFeatures features = new LocationFeatures(configuration.getClusters());
 
     //create a reward function that is linear with respect to those features and has small random
     //parameter values to start
-    LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(features, numberOfStates);
+    LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(features,
+        configuration.getClusters() + 1);
     for (int i = 0; i < rf.numParameters() - 1; i++) {
-      rf.setParameter(i, RandomFactory.getMapped(0).nextDouble() * 0.2 - 0.1);
+      rf.setParameter(i, DecisionDomainGenerator.getRandomRewardInInterval(configuration));
     }
 
-    rf.setParameter(rf.numParameters() - 1, minReward);
+    //set dummy state
+    rf.setParameter(rf.numParameters() - 1, configuration.getMinReward() * configuration.getMultiplierOfRewardForDeadEnd());
 
     //use either DifferentiableVI or DifferentiableSparseSampling for planning. The latter enables receding horizon IRL,
     //but you will probably want to use a fairly large horizon for this kind of reward function.
     HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 //        DifferentiableVI dplanner = new DifferentiableVI(domain, rf, 0.99, beta, hashingFactory, 0.01, 100);
-    DifferentiableSparseSampling dplanner = new DifferentiableSparseSampling(domain, rf, gamma,
-        hashingFactory, (int) Math.sqrt(numberOfStates), batchIterator.getSizeOfBatch(), beta);
+    DifferentiableSparseSampling dplanner = new DifferentiableSparseSampling(domain, rf,
+        configuration.getGamma(), hashingFactory, (int) Math.sqrt(configuration.getClusters()),
+        configuration.getCountOfTrajectoriesPerIRLBatch(), configuration.getBeta());
 
     dplanner.toggleDebugPrinting(doNotPrintDebug);
 
     //define the IRL problem
     MLIRLRequest request = new MLIRLRequest(domain, dplanner, episodes, rf);
-    request.setBoltzmannBeta(beta);
+    request.setBoltzmannBeta(configuration.getBeta());
 
     //run MLIRL on it
-    MLIRL irl = new OurMLIRL(request, learningRate, maxLikelihoodChange, steps, minReward,
-        maxReward, timeBudget, batchIterator);
+    MLIRL irl = new OurMLIRL(request, configuration,
+        new BatchIterator(configuration.getCountOfTrajectoriesPerIRLBatch(), episodes));
     irl.performIRL();
 
     return new GreedyQPolicy((QProvider) request.getPlanner());

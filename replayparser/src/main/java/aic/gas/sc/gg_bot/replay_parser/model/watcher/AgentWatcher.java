@@ -2,7 +2,7 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,7 +70,7 @@ public class AgentWatcher<T extends AgentWatcherType> {
   /**
    * Do reasoning
    */
-  public void reason(WatcherMediatorService mediatorService) {
+  public void reason(IWatcherMediatorService mediatorService) {
     if (agentWatcherType.getReasoning().isPresent()) {
       agentWatcherType.getReasoning().get().updateBeliefs(beliefs, mediatorService);
     }
@@ -79,7 +79,7 @@ public class AgentWatcher<T extends AgentWatcherType> {
   /**
    * Handle trajectories of plans
    */
-  public void handleTrajectoriesOfPlans(WatcherMediatorService mediatorService) {
+  public void handleTrajectoriesOfPlans(IWatcherMediatorService mediatorService) {
     Set<Integer> committedIDs = plansToWatch.stream()
         .filter(PlanWatcher::isCommitted)
         .map(planWatcher -> planWatcher.getDesireKey().getID())

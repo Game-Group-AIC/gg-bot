@@ -69,7 +69,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.FeatureContainer;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.BaseWatcherType;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import bwapi.Game;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -284,7 +284,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                 () -> new PlanWatcher(() -> new FeatureContainer(HOLDING), HOLD_GROUND) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //holding only in own/enemy base
@@ -313,7 +313,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                 () -> new PlanWatcher(() -> new FeatureContainer(HOLDING), HOLD_AIR) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //holding only in own/enemy base
@@ -343,7 +343,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                 () -> new PlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_CREEP_COLONY) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
                     ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
                         .get();
@@ -373,7 +373,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                 () -> new PlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SUNKEN_COLONY) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
                     ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
                         .get();
@@ -403,7 +403,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                 () -> new PlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SPORE_COLONY) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
                     ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
                         .get();

@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies;
 
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 
 /**
  * Template for belief updating strategy
@@ -11,6 +11,6 @@ public interface Reasoning {
   /**
    * Update beliefs
    */
-  void updateBeliefs(Beliefs beliefs, WatcherMediatorService mediatorService);
+  void updateBeliefs(Beliefs beliefs, IWatcherMediatorService mediatorService);
 
 }

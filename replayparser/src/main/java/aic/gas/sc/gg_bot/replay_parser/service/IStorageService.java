@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.service;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
-import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPointDataStructure;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * StorageService contract - to store/load entities
+ * IStorageService contract - to store/load entities
  */
-public interface StorageService {
+public interface IStorageService {
 
 
   /**
@@ -37,9 +37,9 @@ public interface StorageService {
       MapSizeEnums mapSize, ARace race, int limit);
 
   /**
-   * Store learnt DecisionPointDataStructure
+   * Store learnt MDPForDecisionWithPolicy
    */
-  void storeLearntDecision(DecisionPointDataStructure structure, AgentTypeID agentTypeID,
+  void storeLearntDecision(MDPForDecisionWithPolicy structure, AgentTypeID agentTypeID,
       DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) throws Exception;
 
   String getLearntDecisionPath(AgentTypeID agentTypeID, DesireKeyID desireKeyID,

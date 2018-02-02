@@ -1,8 +1,6 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.features;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 
 /**
@@ -11,33 +9,19 @@ import lombok.Getter;
 @Getter
 public class FeatureNormalizer implements Serializable {
 
-  private final double max;
-  private final double min;
+  private final double mean;
+  private final double std;
 
-  public FeatureNormalizer(List<Double> values) {
-    int tenth = values.size() / 10;
-    List<Double> valuesSorted = values.stream()
-        .sorted().collect(Collectors.toList());
-    valuesSorted = valuesSorted.subList(tenth, values.size() - tenth);
-    this.max = valuesSorted.get(valuesSorted.size() - 1);
-    this.min = valuesSorted.get(0);
+  public FeatureNormalizer(double mean, double std) {
+    this.mean = mean;
+    this.std = std;
   }
 
   /**
    * Transform value to z-score
    */
-  public Double rescaling(double value) {
-    double valueToScale;
-    if (value > max) {
-      valueToScale = max;
-    } else {
-      if (value < min) {
-        valueToScale = min;
-      } else {
-        valueToScale = value;
-      }
-    }
-    return (valueToScale - min) / (max - min);
+  public double standardize(double value) {
+    return (value - mean) / std;
   }
 
 }

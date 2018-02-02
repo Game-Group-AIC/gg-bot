@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Contract for factory to initiate agents for unit
  */
-public interface AgentUnitHandler {
+public interface IAgentUnitHandler {
 
   /**
    * Create agent watcher for unit if possible

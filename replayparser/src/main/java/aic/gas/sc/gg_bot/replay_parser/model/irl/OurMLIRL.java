@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.model.irl;
 
+import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import burlap.behavior.functionapproximation.FunctionGradient;
 import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.learnfromdemo.CustomRewardModel;
@@ -7,7 +8,6 @@ import burlap.behavior.singleagent.learnfromdemo.mlirl.MLIRL;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.MLIRLRequest;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.support.DifferentiableRF;
 import burlap.datastructures.HashedAggregator;
-import burlap.debugtools.RandomFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,18 +20,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OurMLIRL extends MLIRL {
 
-  private final int minReward, maxReward;
+  private final int minReward, maxReward, multiplierOfRewardForDeadEnd;
   private final long start = System.currentTimeMillis(), timeBudget;
   private final BatchIterator batchIterator;
+  private final Configuration configuration;
 
-  public OurMLIRL(MLIRLRequest request, double learningRate, double maxLikelihoodChange,
-      int maxSteps, int minReward, int maxReward, long timeBudget,
-      BatchIterator batchIterator) {
-    super(request, learningRate, maxLikelihoodChange, maxSteps);
-    this.minReward = minReward;
-    this.maxReward = maxReward;
-    this.timeBudget = timeBudget;
+  public OurMLIRL(MLIRLRequest request, Configuration configuration, BatchIterator batchIterator) {
+    super(request, configuration.getLearningRate(), configuration.getMaxLikelihoodChange(),
+        configuration.getSteps());
+    this.minReward = configuration.getMinReward();
+    this.maxReward = configuration.getMaxReward();
+    this.timeBudget = configuration.getTimeBudget();
     this.batchIterator = batchIterator;
+    this.configuration = configuration;
+
+    //scales dead end relatively to all bad states
+    this.multiplierOfRewardForDeadEnd = configuration.getMultiplierOfRewardForDeadEnd();
   }
 
   /**
@@ -65,7 +69,7 @@ public class OurMLIRL extends MLIRL {
 
         //on strange number
         if (Double.isNaN(nexVal)) {
-          nexVal = RandomFactory.getMapped(0).nextDouble() * 0.2 - 0.1;
+          nexVal = DecisionDomainGenerator.getRandomRewardInInterval(configuration);
           log.error("Replacing reward in " + pd.parameterId);
         }
 
@@ -81,13 +85,14 @@ public class OurMLIRL extends MLIRL {
         nextValuesOfParameters.put(pd.parameterId, nexVal);
       }
 
-      //normalize and compute change
+      //scale and compute change
       double maxChange = 0.;
       for (Entry<Integer, Double> entry : nextValuesOfParameters.entrySet()) {
         double curVal = rf.getParameter(entry.getKey());
         //always set dummy state to lowest reward
-        double nexVal = (entry.getKey() == rf.numParameters() - 1) ? minReward
-            : normalize(minReward, maxReward, minValue, maxValue, entry.getValue());
+        double nexVal =
+            (entry.getKey() == rf.numParameters() - 1) ? minReward * multiplierOfRewardForDeadEnd
+                : scale(minReward, maxReward, minValue, maxValue, entry.getValue());
         rf.setParameter(entry.getKey(), nexVal);
         double delta = Math.abs(curVal - nexVal);
         maxChange = Math.max(maxChange, delta);
@@ -121,7 +126,8 @@ public class OurMLIRL extends MLIRL {
     }
 
     //change to best one
-    bestValuesOfParameters.put(rf.numParameters() - 1, (double) minReward);
+    bestValuesOfParameters
+        .put(rf.numParameters() - 1, (double) (minReward * multiplierOfRewardForDeadEnd));
     for (Entry<Integer, Double> entry : bestValuesOfParameters.entrySet()) {
       rf.setParameter(entry.getKey(), entry.getValue());
     }
@@ -190,8 +196,10 @@ public class OurMLIRL extends MLIRL {
     return gradient;
   }
 
-
-  private double normalize(int a, int b, double min, double max, double value) {
+  /**
+   * Scale values in the dataset between any arbitrary points a and b
+   */
+  private double scale(int a, int b, double min, double max, double value) {
     return ((b - a) * ((value - min) / (max - min))) + a;
   }
 

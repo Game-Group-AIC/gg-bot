@@ -1,10 +1,10 @@
 package aic.gas.sc.gg_bot.replay_parser.main;
 
-import aic.gas.sc.gg_bot.replay_parser.service.ReplayLoaderService;
-import aic.gas.sc.gg_bot.replay_parser.service.implementation.FileReplayLoaderServiceImpl;
-import aic.gas.sc.gg_bot.replay_parser.service.implementation.FolderReplayLoaderServiceImpl;
-import aic.gas.sc.gg_bot.replay_parser.service.implementation.RabbitMQReplayLoaderServiceImpl;
-import aic.gas.sc.gg_bot.replay_parser.service.implementation.ReplayParserServiceImpl;
+import aic.gas.sc.gg_bot.replay_parser.service.IReplayLoaderService;
+import aic.gas.sc.gg_bot.replay_parser.service.implementation.FileReplayLoaderService;
+import aic.gas.sc.gg_bot.replay_parser.service.implementation.FolderReplayLoaderService;
+import aic.gas.sc.gg_bot.replay_parser.service.implementation.RabbitMQReplayLoaderService;
+import aic.gas.sc.gg_bot.replay_parser.service.implementation.ReplayParserService;
 import java.io.IOException;
 
 /**
@@ -15,15 +15,15 @@ public class Parser {
     //to speed things up when executing parallel stream
     System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "100");
 
-    ReplayLoaderService replayLoader = createReplayLoader(args);
+    IReplayLoaderService replayLoader = createReplayLoader(args);
 
-    ReplayParserServiceImpl replayParserService = new ReplayParserServiceImpl(replayLoader,
+    ReplayParserService replayParserService = new ReplayParserService(replayLoader,
         args.length == 3 && args[2].equals("-w"));
     replayParserService.parseReplays();
   }
 
-  private static ReplayLoaderService createReplayLoader(String[] args) throws IOException {
-    ReplayLoaderService replayLoader;
+  private static IReplayLoaderService createReplayLoader(String[] args) throws IOException {
+    IReplayLoaderService replayLoader;
 
     if (args.length < 1 || args.length > 3) {
       showHelp(args);
@@ -40,16 +40,16 @@ public class Parser {
           System.out.println("Could not load env config!");
           System.exit(1);
         }
-        replayLoader = new RabbitMQReplayLoaderServiceImpl(host, user, pass,
+        replayLoader = new RabbitMQReplayLoaderService(host, user, pass,
             Integer.parseInt(port));
         break;
       case "--folder":
         System.out.println(args[1]);
-        replayLoader = new FolderReplayLoaderServiceImpl(args[1]);
+        replayLoader = new FolderReplayLoaderService(args[1]);
         break;
       case "--file":
         System.out.println(args[1]);
-        replayLoader = new FileReplayLoaderServiceImpl(args[1]);
+        replayLoader = new FileReplayLoaderService(args[1]);
         break;
       default:
         replayLoader = null;

@@ -2,7 +2,7 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import com.rits.cloning.Cloner;
 import java.util.Set;
 import lombok.Getter;
@@ -56,7 +56,7 @@ public class FeatureContainer {
   /**
    * Update features if values differ. If so return true to indicate that values has changed
    */
-  public boolean isStatusUpdated(Beliefs beliefs, WatcherMediatorService mediatorService,
+  public boolean isStatusUpdated(Beliefs beliefs, IWatcherMediatorService mediatorService,
       Set<Integer> committedToIDs) {
     hasChanged = false;
 

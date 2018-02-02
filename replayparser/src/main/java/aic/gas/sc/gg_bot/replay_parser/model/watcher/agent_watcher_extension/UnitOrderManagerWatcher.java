@@ -18,7 +18,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.FeatureContainer;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.UnitOrderManagerWatcherType;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -38,7 +38,7 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
                   private long flayersBeingConstructs = 0;
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //morphing to flayer (not overlord)
@@ -73,7 +73,7 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
                   private long lingsBeingConstructs = 0;
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //morphing to ling
@@ -107,7 +107,7 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
                   private long rangedBeingConstructs = 0;
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //morphing to any other ground attack unit except ling

@@ -24,7 +24,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.FeatureContainer;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.EcoManagerWatcherType;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -43,7 +43,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
                 () -> new PlanWatcher(() -> new FeatureContainer(BUILDING_EXTRACTOR), BUILD_EXTRACTOR) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //extractors being build
@@ -75,7 +75,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
                   private long workersBeingConstructs = 0;
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //morphing to worker
@@ -107,7 +107,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
                 () -> new PlanWatcher(() -> new FeatureContainer(EXPANDING), EXPAND) {
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //hatchery is being build
@@ -140,7 +140,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
                   private long overlordsBeingConstructs = 0;
 
                   @Override
-                  protected boolean isAgentCommitted(WatcherMediatorService mediatorService,
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
                       Beliefs beliefs) {
 
                     //overlord being morphed

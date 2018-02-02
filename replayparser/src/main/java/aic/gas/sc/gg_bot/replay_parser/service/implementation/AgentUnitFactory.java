@@ -54,7 +54,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.UnitWatcherType;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
-import aic.gas.sc.gg_bot.replay_parser.service.AgentUnitHandler;
+import aic.gas.sc.gg_bot.replay_parser.service.IAgentUnitHandler;
 import bwapi.Game;
 import bwapi.Order;
 import bwapi.Unit;
@@ -69,10 +69,10 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Concrete implementation of AgentUnitHandler
+ * Concrete implementation of IAgentUnitHandler
  */
 @Slf4j
-public class AgentUnitFactory implements AgentUnitHandler {
+public class AgentUnitFactory implements IAgentUnitHandler {
 
   private static final Reasoning BUILDING_REASONING = (beliefs, mediatorService) -> {
     AUnitOfPlayer me = beliefs.returnFactValueForGivenKey(REPRESENTS_UNIT).get();

@@ -10,9 +10,6 @@ import lombok.Getter;
 public class Configuration {
 
   @Builder.Default
-  private boolean removeOutliersWhenNormalisingFeatures = true;
-
-  @Builder.Default
   private int sampleStates = 20000;
 
   @Builder.Default
@@ -24,11 +21,12 @@ public class Configuration {
   @Builder.Default
   private int clusters = 1500;
 
+  //set last "dummy state" to large negative number as we do not want to go there
   @Builder.Default
-  private int minReward = -1;
+  private int minReward = -1000;
 
   @Builder.Default
-  private int maxReward = 1;
+  private int maxReward = 1000;
 
   @Builder.Default
   private double learningRate = 0.01;
@@ -48,4 +46,29 @@ public class Configuration {
   @Builder.Default
   private long timeBudget = 1000 * 60 * 30;
 
+  @Builder.Default
+  private int countOfTrajectoriesPerIRLBatch = 20;
+
+  @Builder.Default
+  private int multiplierOfRewardForDeadEnd = 4;
+
+  @Override
+  public String toString() {
+    return "Configuration{" +
+        "sampleStates=" + sampleStates +
+        ", batchSize=" + batchSize +
+        ", iterations=" + iterations +
+        ", clusters=" + clusters +
+        ", minReward=" + minReward +
+        ", maxReward=" + maxReward +
+        ", learningRate=" + learningRate +
+        ", maxLikelihoodChange=" + maxLikelihoodChange +
+        ", gamma=" + gamma +
+        ", beta=" + beta +
+        ", steps=" + steps +
+        ", timeBudget=" + timeBudget +
+        ", countOfTrajectoriesPerIRLBatch=" + countOfTrajectoriesPerIRLBatch +
+        ", multiplierOfRewardForDeadEnd=" + multiplierOfRewardForDeadEnd +
+        '}';
+  }
 }

@@ -5,14 +5,14 @@ import static aic.gas.sc.gg_bot.abstract_bot.utils.Configuration.getParsedDesire
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
-import aic.gas.sc.gg_bot.abstract_bot.model.decision.DecisionPointDataStructure;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.TrajectoryWrapper;
-import aic.gas.sc.gg_bot.replay_parser.service.StorageService;
+import aic.gas.sc.gg_bot.replay_parser.service.IStorageService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,10 +27,10 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * StorageService implementation... as singleton
+ * IStorageService implementation... as singleton
  */
 @Slf4j
-public class StorageServiceImp implements StorageService {
+public class StorageService implements IStorageService {
 
   //databases
 
@@ -46,9 +46,9 @@ public class StorageServiceImp implements StorageService {
   private static final String otherFolder = "other_" + parsingFolder;
   private static final String outputFolder = storageFolder + "/output";
   private static final String dbFileReplays = storageFolder + "/replays.db";
-  private static StorageServiceImp instance = null;
+  private static StorageService instance = null;
 
-  private StorageServiceImp() {
+  private StorageService() {
     //singleton
     createDirectoryIfItDoesNotExist(storageFolder);
     createDirectoryIfItDoesNotExist(parsingFolder);
@@ -68,9 +68,9 @@ public class StorageServiceImp implements StorageService {
     });
   }
 
-  static StorageService getInstance() {
+  static IStorageService getInstance() {
     if (instance == null) {
-      instance = new StorageServiceImp();
+      instance = new StorageService();
     }
     return instance;
   }
@@ -153,13 +153,11 @@ public class StorageServiceImp implements StorageService {
             boolean isHumanReplay = s.contains("human");
 
             // noinspection unchecked
-            return ((List<Trajectory>) SerializationUtil.deserialize(s))
-                .stream()
-                .map(trajectory -> {
-                  TrajectoryWrapper trajectoryWrapped = new TrajectoryWrapper(trajectory);
-                  trajectoryWrapped.setUsedToLearnPolicy(isHumanReplay);
-                  return trajectoryWrapped;
-                });
+            return ((List<Trajectory>) SerializationUtil.deserialize(s)).stream()
+                .map(trajectory -> TrajectoryWrapper.builder()
+                    .trajectory(trajectory)
+                    .usedToLearnPolicy(isHumanReplay)
+                    .build());
           } catch (Exception e) {
             log.error(e.getLocalizedMessage());
           }
@@ -192,7 +190,7 @@ public class StorageServiceImp implements StorageService {
 
 
   @Override
-  public void storeLearntDecision(DecisionPointDataStructure structure, AgentTypeID agentTypeID,
+  public void storeLearntDecision(MDPForDecisionWithPolicy structure, AgentTypeID agentTypeID,
       DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) throws Exception {
     createDirectoryIfItDoesNotExist(agentTypeID.getName(), outputFolder + "/" + mapSize.name() + "/"
         + "/" + race.name());

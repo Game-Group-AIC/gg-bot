@@ -17,7 +17,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.AgentEnvironmentObservation;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
-import aic.gas.sc.gg_bot.replay_parser.service.WatcherMediatorService;
+import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -104,7 +104,7 @@ public class UnitWatcherType extends AgentWatcherType {
     }
 
     @Override
-    public void updateBeliefs(Beliefs beliefs, WatcherMediatorService mediatorService) {
+    public void updateBeliefs(Beliefs beliefs, IWatcherMediatorService mediatorService) {
       updateBeliefsAboutUnitsInSurroundingArea(beliefs);
       reasoning.updateBeliefs(beliefs, mediatorService);
     }
