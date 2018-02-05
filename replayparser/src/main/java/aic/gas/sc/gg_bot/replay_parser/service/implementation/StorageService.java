@@ -42,10 +42,9 @@ public class StorageService implements IStorageService {
   // we need two folders: human
   private static final String storageFolder = "storage";
   private static final String parsingFolder = storageFolder + "/parsing";
-  private static final String humanFolder = "human_" + parsingFolder;
-  private static final String otherFolder = "other_" + parsingFolder;
+  private static final String humanFolder = storageFolder + "/human/parsing";
+  private static final String otherFolder = storageFolder + "/other/parsing";
   private static final String outputFolder = storageFolder + "/output";
-  private static final String dbFileReplays = storageFolder + "/replays.db";
   private static StorageService instance = null;
 
   private StorageService() {

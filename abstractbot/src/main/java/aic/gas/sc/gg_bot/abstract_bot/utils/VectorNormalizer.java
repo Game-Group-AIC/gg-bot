@@ -19,7 +19,13 @@ public class VectorNormalizer {
     double[] normalizeFeatureVector = new double[featureVector.length];
     for (int i = 0; i < featureVector.length; i++) {
       Double normalizedValue = normalizers.get(i).standardize(featureVector[i]);
-      normalizeFeatureVector[i] = normalizedValue;
+
+      //TODO features with mean and std equals to zero should be disabled
+      if (normalizedValue.isNaN()) {
+        normalizeFeatureVector[i] = 0;
+      } else {
+        normalizeFeatureVector[i] = normalizedValue;
+      }
     }
     return normalizeFeatureVector;
   }

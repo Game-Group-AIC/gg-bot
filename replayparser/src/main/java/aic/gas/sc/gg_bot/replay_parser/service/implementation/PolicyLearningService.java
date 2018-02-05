@@ -33,7 +33,7 @@ public class PolicyLearningService implements IPolicyLearningService {
   public Policy learnPolicy(SADomain domain, List<Episode> episodes, Configuration configuration) {
 
     //create reward function features to use
-    LocationFeatures features = new LocationFeatures(configuration.getClusters());
+    LocationFeatures features = new LocationFeatures(configuration.getClusters() + 1);
 
     //create a reward function that is linear with respect to those features and has small random
     //parameter values to start

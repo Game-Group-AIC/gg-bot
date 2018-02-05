@@ -17,7 +17,7 @@ public class Learner {
 
     //TODO increase
 
-    int num_proc = 8;
+    int num_proc = 1;
     String NUM_PROC = System.getenv("NUM_PROC");
     if (NUM_PROC != null) {
       num_proc = Integer.parseInt(NUM_PROC);

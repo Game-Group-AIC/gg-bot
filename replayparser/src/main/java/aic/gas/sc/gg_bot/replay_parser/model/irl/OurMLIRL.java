@@ -1,12 +1,16 @@
 package aic.gas.sc.gg_bot.replay_parser.model.irl;
 
+import static aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionDomainGenerator.getRandomRewardInInterval;
+
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import burlap.behavior.functionapproximation.FunctionGradient;
+import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.learnfromdemo.CustomRewardModel;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.MLIRL;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.MLIRLRequest;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.support.DifferentiableRF;
+import burlap.behavior.valuefunction.QProvider;
 import burlap.datastructures.HashedAggregator;
 import java.util.HashMap;
 import java.util.List;
@@ -24,15 +28,19 @@ public class OurMLIRL extends MLIRL {
   private final long start = System.currentTimeMillis(), timeBudget;
   private final BatchIterator batchIterator;
   private final Configuration configuration;
+  private double currentLearningRate;
 
   public OurMLIRL(MLIRLRequest request, Configuration configuration, BatchIterator batchIterator) {
-    super(request, configuration.getLearningRate(), configuration.getMaxLikelihoodChange(),
+    super(request, configuration.getInitialLearningRate(), configuration.getMaxLikelihoodChange(),
         configuration.getSteps());
     this.minReward = configuration.getMinReward();
     this.maxReward = configuration.getMaxReward();
     this.timeBudget = configuration.getTimeBudget();
     this.batchIterator = batchIterator;
     this.configuration = configuration;
+
+    //init learning rate
+    this.currentLearningRate = configuration.getInitialLearningRate();
 
     //scales dead end relatively to all bad states
     this.multiplierOfRewardForDeadEnd = configuration.getMultiplierOfRewardForDeadEnd();
@@ -57,7 +65,7 @@ public class OurMLIRL extends MLIRL {
     int bestIt = -1;
 
     int i;
-    for (i = 0; i < maxSteps || this.maxSteps == -1; i++) {
+    for (i = 0; i < this.maxSteps; i++) {
       nextValuesOfParameters.clear();
 
       //move up gradient
@@ -65,11 +73,11 @@ public class OurMLIRL extends MLIRL {
       FunctionGradient gradient = this.logLikelihoodGradient();
       for (FunctionGradient.PartialDerivative pd : gradient.getNonZeroPartialDerivatives()) {
         double curVal = rf.getParameter(pd.parameterId);
-        double nexVal = curVal + this.learningRate * pd.value;
+        double nexVal = curVal + this.currentLearningRate * pd.value;
 
         //on strange number
         if (Double.isNaN(nexVal)) {
-          nexVal = DecisionDomainGenerator.getRandomRewardInInterval(configuration);
+          nexVal = getRandomRewardInInterval(configuration);
           log.error("Replacing reward in " + pd.parameterId);
         }
 
@@ -93,7 +101,8 @@ public class OurMLIRL extends MLIRL {
         double nexVal =
             (entry.getKey() == rf.numParameters() - 1) ? minReward * multiplierOfRewardForDeadEnd
                 : scale(minReward, maxReward, minValue, maxValue, entry.getValue());
-        rf.setParameter(entry.getKey(), nexVal);
+        rf.setParameter(entry.getKey(),
+            Double.isNaN(nexVal) ? getRandomRewardInInterval(configuration) : nexVal);
         double delta = Math.abs(curVal - nexVal);
         maxChange = Math.max(maxChange, delta);
       }
@@ -118,7 +127,15 @@ public class OurMLIRL extends MLIRL {
         bestIt = i;
       }
 
-      if (Math.abs(likelihoodChange) < this.maxLikelihoodChange || Double.isNaN(likelihoodChange)
+      //step decay on learning rate
+      if (!configuration.isStaticLearningRate() && i != 0
+          && i % configuration.getDropAfterIterations() == 0) {
+        this.currentLearningRate = this.currentLearningRate * configuration.getDropLearningRate();
+        log.info("Setting learning rate to " + this.currentLearningRate);
+      }
+
+      if ((Math.abs(likelihoodChange) < this.maxLikelihoodChange
+          && lastLikelihood == bestLikelihood) || Double.isNaN(likelihoodChange)
           || System.currentTimeMillis() - start > timeBudget) {
         i++;
         break;
@@ -156,6 +173,24 @@ public class OurMLIRL extends MLIRL {
     log.info("LogLikelihood computation executed in " + (System.currentTimeMillis() - start));
     return sum;
 
+  }
+
+  public double logLikelihoodOfTrajectory(Episode ea, double weight) {
+    double logLike = 0.0D;
+    Policy p = new OurBoltzmannQPolicy((QProvider) this.request.getPlanner(),
+        1.0D / this.request.getBoltzmannBeta(), configuration.getNoiseForLearningReward());
+
+    for (int i = 0; i < ea.numTimeSteps() - 1; ++i) {
+      this.request.getPlanner().planFromState(ea.state(i));
+      double actProb = p.actionProb(ea.state(i), ea.action(i));
+      if (Double.isInfinite(Math.log(actProb))) {
+        actProb = p.actionProb(ea.state(i), ea.action(i));
+      }
+      logLike += Math.log(actProb);
+    }
+
+    logLike *= weight;
+    return logLike;
   }
 
   /**

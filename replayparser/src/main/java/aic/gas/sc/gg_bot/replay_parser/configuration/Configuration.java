@@ -10,16 +10,16 @@ import lombok.Getter;
 public class Configuration {
 
   @Builder.Default
-  private int sampleStates = 20000;
+  private int sampleStates = 100;
 
   @Builder.Default
-  private int batchSize = 2000;
+  private int batchSize = 100;
 
   @Builder.Default
   private int iterations = 250;
 
   @Builder.Default
-  private int clusters = 1500;
+  private int clusters = 200;
 
   //set last "dummy state" to large negative number as we do not want to go there
   @Builder.Default
@@ -29,10 +29,22 @@ public class Configuration {
   private int maxReward = 1000;
 
   @Builder.Default
-  private double learningRate = 0.01;
+  private double initialLearningRate = 0.1;
 
   @Builder.Default
-  private double maxLikelihoodChange = 0.1;
+  private boolean staticLearningRate = false;
+
+  @Builder.Default
+  private double dropLearningRate = 0.5;
+
+  @Builder.Default
+  private int dropAfterIterations = 100;
+
+  @Builder.Default
+  private double noiseForLearningReward = 0.001;
+
+  @Builder.Default
+  private double maxLikelihoodChange = 0.01;
 
   @Builder.Default
   private double gamma = 0.99;
@@ -61,7 +73,11 @@ public class Configuration {
         ", clusters=" + clusters +
         ", minReward=" + minReward +
         ", maxReward=" + maxReward +
-        ", learningRate=" + learningRate +
+        ", initialLearningRate=" + initialLearningRate +
+        ", staticLearningRate=" + staticLearningRate +
+        ", dropLearningRate=" + dropLearningRate +
+        ", dropAfterIterations=" + dropAfterIterations +
+        ", noiseForLearningReward=" + noiseForLearningReward +
         ", maxLikelihoodChange=" + maxLikelihoodChange +
         ", gamma=" + gamma +
         ", beta=" + beta +
