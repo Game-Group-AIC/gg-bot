@@ -5,7 +5,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_START_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION_IN_FRAME;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeBaseLocation;
@@ -30,7 +29,6 @@ public class AgentBaseLocation extends AgentObservingGame<AgentTypeBaseLocation>
 
     //add itself to knowledge
     beliefs.updateFact(IS_BASE_LOCATION, location);
-    beliefs.updateFact(MADE_OBSERVATION_IN_FRAME, 0);
     beliefs.updateFact(IS_MINERAL_ONLY, location.isMineralOnly());
     beliefs.updateFact(IS_ISLAND, location.isIsland());
     beliefs.updateFact(IS_START_LOCATION, location.isStartLocation());

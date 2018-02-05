@@ -6,7 +6,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL_TO_MINE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
@@ -97,18 +96,12 @@ public class DesiresKeys {
   //attack
   public static final DesireKey HOLD_GROUND = DesireKey.builder()
       .id(DesireKeys.HOLD_GROUND)
-      .parametersTypesForFacts(Stream.of(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)
-          .collect(Collectors.toSet()))
       .build();
   public static final DesireKey HOLD_AIR = DesireKey.builder()
       .id(DesireKeys.HOLD_AIR)
-      .parametersTypesForFacts(Stream.of(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)
-          .collect(Collectors.toSet()))
       .build();
   public static final DesireKey DEFEND = DesireKey.builder()
       .id(DesireKeys.DEFEND)
-      .parametersTypesForFacts(Stream.of(IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND)
-          .collect(Collectors.toSet()))
       .build();
 
   //for base

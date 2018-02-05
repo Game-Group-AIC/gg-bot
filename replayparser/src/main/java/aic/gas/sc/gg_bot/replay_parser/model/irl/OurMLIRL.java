@@ -4,13 +4,11 @@ import static aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionDomainGenerator.
 
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import burlap.behavior.functionapproximation.FunctionGradient;
-import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.learnfromdemo.CustomRewardModel;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.MLIRL;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.MLIRLRequest;
 import burlap.behavior.singleagent.learnfromdemo.mlirl.support.DifferentiableRF;
-import burlap.behavior.valuefunction.QProvider;
 import burlap.datastructures.HashedAggregator;
 import java.util.HashMap;
 import java.util.List;
@@ -173,24 +171,6 @@ public class OurMLIRL extends MLIRL {
     log.info("LogLikelihood computation executed in " + (System.currentTimeMillis() - start));
     return sum;
 
-  }
-
-  public double logLikelihoodOfTrajectory(Episode ea, double weight) {
-    double logLike = 0.0D;
-    Policy p = new OurBoltzmannQPolicy((QProvider) this.request.getPlanner(),
-        1.0D / this.request.getBoltzmannBeta(), configuration.getNoiseForLearningReward());
-
-    for (int i = 0; i < ea.numTimeSteps() - 1; ++i) {
-      this.request.getPlanner().planFromState(ea.state(i));
-      double actProb = p.actionProb(ea.state(i), ea.action(i));
-      if (Double.isInfinite(Math.log(actProb))) {
-        actProb = p.actionProb(ea.state(i), ea.action(i));
-      }
-      logLike += Math.log(actProb);
-    }
-
-    logLike *= weight;
-    return logLike;
   }
 
   /**

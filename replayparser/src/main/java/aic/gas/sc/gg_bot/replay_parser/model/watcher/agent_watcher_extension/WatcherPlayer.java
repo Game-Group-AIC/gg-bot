@@ -6,10 +6,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_MINERA
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_RACE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FREE_SUPPLY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
@@ -19,12 +21,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION_LIMIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TECH_TO_RESEARCH;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
@@ -42,11 +44,10 @@ import bwapi.Game;
 import bwapi.Player;
 import bwapi.Race;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Implementation of watcher for player Created by Jan on 18-Apr-17.
@@ -58,25 +59,23 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
 
   public WatcherPlayer(Player player, Game game) {
     super(WatcherPlayerType.builder()
-        .factKeys(new HashSet<>(Arrays
-            .asList(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT, POPULATION,
-                IS_PLAYER)))
-        .factSetsKeys(
-            new HashSet<>(Arrays.asList(UPGRADE_STATUS, TECH_TO_RESEARCH, OUR_BASE, ENEMY_BASE,
-                OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
-                ENEMY_AIR_FORCE_STATUS, ENEMY_BUILDING_STATUS,
-                ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS, LOCKED_BUILDINGS,
-                ENEMY_STATIC_AIR_FORCE_STATUS, ENEMY_STATIC_GROUND_FORCE_STATUS,
-                OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS)))
+        .factKeys(Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT,
+            POPULATION, IS_PLAYER, FREE_SUPPLY)
+            .collect(Collectors.toSet()))
+        .factSetsKeys(Stream.of(UPGRADE_STATUS, OUR_BASE, ENEMY_BASE,
+            OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
+            ENEMY_AIR_FORCE_STATUS, ENEMY_BUILDING_STATUS,
+            ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS, LOCKED_BUILDINGS,
+            ENEMY_STATIC_AIR_FORCE_STATUS, ENEMY_STATIC_GROUND_FORCE_STATUS,
+            OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS, ENEMY_FORCE_STATUS,
+            OWN_FORCE_STATUS)
+            .collect(Collectors.toSet()))
         .playerEnvironmentObservation((aPlayer, beliefs) -> {
           APlayer p = aPlayer.makeObservationOfEnvironment(game.getFrameCount());
           beliefs.updateFactSetByFacts(UPGRADE_STATUS, WrapperTypeFactory.upgrades().stream()
               .map(aUpgradeTypeWrapper -> new UpgradeTypeStatus(
                   p.getPlayer().getUpgradeLevel(aUpgradeTypeWrapper.getType()),
                   aUpgradeTypeWrapper))
-              .collect(Collectors.toSet()));
-          beliefs.updateFactSetByFacts(TECH_TO_RESEARCH, WrapperTypeFactory.techs().stream()
-              .filter(aTechTypeWrapper -> !p.getPlayer().hasResearched(aTechTypeWrapper.getType()))
               .collect(Collectors.toSet()));
           beliefs.updateFactSetByFacts(LOCKED_UNITS, WrapperTypeFactory.units().stream()
               .filter(aUnitTypeWrapper -> !p.getPlayer()
@@ -90,12 +89,14 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
         })
         .agentTypeID(AgentTypes.PLAYER)
         .reasoning((bl, ms) -> {
+
           //read data from player
           APlayer aPlayer = bl.returnFactValueForGivenKey(IS_PLAYER).get();
           bl.updateFact(AVAILABLE_MINERALS, (double) aPlayer.getMinerals());
           bl.updateFact(AVAILABLE_GAS, (double) aPlayer.getGas());
           bl.updateFact(POPULATION_LIMIT, (double) aPlayer.getSupplyTotal());
           bl.updateFact(POPULATION, (double) aPlayer.getSupplyUsed());
+          bl.updateFact(FREE_SUPPLY, (double) (aPlayer.getSupplyTotal() - aPlayer.getSupplyUsed()));
 
           //estimate enemy force
           Set<UnitTypeStatus> enemyBuildingsTypes = UnitWrapperFactory
@@ -154,6 +155,11 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
           bl.updateFactSetByFacts(OWN_GROUND_FORCE_STATUS, ownUnitsTypes.stream()
               .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackGroundUnits())
               .collect(Collectors.toSet()));
+
+          //enemy + our force
+          bl.updateFactSetByFacts(OWN_FORCE_STATUS, ownUnitsTypes);
+          bl.updateFactSetByFacts(ENEMY_FORCE_STATUS, enemyUnitsTypes);
+
 
           //enemy race
           Optional<Race> enemyRace = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()

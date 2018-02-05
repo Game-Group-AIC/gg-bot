@@ -264,6 +264,12 @@ public class FactKeys {
       return null;
     }
   };
+  public static final FactKey<Double> FREE_SUPPLY = new FactKey<Double>("FREE_SUPPLY", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
   public static final FactKey<ARace> ENEMY_RACE = new FactKey<ARace>("ENEMY_RACE", false) {
     @Override
     public ARace getInitValue() {
@@ -296,13 +302,6 @@ public class FactKeys {
       "UPGRADE_STATUS", false) {
     @Override
     public UpgradeTypeStatus getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<ATechTypeWrapper> TECH_TO_RESEARCH = new FactKey<ATechTypeWrapper>(
-      "TECH_TO_RESEARCH", false) {
-    @Override
-    public ATechTypeWrapper getInitValue() {
       return null;
     }
   };
@@ -387,6 +386,20 @@ public class FactKeys {
       "LOCKED_BUILDINGS", false) {
     @Override
     public AUnitTypeWrapper getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<UnitTypeStatus> OWN_FORCE_STATUS = new FactKey<UnitTypeStatus>(
+      "OWN_FORCE_STATUS", false) {
+    @Override
+    public UnitTypeStatus getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<UnitTypeStatus> ENEMY_FORCE_STATUS = new FactKey<UnitTypeStatus>(
+      "ENEMY_FORCE_STATUS", false) {
+    @Override
+    public UnitTypeStatus getInitValue() {
       return null;
     }
   };
@@ -492,24 +505,10 @@ public class FactKeys {
   };
 
   //units
-  public static final FactKey<Boolean> IS_UNDER_ATTACK = new FactKey<Boolean>("IS_UNDER_ATTACK",
-      false) {
-    @Override
-    public Boolean getInitValue() {
-      return false;
-    }
-  };
   public static final FactKey<APosition> PLACE_TO_REACH = new FactKey<APosition>("PLACE_TO_REACH",
       false) {
     @Override
     public APosition getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Integer> TIME_OF_HOLD_COMMAND = new FactKey<Integer>(
-      "TIME_OF_HOLD_COMMAND", false) {
-    @Override
-    public Integer getInitValue() {
       return null;
     }
   };
@@ -526,13 +525,6 @@ public class FactKeys {
       "REPRESENTS_UNIT", false) {
     @Override
     public AUnitOfPlayer getInitValue() {
-      return null;
-    }
-  };
-  public static final FactKey<Integer> MADE_OBSERVATION_IN_FRAME = new FactKey<Integer>(
-      "MADE_OBSERVATION_IN_FRAME", false) {
-    @Override
-    public Integer getInitValue() {
       return null;
     }
   };

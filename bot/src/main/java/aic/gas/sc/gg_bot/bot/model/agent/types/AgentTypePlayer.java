@@ -2,7 +2,6 @@ package aic.gas.sc.gg_bot.bot.model.agent.types;
 
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_RACE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION_IN_FRAME;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
@@ -12,7 +11,6 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
 import bwapi.Game;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -40,7 +38,6 @@ public class AgentTypePlayer extends AgentTypeMakingObservations<Game> {
 
     //add updated version of itself to knowledge
     memory.updateFact(IS_PLAYER, player);
-    memory.updateFact(MADE_OBSERVATION_IN_FRAME, environment.getFrameCount());
     return true;
   };
 
@@ -59,8 +56,8 @@ public class AgentTypePlayer extends AgentTypeMakingObservations<Game> {
 
         //add facts related to agent - IS_UNIT, REPRESENTS_UNIT
         Stream.concat(usingTypesForFacts.stream(),
-            Arrays.stream(new FactKey<?>[]{IS_PLAYER, ENEMY_RACE,
-                MADE_OBSERVATION_IN_FRAME})).collect(Collectors.toSet()),
+            Stream.of(IS_PLAYER, ENEMY_RACE))
+            .collect(Collectors.toSet()),
         usingTypesForFactSets, initializationStrategy, OBSERVING_COMMAND,
         skipTurnsToMakeObservation);
   }

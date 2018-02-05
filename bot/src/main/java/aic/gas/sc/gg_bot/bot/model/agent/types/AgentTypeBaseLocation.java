@@ -6,7 +6,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_START_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION_IN_FRAME;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
 
@@ -47,7 +46,6 @@ public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
     }
     updateKnowledgeAboutResources(baseLocation.get().getWrappedPosition(), memory,
         environment.getFrameCount());
-    memory.updateFact(MADE_OBSERVATION_IN_FRAME, environment.getFrameCount());
     return true;
   };
 
@@ -65,9 +63,9 @@ public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
         desiresWithIntentionToAct, desiresWithIntentionToReason,
 
         //add facts related to agent
-        Stream.concat(usingTypesForFacts.stream(), Arrays.stream(new FactKey<?>[]{IS_BASE_LOCATION,
-            MADE_OBSERVATION_IN_FRAME, IS_MINERAL_ONLY, IS_ISLAND, IS_START_LOCATION,
-            IS_BASE_LOCATION, WAS_VISITED, BASE_TO_MOVE}))
+        Stream.concat(usingTypesForFacts.stream(), Stream.of(IS_BASE_LOCATION,
+            IS_MINERAL_ONLY, IS_ISLAND, IS_START_LOCATION,
+            IS_BASE_LOCATION, WAS_VISITED, BASE_TO_MOVE))
             .collect(Collectors.toSet()),
 
         //add fact set related to resources

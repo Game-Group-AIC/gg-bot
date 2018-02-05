@@ -7,16 +7,13 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNDER_ATTACK;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MADE_OBSERVATION_IN_FRAME;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_TO_REACH;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
@@ -181,7 +178,6 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
     //add updated version of itself to knowledge
     memory.updateFact(IS_UNIT, unit);
     memory.updateFact(REPRESENTS_UNIT, unit);
-    memory.updateFact(MADE_OBSERVATION_IN_FRAME, environment.getFrameCount());
     return true;
   };
 
@@ -200,9 +196,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
         //add facts related to agent - IS_UNIT, REPRESENTS_UNIT
         Stream.concat(usingTypesForFacts.stream(),
-            Arrays.stream(new FactKey<?>[]{IS_UNIT, REPRESENTS_UNIT,
-                MADE_OBSERVATION_IN_FRAME, LOCATION, IS_UNDER_ATTACK, PLACE_TO_REACH,
-                TIME_OF_HOLD_COMMAND})).collect(Collectors.toSet()),
+            Stream.of(IS_UNIT, REPRESENTS_UNIT, LOCATION, PLACE_TO_REACH))
+            .collect(Collectors.toSet()),
         Stream.concat(usingTypesForFactSets.stream(),
             Arrays.stream(new FactKey<?>[]{ENEMY_BUILDING, ENEMY_AIR,
                 ENEMY_GROUND, OWN_BUILDING, OWN_AIR, OWN_GROUND})).collect(Collectors.toSet()),

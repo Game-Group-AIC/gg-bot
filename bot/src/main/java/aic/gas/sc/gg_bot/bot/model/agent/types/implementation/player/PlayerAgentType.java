@@ -7,10 +7,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_RACE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FREE_SUPPLY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
@@ -21,13 +23,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION_LIMIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TECH_TO_RESEARCH;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_BUILDINGS;
@@ -67,16 +68,14 @@ public class PlayerAgentType {
       .agentTypeID(AgentTypes.PLAYER)
       .usingTypesForFacts(
           Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT, POPULATION,
-              IS_PLAYER, BASE_TO_MOVE, IS_BASE_LOCATION, TIME_OF_HOLD_COMMAND, LOCATION)
+              IS_PLAYER, BASE_TO_MOVE, IS_BASE_LOCATION, LOCATION, FREE_SUPPLY)
               .collect(Collectors.toSet()))
-      .usingTypesForFactSets(Stream.of(UPGRADE_STATUS, TECH_TO_RESEARCH, OUR_BASE, ENEMY_BASE,
+      .usingTypesForFactSets(Stream.of(UPGRADE_STATUS, OUR_BASE, ENEMY_BASE,
           OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
-          ENEMY_AIR_FORCE_STATUS,
-          ENEMY_BUILDING_STATUS,
-          ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS, LOCKED_BUILDINGS,
-          ENEMY_STATIC_AIR_FORCE_STATUS,
-          ENEMY_STATIC_GROUND_FORCE_STATUS,
-          OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS)
+          ENEMY_AIR_FORCE_STATUS, ENEMY_BUILDING_STATUS, ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS,
+          LOCKED_BUILDINGS, ENEMY_STATIC_AIR_FORCE_STATUS, ENEMY_STATIC_GROUND_FORCE_STATUS,
+          OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS, ENEMY_FORCE_STATUS,
+          OWN_FORCE_STATUS)
           .collect(Collectors.toSet()))
       .initializationStrategy(type -> {
 
@@ -91,6 +90,8 @@ public class PlayerAgentType {
                 memory.updateFact(AVAILABLE_GAS, (double) aPlayer.getGas());
                 memory.updateFact(POPULATION_LIMIT, (double) aPlayer.getSupplyTotal());
                 memory.updateFact(POPULATION, (double) aPlayer.getSupplyUsed());
+                memory.updateFact(FREE_SUPPLY,
+                    (double) (aPlayer.getSupplyTotal() - aPlayer.getSupplyUsed()));
                 return true;
               }
             })
@@ -122,11 +123,22 @@ public class PlayerAgentType {
             });
         type.addConfiguration(ESTIMATE_ENEMY_FORCE_IN_BUILDINGS, estimateEnemyForceByBuildings);
 
+        //TODO add to watchers
+        //todo difference in bases vs enemy
+        //todo ratio of supply of our army vs enemy - without workers
+        //todo does enemy have any structures producing military units
+        //TODO ratio of enemy ranged vs melee damage
+        //TODO ratio of own ranged vs melee damage
+        //TODO number of enemy bases unprotected against air
+        //TODO ratio of enemy ranged vs melee damage
+//      //TODO ratio of own ranged vs melee damage
+//      //TODO number of enemy bases unprotected against ground
+
         //estimate enemy force by units
         ConfigurationWithCommand.WithReasoningCommandDesiredBySelf estimateEnemyForceByUnits = createConfigurationTemplateForForceEstimator(
             () -> UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
-                .filter(
-                    enemy -> !enemy.getType().isNotActuallyUnit() && !enemy.getType().isBuilding()),
+                .filter(enemy -> !enemy.getType().isNotActuallyUnit()
+                    && !enemy.getType().isBuilding()),
             (unitTypeStatuses, memoryToUpdate) -> {
               memoryToUpdate.updateFactSetByFacts(ENEMY_AIR_FORCE_STATUS, unitTypeStatuses.stream()
                   .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackAirUnits())
@@ -136,6 +148,7 @@ public class PlayerAgentType {
                       .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper()
                           .canAttackGroundUnits())
                       .collect(Collectors.toSet()));
+              memoryToUpdate.updateFactSetByFacts(ENEMY_FORCE_STATUS, unitTypeStatuses);
             });
         type.addConfiguration(ESTIMATE_ENEMY_FORCE_IN_UNITS, estimateEnemyForceByUnits);
 
@@ -167,11 +180,11 @@ public class PlayerAgentType {
               memoryToUpdate.updateFactSetByFacts(OWN_AIR_FORCE_STATUS, unitTypeStatuses.stream()
                   .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackAirUnits())
                   .collect(Collectors.toSet()));
-              memoryToUpdate
-                  .updateFactSetByFacts(OWN_GROUND_FORCE_STATUS, unitTypeStatuses.stream()
-                      .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper()
-                          .canAttackGroundUnits())
-                      .collect(Collectors.toSet()));
+              memoryToUpdate.updateFactSetByFacts(OWN_GROUND_FORCE_STATUS, unitTypeStatuses.stream()
+                  .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper()
+                      .canAttackGroundUnits())
+                  .collect(Collectors.toSet()));
+              memoryToUpdate.updateFactSetByFacts(OWN_FORCE_STATUS, unitTypeStatuses);
             });
         type.addConfiguration(ESTIMATE_OUR_FORCE_IN_UNITS, estimateOurForceByUnits);
 

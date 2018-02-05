@@ -40,7 +40,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SPORE_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.STATIC_DEFENSE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SUNKEN_COLONY_COUNT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.TIME_OF_HOLD_COMMAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
@@ -558,6 +557,20 @@ public class BaseLocationAgentType {
                 .build();
         type.addConfiguration(DesiresKeys.FRIENDLIES_IN_LOCATION, ourUnits);
 
+        //TODO add to watchers
+        //TODO is unprotected vs air - if enemy, check all units
+        //TODO is unprotected vs ground - if enemy, check all units
+        //TODO ratio of how much damage per minute our air army can inflict vs. how much damage per minute it can suffer in that region
+        //TODO ratio of our global air army supply vs. enemy anti-air army supply in that region
+        //TODO is this region our main base? (True / False)
+        //TODO is this region enemy main base? (True / False)
+        //TODO air distance to nearest enemy base
+        //TODO air distance to our nearest base
+        //TODO ratio of how much damage per minute our ground army can inflict vs. how much damage per minute it can suffer in that region
+        //TODO ratio of our global ground army supply vs. enemy anti-ground army supply in that region
+        //TODO ground distance to nearest enemy base
+        //TODO ground distance to our nearest base
+
         //estimate enemy force
         type.addConfiguration(DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION,
             formForceEstimator(ENEMY_UNIT, ENEMY_BUILDING_STATUS,
@@ -675,8 +688,6 @@ public class BaseLocationAgentType {
         //hold ground
         ConfigurationWithSharedDesire holdGround = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(DesiresKeys.HOLD_GROUND)
-            .reactionOnChangeStrategy((memory, desireParameters) -> memory
-                .updateFact(TIME_OF_HOLD_COMMAND, memory.getCurrentClock()))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
@@ -709,8 +720,6 @@ public class BaseLocationAgentType {
         //hold air
         ConfigurationWithSharedDesire holdAir = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(DesiresKeys.HOLD_AIR)
-            .reactionOnChangeStrategy((memory, desireParameters) -> memory
-                .updateFact(TIME_OF_HOLD_COMMAND, memory.getCurrentClock()))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
                     Decider
@@ -744,7 +753,7 @@ public class BaseLocationAgentType {
       })
       .usingTypesForFacts(Stream
           .of(IS_BASE, IS_ENEMY_BASE, BASE_TO_MOVE, SUNKEN_COLONY_COUNT,
-              SPORE_COLONY_COUNT, CREEP_COLONY_COUNT, LOCATION, TIME_OF_HOLD_COMMAND)
+              SPORE_COLONY_COUNT, CREEP_COLONY_COUNT, LOCATION)
           .collect(Collectors.toSet()))
       .usingTypesForFactSets(Stream.of(WORKER_ON_BASE, ENEMY_BUILDING, ENEMY_AIR,
           ENEMY_GROUND, HAS_BASE, HAS_EXTRACTOR, OWN_BUILDING, OWN_AIR, OWN_GROUND,

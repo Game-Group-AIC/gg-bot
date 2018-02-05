@@ -8,91 +8,27 @@ import java.util.stream.Stream;
 /**
  * Enumeration of all feature container headers as static classes
  */
-//TODO army supply without worker supply
-//TODO add cap to some features - after the amount is reached - represent by cap
-//TODO BUILDING_EXTRACTOR, INCREASING_CAPACITY a TRAINING_WORKER - is pool built
 public class FeatureContainerHeaders {
 
   //ECO manager
   public static final FeatureContainerHeader BUILDING_EXTRACTOR = FeatureContainerHeader.builder()
-      .convertersForFactsForGlobalBeliefs(Collections.singleton(FactConverters.COUNT_OF_WORKERS))
       .convertersForFactsForGlobalBeliefsByAgentType(
-          Collections.singleton(FactConverters.COUNT_OF_BASES))
+          Stream.of(FactConverters.COUNT_OF_BASES, FactConverters.IS_POOL_BUILT)
+              .collect(Collectors.toSet()))
       .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
+          FactConverters.COUNT_OF_BASES_WITHOUT_EXTRACTORS,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
-          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.COUNT_OF_EXTRACTORS,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
           .collect(Collectors.toSet()))
       .build();
-//  public static final FeatureContainerHeader BUILDING_EXTRACTOR = FeatureContainerHeader.builder()
-//      .convertersForFactsForGlobalBeliefsByAgentType(
-//          Collections.singleton(FactConverters.COUNT_OF_BASES))
-//      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
-//          //todo count of bases without extractor - cap 3
-//          FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
-//          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
-//          .collect(Collectors.toSet()))
-//      .build();
 
   public static final FeatureContainerHeader INCREASING_CAPACITY = FeatureContainerHeader.builder()
+      .convertersForFactsForGlobalBeliefsByAgentType(
+          Collections.singleton(FactConverters.IS_POOL_BUILT))
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(
-          FactConverters.CURRENT_POPULATION,
-          FactConverters.MAX_POPULATION,
-          FactConverters.GAME_PHASE)
-          .collect(Collectors.toSet()))
-      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.FREE_SUPPLY, FactConverters.GAME_PHASE)
           .collect(Collectors.toSet()))
       .build();
-//  public static final FeatureContainerHeader INCREASING_CAPACITY = FeatureContainerHeader.builder()
-//      .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(
-//          //TODO single feature - free supply - 0,1,2,3+ (multiply by 2)
-//          FactConverters.GAME_PHASE)
-//          .collect(Collectors.toSet()))
-//      .build();
 
   public static final FeatureContainerHeader TRAINING_WORKER = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefs(Collections.singleton(FactConverters.COUNT_OF_WORKERS))
@@ -103,29 +39,7 @@ public class FeatureContainerHeaders {
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.COUNT_OF_EXTRACTORS,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.COUNT_OF_EXTRACTORS)
           .collect(Collectors.toSet()))
       .build();
 //  public static final FeatureContainerHeader TRAINING_WORKER = FeatureContainerHeader.builder()
@@ -133,6 +47,7 @@ public class FeatureContainerHeaders {
 //          .collect(Collectors.toSet()))
 //      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
 //          FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE
+  //todo is pool built
 //          //todo ratio of our army supply vs enemy army supply - cap 0.5 - 2.0
 //      )
 //          .collect(Collectors.toSet()))
@@ -152,29 +67,7 @@ public class FeatureContainerHeaders {
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.COUNT_OF_EXTRACTORS,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.COUNT_OF_EXTRACTORS)
           .collect(Collectors.toSet()))
       .build();
 //  public static final FeatureContainerHeader EXPANDING = FeatureContainerHeader.builder()
@@ -204,29 +97,7 @@ public class FeatureContainerHeaders {
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.COUNT_OF_EXTRACTORS,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.COUNT_OF_EXTRACTORS)
           .collect(Collectors.toSet()))
       .build();
 //  public static final FeatureContainerHeader BUILDING_POOL = FeatureContainerHeader.builder()
@@ -250,29 +121,7 @@ public class FeatureContainerHeaders {
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.COUNT_OF_EXTRACTORS,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.COUNT_OF_EXTRACTORS)
           .collect(Collectors.toSet()))
       .build();
 //  public static final FeatureContainerHeader UPGRADING_TO_LAIR = FeatureContainerHeader.builder()
@@ -293,29 +142,7 @@ public class FeatureContainerHeaders {
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.COUNT_OF_EXTRACTORS,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.COUNT_OF_EXTRACTORS)
           .collect(Collectors.toSet()))
       .build();
 //  public static final FeatureContainerHeader BUILDING_SPIRE = FeatureContainerHeader.builder()
@@ -341,36 +168,14 @@ public class FeatureContainerHeaders {
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.COUNT_OF_EXTRACTORS,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.COUNT_OF_EXTRACTORS)
           .collect(Collectors.toSet()))
       .build();
 //  public static final FeatureContainerHeader BUILDING_HYDRALISK_DEN = FeatureContainerHeader
 //      .builder()
 //      //TODO has at least 10 army supply
-//      //TODO ratio of enemy ranged vs melee damage
-//      //TODO ratio of own ranged vs melee damage
+//      //TODO ratio of enemy ranged vs melee damage - cap 0.5 - 2.0
+//      //TODO ratio of own ranged vs melee damage - cap 0.5 - 2.0
 //      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
 //          FactConverters.SUM_OF_ENEMY_AIR_HP)
 //          .collect(Collectors.toSet()))
@@ -390,29 +195,7 @@ public class FeatureContainerHeaders {
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.COUNT_OF_EXTRACTORS,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.COUNT_OF_EXTRACTORS)
           .collect(Collectors.toSet()))
       .build();
 
@@ -436,29 +219,7 @@ public class FeatureContainerHeaders {
       .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
-          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
           .collect(Collectors.toSet()))
       .build();
 
@@ -493,29 +254,7 @@ public class FeatureContainerHeaders {
       .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
-          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
           .collect(Collectors.toSet()))
       .build();
 
@@ -548,29 +287,7 @@ public class FeatureContainerHeaders {
       .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_MINERALS_PER_BASE,
-          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
           .collect(Collectors.toSet()))
       .build();
 
@@ -598,54 +315,54 @@ public class FeatureContainerHeaders {
           FactConverters.AVAILABLE_BASES,
           FactConverters.GAME_PHASE)
           .collect(Collectors.toSet()))
-      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
-          .collect(Collectors.toSet()))
-      .convertersForFactSets(Stream.of(
-          FactConverters.SUM_OF_ENEMY_AIR_DMG_BASE,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_HP_BASE,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS_BASE,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS_BASE,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG_BASE,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG_BASE,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS_BASE,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS_BASE,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS_BASE,
-          FactConverters.SUM_OF_OWN_AIR_DMG_BASE,
-          FactConverters.SUM_OF_OWN_GROUND_DMG_BASE,
-          FactConverters.SUM_OF_OWN_AIR_HP_BASE,
-          FactConverters.SUM_OF_OWN_GROUND_HP_BASE,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG_BASE,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG_BASE,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS_BASE,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS_BASE,
-          FactConverters.SUM_OF_OWN_AIR_UNITS_BASE,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS_BASE)
-          .collect(Collectors.toSet()))
+//      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
+//          FactConverters.SUM_OF_ENEMY_AIR_DMG,
+//          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
+//          FactConverters.SUM_OF_ENEMY_AIR_HP,
+//          FactConverters.SUM_OF_ENEMY_GROUND_HP,
+//          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
+//          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
+//          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
+//          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
+//          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
+//          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
+//          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
+//          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
+//          FactConverters.SUM_OF_OWN_AIR_DMG,
+//          FactConverters.SUM_OF_OWN_GROUND_DMG,
+//          FactConverters.SUM_OF_OWN_AIR_HP,
+//          FactConverters.SUM_OF_OWN_GROUND_HP,
+//          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
+//          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
+//          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
+//          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
+//          FactConverters.SUM_OF_OWN_AIR_UNITS,
+//          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+//          .collect(Collectors.toSet()))
+//      .convertersForFactSets(Stream.of(
+//          FactConverters.SUM_OF_ENEMY_AIR_DMG_BASE,
+//          FactConverters.SUM_OF_ENEMY_GROUND_DMG_BASE,
+//          FactConverters.SUM_OF_ENEMY_AIR_HP_BASE,
+//          FactConverters.SUM_OF_ENEMY_GROUND_HP_BASE,
+//          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS_BASE,
+//          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS_BASE,
+//          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG_BASE,
+//          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG_BASE,
+//          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS_BASE,
+//          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS_BASE,
+//          FactConverters.SUM_OF_ENEMY_AIR_UNITS_BASE,
+//          FactConverters.SUM_OF_ENEMY_GROUND_UNITS_BASE,
+//          FactConverters.SUM_OF_OWN_AIR_DMG_BASE,
+//          FactConverters.SUM_OF_OWN_GROUND_DMG_BASE,
+//          FactConverters.SUM_OF_OWN_AIR_HP_BASE,
+//          FactConverters.SUM_OF_OWN_GROUND_HP_BASE,
+//          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG_BASE,
+//          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG_BASE,
+//          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS_BASE,
+//          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS_BASE,
+//          FactConverters.SUM_OF_OWN_AIR_UNITS_BASE,
+//          FactConverters.SUM_OF_OWN_GROUND_UNITS_BASE)
+//          .collect(Collectors.toSet()))
       .convertersForFacts(Stream.of(
           FactConverters.IS_BASE,
           FactConverters.IS_ENEMY_BASE,
@@ -699,54 +416,31 @@ public class FeatureContainerHeaders {
           FactConverters.AVAILABLE_BASES,
           FactConverters.GAME_PHASE)
           .collect(Collectors.toSet()))
-      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
-          FactConverters.SUM_OF_ENEMY_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_AIR_HP,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_DMG,
-          FactConverters.SUM_OF_OWN_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_AIR_HP,
-          FactConverters.SUM_OF_OWN_GROUND_HP,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
-          FactConverters.SUM_OF_OWN_AIR_UNITS,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS)
-          .collect(Collectors.toSet()))
-      .convertersForFactSets(Stream.of(
-          FactConverters.SUM_OF_ENEMY_AIR_DMG_BASE,
-          FactConverters.SUM_OF_ENEMY_GROUND_DMG_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_HP_BASE,
-          FactConverters.SUM_OF_ENEMY_GROUND_HP_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS_BASE,
-          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS_BASE,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG_BASE,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG_BASE,
-          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS_BASE,
-          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS_BASE,
-          FactConverters.SUM_OF_ENEMY_AIR_UNITS_BASE,
-          FactConverters.SUM_OF_ENEMY_GROUND_UNITS_BASE,
-          FactConverters.SUM_OF_OWN_AIR_DMG_BASE,
-          FactConverters.SUM_OF_OWN_GROUND_DMG_BASE,
-          FactConverters.SUM_OF_OWN_AIR_HP_BASE,
-          FactConverters.SUM_OF_OWN_GROUND_HP_BASE,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG_BASE,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG_BASE,
-          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS_BASE,
-          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS_BASE,
-          FactConverters.SUM_OF_OWN_AIR_UNITS_BASE,
-          FactConverters.SUM_OF_OWN_GROUND_UNITS_BASE,
-          FactConverters.COUNT_OF_CREEP_COLONIES_AT_BASE,
+//      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
+//          FactConverters.SUM_OF_ENEMY_AIR_DMG,
+//          FactConverters.SUM_OF_ENEMY_GROUND_DMG,
+//          FactConverters.SUM_OF_ENEMY_AIR_HP,
+//          FactConverters.SUM_OF_ENEMY_GROUND_HP,
+//          FactConverters.SUM_OF_ENEMY_AIR_SHIELDS,
+//          FactConverters.SUM_OF_ENEMY_GROUND_SHIELDS,
+//          FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
+//          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
+//          FactConverters.SUM_OF_ENEMY_STATIC_AIR_UNITS,
+//          FactConverters.SUM_OF_ENEMY_STATIC_GROUND_UNITS,
+//          FactConverters.SUM_OF_ENEMY_AIR_UNITS,
+//          FactConverters.SUM_OF_ENEMY_GROUND_UNITS,
+//          FactConverters.SUM_OF_OWN_AIR_DMG,
+//          FactConverters.SUM_OF_OWN_GROUND_DMG,
+//          FactConverters.SUM_OF_OWN_AIR_HP,
+//          FactConverters.SUM_OF_OWN_GROUND_HP,
+//          FactConverters.SUM_OF_OWN_STATIC_AIR_DMG,
+//          FactConverters.SUM_OF_OWN_STATIC_GROUND_DMG,
+//          FactConverters.SUM_OF_OWN_STATIC_AIR_UNITS,
+//          FactConverters.SUM_OF_OWN_STATIC_GROUND_UNITS,
+//          FactConverters.SUM_OF_OWN_AIR_UNITS,
+//          FactConverters.SUM_OF_OWN_GROUND_UNITS)
+//          .collect(Collectors.toSet()))
+      .convertersForFactSets(Stream.of(FactConverters.COUNT_OF_CREEP_COLONIES_AT_BASE,
           FactConverters.COUNT_OF_SPORE_COLONIES_AT_BASE,
           FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE)
           .collect(Collectors.toSet()))
@@ -759,10 +453,8 @@ public class FeatureContainerHeaders {
           .collect(Collectors.toSet()))
       .build();
 
-}
-
-//TODO by malo zmysel rozdelit DEFENSE na 2 casti - sunken a spore. creep colony je len prerekvizita - stavia sa len preto, ze chces sunken alebo spore.
-//TODO do not limit creep colonies by one
+  //TODO by malo zmysel rozdelit DEFENSE na 2 casti - sunken a spore. creep colony je len prerekvizita - stavia sa len preto, ze chces sunken alebo spore.
+  //TODO do not limit creep colonies by one
 //  public static final FeatureContainerHeader DEFENSE = FeatureContainerHeader.builder()
 //     //TODO ratio of our army supply vs enemy army supply - cap 0.5 - 2.0
 //     //TODO is this region our main base? (True / False)
@@ -782,4 +474,11 @@ public class FeatureContainerHeaders {
 //          FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE)
 //          .collect(Collectors.toSet()))
 //      .build();
-//}
+
+  //TODO build lurkers
+  //TODO research lurkers
+  //TODO burrow lurker
+
+  //TODO research
+
+}
