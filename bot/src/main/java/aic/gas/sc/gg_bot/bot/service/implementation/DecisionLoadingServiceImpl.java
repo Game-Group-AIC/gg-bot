@@ -61,9 +61,14 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
               .getName() + ".db";
       MDPForDecisionWithPolicy mdpForDecisionWithPolicy = SerializationUtil.deserialize(
           DecisionLoadingServiceImpl.class.getResourceAsStream(fileName));
+
+      //set cache
+      mdpForDecisionWithPolicy.initCache();
+
       cache.computeIfAbsent(mapSize, id -> new HashMap<>())
           .computeIfAbsent(race, id -> new HashMap<>())
-          .computeIfAbsent(agentTypeID, id -> new HashMap<>()).put(desireKeyID, mdpForDecisionWithPolicy);
+          .computeIfAbsent(agentTypeID, id -> new HashMap<>())
+          .put(desireKeyID, mdpForDecisionWithPolicy);
       if (!loaded.containsKey(agentTypeID)) {
         Map<DesireKeyID, MDPForDecisionWithPolicy> toAdd = new HashMap<>();
         toAdd.put(desireKeyID, mdpForDecisionWithPolicy);
@@ -82,9 +87,11 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
   }
 
   @Override
-  public MDPForDecisionWithPolicy getDecisionPoint(AgentTypeID agentTypeID, DesireKeyID desireKeyID) {
+  public MDPForDecisionWithPolicy getDecisionPoint(AgentTypeID agentTypeID,
+      DesireKeyID desireKeyID) {
     try {
-      MDPForDecisionWithPolicy mdpForDecisionWithPolicy = cache.get(DecisionConfiguration.getMapSize())
+      MDPForDecisionWithPolicy mdpForDecisionWithPolicy = cache
+          .get(DecisionConfiguration.getMapSize())
           .get(DecisionConfiguration.getRace())
           .get(agentTypeID).get(desireKeyID);
 
@@ -104,11 +111,11 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
         return loaded.get(agentTypeID).get(desireKeyID);
       }
 
-      log.error(e.getLocalizedMessage());
-      throw new RuntimeException(
+      log.error(
           "No models of decision for combination " + DecisionConfiguration.getMapSize().name()
               + ", " + DecisionConfiguration.getRace().name() + ", " + agentTypeID.getName()
               + ", " + desireKeyID.getName());
+      return null;
     }
   }
 }

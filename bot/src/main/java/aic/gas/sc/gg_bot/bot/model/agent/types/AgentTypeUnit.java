@@ -229,7 +229,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
             (memory, desireParameters) -> memory.eraseFactValueForGivenKey(PLACE_TO_REACH))
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
-            .desiresToConsider(new HashSet<>(Arrays.asList(desireKey, DesiresKeys.DEFEND)))
+            .desiresToConsider(Collections.singleton(desireKey))
             .build()
         )
         .decisionInIntention(CommitmentDeciderInitializer.builder()

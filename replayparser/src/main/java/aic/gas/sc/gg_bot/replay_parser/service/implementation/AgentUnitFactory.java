@@ -78,16 +78,20 @@ public class AgentUnitFactory implements IAgentUnitHandler {
     AUnitOfPlayer me = beliefs.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
     beliefs.updateFact(IS_BEING_CONSTRUCTED, me.isBeingConstructed());
   };
-  private static final List<Order> ordersCheckForAttack = Arrays
-      .asList(Order.AttackMove, Order.AttackTile,
-          Order.AttackUnit, Order.HarassMove);
 
-  private static final Reasoning UNIT_REASONING = (beliefs, mediatorService) -> {
+  private static final List<Order> ordersCheckForAttack = Arrays.asList(Order.AttackMove,
+      Order.AttackTile, Order.AttackUnit, Order.HarassMove, Order.Move);
+
+  private static final Reasoning UNIT_TARGET_LOCATION = (beliefs, mediatorService) -> {
     AUnitOfPlayer me = beliefs.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
     Optional<Order> order = me.getOrder();
     if (order.isPresent() && ordersCheckForAttack.contains(order.get())) {
-      APosition targetPosition = me.getOrderTargetPosition()
-          .orElse(me.getTargetPosition().orElse(me.getPosition()));
+
+      //what is the target position
+      APosition targetPosition = me.getOrderTargetPosition().orElse(me.getTargetPosition()
+          .orElse(me.getPosition()));
+
+      //select closest location to target - iteration over all base location agents
       Optional<ABaseLocationWrapper> holdInBaseLocation = mediatorService.getStreamOfWatchers()
           .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
               .equals(BASE_LOCATION.getName()))
@@ -101,6 +105,7 @@ public class AgentUnitFactory implements IAgentUnitHandler {
       beliefs.updateFact(HOLD_LOCATION, HOLD_LOCATION.getInitValue());
     }
   };
+
   private final Map<AUnitTypeWrapper, UnitWatcherType> agentConfigurationForUnitType = new HashMap<>();
 
   private final void initConfig() {
@@ -201,17 +206,17 @@ public class AgentUnitFactory implements IAgentUnitHandler {
     agentConfigurationForUnitType.put(ZERGLING_TYPE, UnitWatcherType.builder()
         .agentTypeID(ZERGLING)
         .factKeys(new HashSet<>(Collections.singletonList(HOLD_LOCATION)))
-        .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_REASONING))
+        .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_TARGET_LOCATION))
         .build());
     agentConfigurationForUnitType.put(MUTALISK_TYPE, UnitWatcherType.builder()
         .agentTypeID(MUTALISK)
         .factKeys(new HashSet<>(Collections.singletonList(HOLD_LOCATION)))
-        .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_REASONING))
+        .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_TARGET_LOCATION))
         .build());
     agentConfigurationForUnitType.put(HYDRALISK_TYPE, UnitWatcherType.builder()
         .agentTypeID(HYDRALISK)
         .factKeys(new HashSet<>(Collections.singletonList(HOLD_LOCATION)))
-        .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_REASONING))
+        .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_TARGET_LOCATION))
         .build());
 
     AgentTypeID dummy = new AgentTypeID("DUMMY", 10000);
@@ -219,7 +224,8 @@ public class AgentUnitFactory implements IAgentUnitHandler {
         typeWrapper -> agentConfigurationForUnitType.put(typeWrapper, UnitWatcherType.builder()
             .agentTypeID(dummy)
             .factKeys(new HashSet<>(Collections.singletonList(HOLD_LOCATION)))
-            .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_REASONING))
+            .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(
+                UNIT_TARGET_LOCATION))
             .build()));
 
     //"barracks"

@@ -6,8 +6,16 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_E
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPORE_COLONIES_AT_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AIR_DISTANCE_TO_OUR_CLOSEST_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.CREEP_COLONY_COUNT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
@@ -17,13 +25,15 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND_FOR
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GROUND_DISTANCE_TO_OUR_CLOSEST_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
@@ -36,6 +46,8 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUND_FORCE_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.RATIO_GLOBAL_GROUND_VS_ANTI_GROUND_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SPORE_COLONY_COUNT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.STATIC_DEFENSE;
@@ -45,7 +57,9 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GA
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.DEFENSE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.HOLDING;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.HOLDING_BY_AIR_UNITS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.HOLDING_BY_GROUND_UNITS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper.MAX_DISTANCE;
 import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.AgentTypeUtils.createConfigurationWithSharedDesireToBuildFromTemplate;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
@@ -54,12 +68,14 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AWeaponTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.bot.model.Decider;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
@@ -68,6 +84,7 @@ import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
@@ -84,6 +101,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//TODO maybe it could be wise to split to different agents
 public class BaseLocationAgentType {
 
   private interface SimpleDecisionStrategy {
@@ -116,8 +134,7 @@ public class BaseLocationAgentType {
         )
         .reactionOnChangeStrategyInIntention(
             (memory, desireParameters) -> {
-              BotFacade.RESOURCE_MANAGER
-                  .removeReservation(unitTypeWrapper, memory.getAgentId());
+              BotFacade.RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId());
               memory.eraseFactValueForGivenKey(factCountToTrackPreviousCount);
             })
         .decisionInDesire(CommitmentDeciderInitializer.builder()
@@ -129,7 +146,7 @@ public class BaseLocationAgentType {
                         && !BuildLockerService.getInstance()
                         .isLocked(unitTypeWrapper)
                         //is base
-                        && memory.returnFactValueForGivenKey(IS_BASE).get()
+                        && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
                         //we have base completed
                         && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
                         //there is/will be no creep colony available
@@ -160,7 +177,7 @@ public class BaseLocationAgentType {
                         && !BotFacade.RESOURCE_MANAGER
                         .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        || !memory.returnFactValueForGivenKey(IS_BASE).get()
+                        || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
                         || memory.returnFactValueForGivenKey(factCountToTrackPreviousCount)
                         .orElse(0) != dataForDecision.getFeatureValueBeliefSets(completedCount))
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
@@ -182,7 +199,7 @@ public class BaseLocationAgentType {
   }
 
   public static final AgentTypeBaseLocation BASE_LOCATION = AgentTypeBaseLocation.builder()
-      .initializationStrategy(type -> {
+      .initializationStrategy((AgentType type) -> {
 
         //build creep colony
         ConfigurationWithAbstractPlan buildCreepColonyAbstractPlan = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
@@ -207,7 +224,7 @@ public class BaseLocationAgentType {
                             && !BuildLockerService.getInstance()
                             .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
                             //is base
-                            && memory.returnFactValueForGivenKey(IS_BASE).get()
+                            && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
                             //we have base completed
                             && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
                             //hack
@@ -222,7 +239,7 @@ public class BaseLocationAgentType {
                     (dataForDecision, memory) ->
                         BuildLockerService.getInstance()
                             .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
-                            || !memory.returnFactValueForGivenKey(IS_BASE).get()
+                            || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
                             || dataForDecision
                             .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) > 0
                 )
@@ -293,7 +310,7 @@ public class BaseLocationAgentType {
                 //base status
                 boolean isBase = memory.returnFactSetValueForGivenKey(HAS_BASE)
                     .orElse(Stream.empty()).findAny().isPresent();
-                memory.updateFact(IS_BASE, isBase);
+                memory.updateFact(IS_OUR_BASE, isBase);
 
                 //set visited for our base
                 if (isBase && !memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false)) {
@@ -307,7 +324,7 @@ public class BaseLocationAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) -> memory.returnFactSetValueForGivenKey(HAS_BASE)
                         .orElse(Stream.empty()).findAny().isPresent() != memory
-                        .returnFactValueForGivenKey(IS_BASE).orElse(false))
+                        .returnFactValueForGivenKey(IS_OUR_BASE).orElse(false))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> true)
@@ -334,14 +351,14 @@ public class BaseLocationAgentType {
                       .orElse(Stream.empty())
                       .mapToDouble(
                           aUnitOfPlayer -> aUnitOfPlayer.getPosition().distanceTo(aPosition))
-                      .min().orElse(Double.MAX_VALUE);
+                      .min().orElse(MAX_DISTANCE);
                   if (closestDistance < 3) {
                     memory.updateFact(WAS_VISITED, true);
                   }
                 }
 
                 //is not visited + other start base location were visited - set as enemy base
-                if (!memory.returnFactValueForGivenKey(IS_BASE).orElse(false)
+                if (!memory.returnFactValueForGivenKey(IS_OUR_BASE).orElse(false)
                     && !memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false)
                     && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
                     .filter(
@@ -355,10 +372,10 @@ public class BaseLocationAgentType {
                 } else {
 
                   //when there is an enemy building, consider it as enemy base
-                  memory.updateFact(IS_ENEMY_BASE,
-                      memory.returnFactSetValueForGivenKey(ENEMY_BUILDING)
-                          .orElse(Stream.empty())
-                          .findAny().isPresent());
+                  boolean isEnemyBase = memory.returnFactSetValueForGivenKey(ENEMY_BUILDING)
+                      .orElse(Stream.empty())
+                      .findAny().isPresent();
+                  memory.updateFact(IS_ENEMY_BASE, isEnemyBase);
                 }
 
                 return true;
@@ -386,7 +403,7 @@ public class BaseLocationAgentType {
                   }
 
                   //it is our base and there is enemy
-                  if (memory.returnFactValueForGivenKey(IS_BASE).orElse(false)
+                  if (memory.returnFactValueForGivenKey(IS_OUR_BASE).orElse(false)
                       && memory.returnFactSetValueForGivenKey(ENEMY_UNIT).orElse(Stream.empty())
                       .findAny().isPresent()) {
                     return true;
@@ -495,55 +512,191 @@ public class BaseLocationAgentType {
         type.addConfiguration(DesiresKeys.ENEMIES_IN_LOCATION, enemyUnits);
 
         //player's units
-        WithReasoningCommandDesiredBySelf ourUnits =
+        WithReasoningCommandDesiredBySelf ourUnits = WithReasoningCommandDesiredBySelf.builder()
+            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+              @Override
+              public boolean act(WorkingMemory memory) {
+                ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                    .get();
+
+                //player's units on location
+                Set<AUnitOfPlayer> playersUnits = UnitWrapperFactory
+                    .getStreamOfAllAlivePlayersUnits()
+                    .filter(plU -> plU.getNearestBaseLocation().isPresent()
+                        && plU.getNearestBaseLocation().get().equals(base))
+                    .collect(Collectors.toSet());
+
+                memory.updateFactSetByFacts(OUR_UNIT, playersUnits);
+                memory.updateFactSetByFacts(OWN_BUILDING, playersUnits.stream()
+                    .filter(own -> own.getType().isBuilding())
+                    .collect(Collectors.toSet()));
+                memory.updateFactSetByFacts(OWN_GROUND, playersUnits.stream()
+                    .filter(own -> !own.getType().isBuilding() && !own.getType().isFlyer())
+                    .collect(Collectors.toSet()));
+                memory.updateFactSetByFacts(OWN_AIR, playersUnits.stream()
+                    .filter(own -> !own.getType().isBuilding() && own.getType().isFlyer())
+                    .collect(Collectors.toSet()));
+
+                //find new static defense buildings
+                if (memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
+                    .anyMatch(
+                        aUnitOfPlayer -> aUnitOfPlayer.getType().isMilitaryBuilding())) {
+                  memory.updateFactSetByFacts(STATIC_DEFENSE,
+                      memory.returnFactSetValueForGivenKey(OWN_BUILDING)
+                          .orElse(Stream.empty())
+                          .filter(
+                              aUnitOfPlayer -> aUnitOfPlayer.getType().isMilitaryBuilding())
+                          .collect(Collectors.toSet()));
+                }
+
+                //eco buildings
+                memory.updateFactSetByFacts(HAS_BASE,
+                    memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
+                        .filter(aUnitOfPlayer ->
+                            aUnitOfPlayer.getType().equals(AUnitTypeWrapper.HATCHERY_TYPE)
+                                || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.LAIR_TYPE))
+                        .collect(Collectors.toSet()));
+                memory.updateFactSetByFacts(HAS_EXTRACTOR,
+                    memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
+                        .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isGasBuilding())
+                        .collect(Collectors.toSet()));
+
+                return true;
+              }
+            })
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build())
+            .build();
+        type.addConfiguration(DesiresKeys.FRIENDLIES_IN_LOCATION, ourUnits);
+
+        //ratio of our global air army supply vs. enemy anti-air army supply in that region
+        //ratio of our global ground army supply vs. enemy anti-ground army supply in that region
+        WithReasoningCommandDesiredBySelf reasonGlobalSupplyVsLocal =
+            WithReasoningCommandDesiredBySelf.builder()
+                .commandCreationStrategy(intention -> {
+                  return new ReasoningCommand(intention) {
+                    @Override
+                    public boolean act(WorkingMemory memory) {
+
+                      //supply of enemy anti-air
+                      double supplyOfAntiAir = memory.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                          .orElse(Stream.empty())
+                          .map(AUnit::getType)
+                          .filter(AUnitTypeWrapper::canAttackAirUnits)
+                          .mapToDouble(AUnitTypeWrapper::supplyRequired)
+                          .sum();
+
+                      //supply of enemy anti-ground
+                      double supplyOfAntiGround = memory.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                          .orElse(Stream.empty())
+                          .map(AUnit::getType)
+                          .filter(unitTypeWrapper -> !unitTypeWrapper.isWorker())
+                          .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                          .mapToDouble(AUnitTypeWrapper::supplyRequired)
+                          .sum();
+
+                      //player's units
+                      Set<AUnitOfPlayer> playersUnits = UnitWrapperFactory
+                          .getStreamOfAllAlivePlayersUnits()
+                          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isNotActuallyUnit())
+                          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker())
+                          .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isBuilding())
+                          .collect(Collectors.toSet());
+
+                      //air
+                      memory.updateFact(RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE,
+                          Utils.computeRatio(playersUnits.stream()
+                              .map(AUnit::getType)
+                              .filter(AUnitTypeWrapper::isFlyer)
+                              .mapToDouble(AUnitTypeWrapper::supplyRequired)
+                              .sum(), supplyOfAntiAir));
+
+                      //ground
+                      memory.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+                          Utils.computeRatio(playersUnits.stream()
+                              .map(AUnit::getType)
+                              .filter(unitTypeWrapper -> !unitTypeWrapper.isFlyer())
+                              .mapToDouble(AUnitTypeWrapper::supplyRequired)
+                              .sum(), supplyOfAntiGround));
+
+                      return true;
+                    }
+                  };
+                })
+                .decisionInDesire(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .decisionInIntention(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .build();
+        type.addConfiguration(DesiresKeys.REASON_GLOBAL_SUPPLY_VS_LOCAL_ENEMIES_RATIO,
+            reasonGlobalSupplyVsLocal);
+
+        //reason about damage our army can inflict vs it can suffer
+        WithReasoningCommandDesiredBySelf reasonDamageWeCanInflictVsDamageWeCanTake =
             WithReasoningCommandDesiredBySelf.builder()
                 .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
                   @Override
                   public boolean act(WorkingMemory memory) {
-                    ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                        .get();
 
-                    //player's units on location
-                    Set<AUnitOfPlayer> playersUnits = UnitWrapperFactory
-                        .getStreamOfAllAlivePlayersUnits()
-                        .filter(plU -> plU.getNearestBaseLocation().isPresent()
-                            && plU.getNearestBaseLocation().get().equals(base))
-                        .collect(Collectors.toSet());
+                    //damage to air by enemy
+                    double dpsToAirsByEnemy = memory.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                        .orElse(Stream.empty())
+                        .map(AUnit::getType)
+                        .filter(AUnitTypeWrapper::canAttackAirUnits)
+                        .map(AUnitTypeWrapper::getAirWeapon)
+                        .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                        .sum();
 
-                    memory.updateFactSetByFacts(OUR_UNIT, playersUnits);
-                    memory.updateFactSetByFacts(OWN_BUILDING, playersUnits.stream()
-                        .filter(own -> own.getType().isBuilding())
-                        .collect(Collectors.toSet()));
-                    memory.updateFactSetByFacts(OWN_GROUND, playersUnits.stream()
-                        .filter(own -> !own.getType().isBuilding() && !own.getType().isFlyer())
-                        .collect(Collectors.toSet()));
-                    memory.updateFactSetByFacts(OWN_AIR, playersUnits.stream()
-                        .filter(own -> !own.getType().isBuilding() && own.getType().isFlyer())
-                        .collect(Collectors.toSet()));
+                    //damage to ground by enemy
+                    double dpsToGroundsByEnemy = memory.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                        .orElse(Stream.empty())
+                        .map(AUnit::getType)
+                        .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                        .map(AUnitTypeWrapper::getGroundWeapon)
+                        .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                        .sum();
 
-                    //find new static defense buildings
-                    if (memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
-                        .anyMatch(
-                            aUnitOfPlayer -> aUnitOfPlayer.getType().isMilitaryBuilding())) {
-                      memory.updateFactSetByFacts(STATIC_DEFENSE,
-                          memory.returnFactSetValueForGivenKey(OWN_BUILDING)
-                              .orElse(Stream.empty())
-                              .filter(
-                                  aUnitOfPlayer -> aUnitOfPlayer.getType().isMilitaryBuilding())
-                              .collect(Collectors.toSet()));
-                    }
+                    //air
+                    memory.updateFact(DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+                        Utils.computeRatio(
+                            memory.returnFactSetValueForGivenKey(OWN_AIR).orElse(Stream.empty())
+                                .map(AUnit::getType)
+                                .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                                .map(AUnitTypeWrapper::getGroundWeapon)
+                                .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                                .sum(), dpsToAirsByEnemy));
+                    memory.updateFact(DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER,
+                        Utils.computeRatio(
+                            memory.returnFactSetValueForGivenKey(OWN_AIR).orElse(Stream.empty())
+                                .map(AUnit::getType)
+                                .filter(AUnitTypeWrapper::canAttackAirUnits)
+                                .map(AUnitTypeWrapper::getAirWeapon)
+                                .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                                .sum(), dpsToAirsByEnemy));
 
-                    //eco buildings
-                    memory.updateFactSetByFacts(HAS_BASE,
-                        memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
-                            .filter(aUnitOfPlayer ->
-                                aUnitOfPlayer.getType().equals(AUnitTypeWrapper.HATCHERY_TYPE)
-                                    || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.LAIR_TYPE))
-                            .collect(Collectors.toSet()));
-                    memory.updateFactSetByFacts(HAS_EXTRACTOR,
-                        memory.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
-                            .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isGasBuilding())
-                            .collect(Collectors.toSet()));
+                    //ground
+                    memory.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+                        Utils.computeRatio(
+                            memory.returnFactSetValueForGivenKey(OWN_GROUND).orElse(Stream.empty())
+                                .map(AUnit::getType)
+                                .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                                .map(AUnitTypeWrapper::getGroundWeapon)
+                                .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                                .sum(), dpsToGroundsByEnemy));
+                    memory.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER,
+                        Utils.computeRatio(
+                            memory.returnFactSetValueForGivenKey(OWN_GROUND).orElse(Stream.empty())
+                                .map(AUnit::getType)
+                                .filter(AUnitTypeWrapper::canAttackAirUnits)
+                                .map(AUnitTypeWrapper::getAirWeapon)
+                                .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                                .sum(), dpsToGroundsByEnemy));
 
                     return true;
                   }
@@ -555,21 +708,129 @@ public class BaseLocationAgentType {
                     .decisionStrategy((dataForDecision, memory) -> true)
                     .build())
                 .build();
-        type.addConfiguration(DesiresKeys.FRIENDLIES_IN_LOCATION, ourUnits);
+        type.addConfiguration(DesiresKeys.REASON_ABOUT_SUFFERING_AND_INFLICTING_DMG,
+            reasonDamageWeCanInflictVsDamageWeCanTake);
 
-        //TODO add to watchers
-        //TODO is unprotected vs air - if enemy, check all units
-        //TODO is unprotected vs ground - if enemy, check all units
-        //TODO ratio of how much damage per minute our air army can inflict vs. how much damage per minute it can suffer in that region
-        //TODO ratio of our global air army supply vs. enemy anti-air army supply in that region
-        //TODO is this region our main base? (True / False)
-        //TODO is this region enemy main base? (True / False)
-        //TODO air distance to nearest enemy base
-        //TODO air distance to our nearest base
-        //TODO ratio of how much damage per minute our ground army can inflict vs. how much damage per minute it can suffer in that region
-        //TODO ratio of our global ground army supply vs. enemy anti-ground army supply in that region
-        //TODO ground distance to nearest enemy base
-        //TODO ground distance to our nearest base
+        WithReasoningCommandDesiredBySelf reasonAboutDistances = WithReasoningCommandDesiredBySelf
+            .builder().commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+              @Override
+              public boolean act(WorkingMemory memory) {
+
+                ABaseLocationWrapper base = memory.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                    .get();
+
+                memory.updateFact(GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE, memory
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .filter(
+                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_ENEMY_BASE)
+                            .orElse(false))
+                    .map(readOnlyMemory -> readOnlyMemory
+                        .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .filter(locationWrapper -> !base.equals(locationWrapper))
+                    .map(locationWrapper -> locationWrapper.getGroundDistanceToBase(base))
+                    .min(Double::compareTo)
+                    .orElse(MAX_DISTANCE));
+
+                memory.updateFact(AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE, memory
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .filter(
+                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_ENEMY_BASE)
+                            .orElse(false))
+                    .map(readOnlyMemory -> readOnlyMemory
+                        .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .filter(locationWrapper -> !base.equals(locationWrapper))
+                    .map(locationWrapper -> locationWrapper.getAirDistanceToBase(base))
+                    .min(Double::compareTo)
+                    .orElse(MAX_DISTANCE));
+
+                memory.updateFact(GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, memory
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .filter(
+                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
+                            .orElse(false))
+                    .map(readOnlyMemory -> readOnlyMemory
+                        .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .filter(locationWrapper -> !base.equals(locationWrapper))
+                    .map(locationWrapper -> locationWrapper.getGroundDistanceToBase(base))
+                    .min(Double::compareTo)
+                    .orElse(MAX_DISTANCE));
+
+                memory.updateFact(AIR_DISTANCE_TO_OUR_CLOSEST_BASE, memory
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .filter(
+                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
+                            .orElse(false))
+                    .map(readOnlyMemory -> readOnlyMemory
+                        .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .filter(locationWrapper -> !base.equals(locationWrapper))
+                    .map(locationWrapper -> locationWrapper.getAirDistanceToBase(base))
+                    .min(Double::compareTo)
+                    .orElse(MAX_DISTANCE));
+
+                return true;
+              }
+            })
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build())
+            .build();
+        type.addConfiguration(DesiresKeys.REASON_ABOUT_DISTANCES, reasonAboutDistances);
+
+        //if base is enemy base, compute count of anti-air and anti-ground units
+        WithReasoningCommandDesiredBySelf computeEnemyWeaknessAgainstTypeOfUnits =
+            WithReasoningCommandDesiredBySelf.builder()
+                .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+                  @Override
+                  public boolean act(WorkingMemory memory) {
+
+                    if (memory.returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false)) {
+
+                      //count anti-air and anti-ground
+                      memory.updateFact(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE, memory
+                          .returnFactSetValueForGivenKey(ENEMY_UNIT)
+                          .orElse(Stream.empty())
+                          .map(AUnit::getType)
+                          .filter(AUnitTypeWrapper::canAttackAirUnits)
+                          .mapToDouble(value -> value.getAirWeapon().getDamagePerSecondNormalized())
+                          .sum());
+                      memory.updateFact(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE, memory
+                          .returnFactSetValueForGivenKey(ENEMY_UNIT)
+                          .orElse(Stream.empty())
+                          .map(AUnit::getType)
+                          .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                          .mapToDouble(
+                              value -> value.getGroundWeapon().getDamagePerSecondNormalized())
+                          .sum());
+                    } else {
+
+                      //we do not care whether base is unprotected against unit type if it does not belong to enemy
+                      memory.eraseFactValueForGivenKey(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE);
+                      memory.eraseFactValueForGivenKey(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE);
+                    }
+
+                    return true;
+                  }
+                })
+                .decisionInDesire(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .decisionInIntention(CommitmentDeciderInitializer.builder()
+                    .decisionStrategy((dataForDecision, memory) -> true)
+                    .build())
+                .build();
+        type.addConfiguration(DesiresKeys.REASON_ABOUT_ENEMY_BASE_WEAKNESSES,
+            computeEnemyWeaknessAgainstTypeOfUnits);
 
         //estimate enemy force
         type.addConfiguration(DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION,
@@ -691,28 +952,32 @@ public class BaseLocationAgentType {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                        dataForDecision, HOLDING, memory.getCurrentClock(), memory.getAgentId()))
-                .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
-                .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
+                        dataForDecision, HOLDING_BY_GROUND_UNITS, memory.getCurrentClock(),
+                        memory.getAgentId()))
+                .globalBeliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefSetTypes(
+                    HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    HOLDING.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    HOLDING.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(HOLDING.getConvertersForFacts())
-                .beliefSetTypes(HOLDING.getConvertersForFactSets())
+                    HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .beliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFacts())
+                .beliefSetTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactSets())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> !Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                        dataForDecision, HOLDING, memory.getCurrentClock(), memory.getAgentId()))
-                .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
-                .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
+                        dataForDecision, HOLDING_BY_GROUND_UNITS, memory.getCurrentClock(),
+                        memory.getAgentId()))
+                .globalBeliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefSetTypes(
+                    HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    HOLDING.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    HOLDING.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(HOLDING.getConvertersForFacts())
-                .beliefSetTypes(HOLDING.getConvertersForFactSets())
+                    HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .beliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFacts())
+                .beliefSetTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactSets())
                 .build())
             .build();
         type.addConfiguration(DesiresKeys.HOLD_GROUND, holdGround);
@@ -724,36 +989,44 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) ->
                     Decider
                         .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR, dataForDecision,
-                            HOLDING, memory.getCurrentClock(), memory.getAgentId()))
-                .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
-                .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
+                            HOLDING_BY_AIR_UNITS, memory.getCurrentClock(), memory.getAgentId()))
+                .globalBeliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefSetTypes(
+                    HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    HOLDING.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    HOLDING.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(HOLDING.getConvertersForFacts())
-                .beliefSetTypes(HOLDING.getConvertersForFactSets())
+                    HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .beliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFacts())
+                .beliefSetTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactSets())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> !Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
-                        dataForDecision, HOLDING, memory.getCurrentClock(), memory.getAgentId()))
-                .globalBeliefTypes(HOLDING.getConvertersForFactsForGlobalBeliefs())
-                .globalBeliefSetTypes(HOLDING.getConvertersForFactSetsForGlobalBeliefs())
+                        dataForDecision, HOLDING_BY_AIR_UNITS, memory.getCurrentClock(),
+                        memory.getAgentId()))
+                .globalBeliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefSetTypes(
+                    HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    HOLDING.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    HOLDING.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(HOLDING.getConvertersForFacts())
-                .beliefSetTypes(HOLDING.getConvertersForFactSets())
+                    HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .beliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFacts())
+                .beliefSetTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactSets())
                 .build())
             .build();
         type.addConfiguration(DesiresKeys.HOLD_AIR, holdAir);
 
       })
-      .usingTypesForFacts(Stream
-          .of(IS_BASE, IS_ENEMY_BASE, BASE_TO_MOVE, SUNKEN_COLONY_COUNT,
-              SPORE_COLONY_COUNT, CREEP_COLONY_COUNT, LOCATION)
+      .usingTypesForFacts(Stream.of(IS_OUR_BASE, IS_ENEMY_BASE, BASE_TO_MOVE, SUNKEN_COLONY_COUNT,
+          SPORE_COLONY_COUNT, CREEP_COLONY_COUNT, LOCATION, DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE,
+          DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE, AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE,
+          AIR_DISTANCE_TO_OUR_CLOSEST_BASE, GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE,
+          GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+          DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER, DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER,
+          DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER, RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE,
+          RATIO_GLOBAL_GROUND_VS_ANTI_GROUND_ON_BASE)
           .collect(Collectors.toSet()))
       .usingTypesForFactSets(Stream.of(WORKER_ON_BASE, ENEMY_BUILDING, ENEMY_AIR,
           ENEMY_GROUND, HAS_BASE, HAS_EXTRACTOR, OWN_BUILDING, OWN_AIR, OWN_GROUND,
@@ -763,11 +1036,13 @@ public class BaseLocationAgentType {
           ENEMY_STATIC_GROUND_FORCE_STATUS, OWN_STATIC_AIR_FORCE_STATUS,
           OWN_STATIC_GROUND_FORCE_STATUS, STATIC_DEFENSE, ENEMY_UNIT, OUR_UNIT)
           .collect(Collectors.toSet()))
-      .desiresWithIntentionToReason(Stream
-          .of(DesiresKeys.ECO_STATUS_IN_LOCATION, DesiresKeys.FRIENDLIES_IN_LOCATION,
-              DesiresKeys.ENEMIES_IN_LOCATION, DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION,
-              DesiresKeys.ESTIMATE_OUR_FORCE_IN_LOCATION, DesiresKeys.REASON_ABOUT_BASE_TYPE,
-              DesiresKeys.REASON_ABOUT_OUR_BASE)
+      .desiresWithIntentionToReason(Stream.of(DesiresKeys.ECO_STATUS_IN_LOCATION,
+          DesiresKeys.FRIENDLIES_IN_LOCATION, DesiresKeys.ENEMIES_IN_LOCATION,
+          DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_LOCATION, DesiresKeys.ESTIMATE_OUR_FORCE_IN_LOCATION,
+          DesiresKeys.REASON_ABOUT_BASE_TYPE, DesiresKeys.REASON_ABOUT_OUR_BASE,
+          DesiresKeys.REASON_ABOUT_ENEMY_BASE_WEAKNESSES, DesiresKeys.REASON_ABOUT_DISTANCES,
+          DesiresKeys.REASON_GLOBAL_SUPPLY_VS_LOCAL_ENEMIES_RATIO,
+          DesiresKeys.REASON_ABOUT_SUFFERING_AND_INFLICTING_DMG)
           .collect(Collectors.toSet())
       )
       .desiresForOthers(Stream

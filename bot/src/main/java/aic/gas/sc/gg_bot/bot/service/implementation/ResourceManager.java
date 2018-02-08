@@ -16,8 +16,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+//TODO code review
 //TODO there is still probably bug - skip building without dependencies - check if it is possible to mine gas
-//TODO save 50 minerals for worker if we do not have any worker
 @Slf4j
 public class ResourceManager implements IResourceManager {
 

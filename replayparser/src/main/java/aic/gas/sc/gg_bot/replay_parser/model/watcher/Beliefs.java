@@ -36,7 +36,7 @@ public class Beliefs {
     return Optional.empty();
   }
 
-  public <K, S extends Stream<?>> Optional<S> returnFactSetValueForGivenKey(FactKey<K> factKey) {
+  public <K, S extends Stream<K>> Optional<S> returnFactSetValueForGivenKey(FactKey<K> factKey) {
     FactSet<K> factSet = (FactSet<K>) factSets.get(factKey);
     if (factSet != null) {
       return Optional.ofNullable((S) factSet.getContent().stream());

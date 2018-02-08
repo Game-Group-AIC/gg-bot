@@ -26,12 +26,11 @@ public class APosition extends AbstractPositionWrapper<Position> {
    * Wrap position
    */
   public static APosition wrap(Position toWrap) {
-    Map<Integer, Map<Integer, AbstractPositionWrapper<?>>> positionsByCoordinates = cache
+    Map<Coordinates, AbstractPositionWrapper<?>> positionsByCoordinates = cache
         .computeIfAbsent(Position.class, aClass -> new ConcurrentHashMap<>());
-    Map<Integer, AbstractPositionWrapper<?>> positionsByYCoordinates = positionsByCoordinates
-        .computeIfAbsent(toWrap.getX(), integer -> new ConcurrentHashMap<>());
-    return (APosition) positionsByYCoordinates
-        .computeIfAbsent(toWrap.getY(), integer -> new APosition(toWrap));
+    return (APosition) positionsByCoordinates
+        .computeIfAbsent(new Coordinates(toWrap.getX(), toWrap.getY()),
+            integer -> new APosition(toWrap));
   }
 
   /**

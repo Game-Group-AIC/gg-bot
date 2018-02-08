@@ -99,11 +99,11 @@ public class AWeaponTypeWrapper extends AbstractWrapper<WeaponType> {
     return WrapperTypeFactory.createFrom(upgradeType);
   }
 
-  public double getDamageNormalized() {
+  public double getDamagePerSecondNormalized() {
     if (isForType(WeaponType.Psi_Blades)) {
-      return 16;
+      return 16 * (24 / getDamageCooldown());
     } else {
-      return getDamageAmount() * getDamageFactor();
+      return getDamageAmount() * getDamageFactor() * (24 / (getDamageCooldown() + 1));
     }
   }
 }

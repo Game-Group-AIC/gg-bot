@@ -12,8 +12,6 @@ import java.io.IOException;
 public class Parser {
 
   public static void main(String[] args) throws Exception {
-    //to speed things up when executing parallel stream
-    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "100");
 
     IReplayLoaderService replayLoader = createReplayLoader(args);
 

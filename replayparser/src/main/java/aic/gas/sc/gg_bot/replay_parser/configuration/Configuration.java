@@ -9,6 +9,8 @@ import lombok.Getter;
 @Builder
 public class Configuration {
 
+  //TODO stop when solution is not improving for long period?
+
   @Builder.Default
   private int sampleStates = 100;
 
@@ -56,7 +58,7 @@ public class Configuration {
   private int steps = 1000;
 
   @Builder.Default
-  private long timeBudget = 1000 * 60 * 30;
+  private long timeBudget = 1000 * 60;
 
   @Builder.Default
   private int countOfTrajectoriesPerIRLBatch = 20;

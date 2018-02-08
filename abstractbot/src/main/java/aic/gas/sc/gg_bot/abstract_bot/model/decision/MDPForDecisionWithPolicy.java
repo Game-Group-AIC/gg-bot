@@ -8,24 +8,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import jsat.linear.DenseVector;
 import jsat.linear.Vec;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
  * Serializable data structure containing data of decision point
  */
-@AllArgsConstructor
 @Getter
 public class MDPForDecisionWithPolicy implements Serializable {
 
   private final List<StateWithPolicy> states;
   private final List<FeatureNormalizer> normalizers;
-
-  private transient final Map<Integer, DecisionInState> cache = new HashMap<>();
+  private transient Map<Integer, DecisionInState> cache = new HashMap<>();
   private static final transient Random RANDOM = new Random();
+
+  public MDPForDecisionWithPolicy(List<StateWithPolicy> states,
+      List<FeatureNormalizer> normalizers) {
+    this.states = states;
+    this.normalizers = normalizers;
+  }
 
   /**
    * For given state (represented by feature vector) return optimal action based on policy
@@ -50,6 +52,10 @@ public class MDPForDecisionWithPolicy implements Serializable {
     return states.stream()
         .min(Comparator.comparingDouble(o -> o.distance(anotherInstance)))
         .get();
+  }
+
+  public void initCache() {
+    this.cache = new HashMap<>();
   }
 
 }

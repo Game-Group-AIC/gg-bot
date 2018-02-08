@@ -25,12 +25,11 @@ public class ATilePosition extends AbstractPositionWrapper<TilePosition> {
    * Wrap position
    */
   public static ATilePosition wrap(TilePosition toWrap) {
-    Map<Integer, Map<Integer, AbstractPositionWrapper<?>>> positionsByCoordinates = cache
+    Map<Coordinates, AbstractPositionWrapper<?>> positionsByCoordinates = cache
         .computeIfAbsent(TilePosition.class, aClass -> new ConcurrentHashMap<>());
-    Map<Integer, AbstractPositionWrapper<?>> positionsByYCoordinates = positionsByCoordinates
-        .computeIfAbsent(toWrap.getX(), integer -> new ConcurrentHashMap<>());
-    return (ATilePosition) positionsByYCoordinates
-        .computeIfAbsent(toWrap.getY(), integer -> new ATilePosition(toWrap));
+    return (ATilePosition) positionsByCoordinates
+        .computeIfAbsent(new Coordinates(toWrap.getX(), toWrap.getY()),
+            integer -> new ATilePosition(toWrap));
   }
 
   static Optional<ATilePosition> creteOrEmpty(TilePosition tilePosition) {

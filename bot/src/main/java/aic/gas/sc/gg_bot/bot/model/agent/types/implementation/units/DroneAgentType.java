@@ -10,7 +10,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_SCOUT_BY_WORKER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
@@ -423,7 +423,7 @@ public class DroneAgentType {
                     AgentTypes.BASE_LOCATION)
                     //is base
                     .filter(
-                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE).get())
+                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE).get())
                     //is ready
                     .filter(readOnlyMemory -> readOnlyMemory.returnFactSetValueForGivenKey(HAS_BASE)
                         .orElse(Stream.empty())

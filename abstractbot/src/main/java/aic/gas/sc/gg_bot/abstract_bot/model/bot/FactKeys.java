@@ -7,7 +7,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATechTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATilePosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
@@ -48,7 +47,7 @@ public class FactKeys {
       return null;
     }
   };
-  public static final FactKey<Boolean> IS_BASE = new FactKey<Boolean>("IS_BASE", false) {
+  public static final FactKey<Boolean> IS_OUR_BASE = new FactKey<Boolean>("IS_OUR_BASE", false) {
     @Override
     public Boolean getInitValue() {
       return false;
@@ -150,6 +149,92 @@ public class FactKeys {
       return null;
     }
   };
+  public static final FactKey<Double> DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE = new FactKey<Double>(
+      "DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE = new FactKey<Double>(
+      "DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> AIR_DISTANCE_TO_OUR_CLOSEST_BASE = new FactKey<Double>(
+      "AIR_DISTANCE_TO_OUR_CLOSEST_BASE", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE = new FactKey<Double>(
+      "AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> GROUND_DISTANCE_TO_OUR_CLOSEST_BASE = new FactKey<Double>(
+      "GROUND_DISTANCE_TO_OUR_CLOSEST_BASE", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE = new FactKey<Double>(
+      "GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER = new FactKey<Double>(
+      "DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER = new FactKey<Double>(
+      "DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER = new FactKey<Double>(
+      "DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER = new FactKey<Double>(
+      "DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER", false) {
+    @Override
+    public Double getInitValue() {
+      return null;
+    }
+  };
+  public static final FactKey<Double> RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE = new FactKey<Double>(
+      "RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE",
+      false) {
+    @Override
+    public Double getInitValue() {
+      return 1.0;
+    }
+  };
+  public static final FactKey<Double> RATIO_GLOBAL_GROUND_VS_ANTI_GROUND_ON_BASE = new FactKey<Double>(
+      "RATIO_GLOBAL_GROUND_VS_ANTI_GROUND_ON_BASE",
+      false) {
+    @Override
+    public Double getInitValue() {
+      return 1.0;
+    }
+  };
 
   //facts for workers
   public static final FactKey<Boolean> IS_GATHERING_MINERALS = new FactKey<Boolean>(
@@ -238,6 +323,21 @@ public class FactKeys {
   };
 
   //for player - general facts about the game
+  public static final FactKey<Double> FORCE_SUPPLY_RATIO = new FactKey<Double>("FORCE_SUPPLY_RATIO",
+      false) {
+    @Override
+    public Double getInitValue() {
+      return 1.0;
+    }
+  };
+  public static final FactKey<Double> DIFFERENCE_IN_BASES = new FactKey<Double>(
+      "DIFFERENCE_IN_BASES",
+      false) {
+    @Override
+    public Double getInitValue() {
+      return 0.0;
+    }
+  };
   public static final FactKey<Double> AVAILABLE_MINERALS = new FactKey<Double>("AVAILABLE_MINERALS",
       false) {
     @Override

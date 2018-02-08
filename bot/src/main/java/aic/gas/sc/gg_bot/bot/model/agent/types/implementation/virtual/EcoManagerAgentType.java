@@ -3,11 +3,11 @@ package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CURRENT_POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.MAX_POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EXTRACTOR;
@@ -69,7 +69,7 @@ public class EcoManagerAgentType {
         .collect(Collectors.toSet());
 
     return memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
-        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE).get())
+        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE).get())
         .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(IS_MINERAL_ONLY).get())
         .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE_LOCATION).get())
         .filter(aBaseLocationWrapper -> !extractorsBases.contains(aBaseLocationWrapper))
@@ -111,10 +111,10 @@ public class EcoManagerAgentType {
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    (!Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
+                    !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
                         dataForDecision, EXPANDING, memory.getCurrentClock(), memory.getAgentId())
-                        && !BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(HATCHERY_TYPE, memory.getAgentId()))
+                        || !BotFacade.RESOURCE_MANAGER
+                        .canSpendResourcesOn(HATCHERY_TYPE, memory.getAgentId())
                         || BuildLockerService.getInstance()
                         .isLocked(AUnitTypeWrapper.HATCHERY_TYPE))
                 .globalBeliefTypes(EXPANDING.getConvertersForFactsForGlobalBeliefs())
@@ -139,7 +139,8 @@ public class EcoManagerAgentType {
               Stream<ABaseLocationWrapper> ourBases = memory.getReadOnlyMemoriesForAgentType(
                   AgentTypes.BASE_LOCATION)
                   .filter(
-                      readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE).get())
+                      readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
+                          .get())
                   .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE_LOCATION)
                       .get());
 

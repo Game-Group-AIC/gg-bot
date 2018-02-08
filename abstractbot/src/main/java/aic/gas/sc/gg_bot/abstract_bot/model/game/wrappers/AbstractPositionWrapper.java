@@ -2,6 +2,8 @@ package aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
@@ -10,7 +12,7 @@ import lombok.Getter;
 public abstract class AbstractPositionWrapper<T> {
 
   //cache to store position objects
-  static Map<Class<?>, Map<Integer, Map<Integer, AbstractPositionWrapper<?>>>> cache = new ConcurrentHashMap<>();
+  static Map<Class<?>, Map<Coordinates, AbstractPositionWrapper<?>>> cache = new ConcurrentHashMap<>();
 
   @Getter
   final T wrappedPosition;
@@ -72,5 +74,13 @@ public abstract class AbstractPositionWrapper<T> {
     int result = x;
     result = 31 * result + y;
     return result;
+  }
+
+  @EqualsAndHashCode
+  @AllArgsConstructor
+  @Getter
+  protected static class Coordinates {
+
+    private final int x, y;
   }
 }

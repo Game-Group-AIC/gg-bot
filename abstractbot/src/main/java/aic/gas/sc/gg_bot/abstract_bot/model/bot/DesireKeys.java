@@ -37,7 +37,6 @@ public class DesireKeys {
   //BASE_LOCATION's desires
   public static final DesireKeyID HOLD_GROUND = new DesireKeyID("HOLD_GROUND", 30);
   public static final DesireKeyID HOLD_AIR = new DesireKeyID("HOLD_AIR", 31);
-  public static final DesireKeyID DEFEND = new DesireKeyID("DEFEND", 32);
 
   //defend (base is present)
   public static final DesireKeyID BUILD_CREEP_COLONY = new DesireKeyID("BUILD_CREEP_COLONY", 33);
@@ -48,7 +47,7 @@ public class DesireKeys {
   public static final Set<DesireKeyID> LEARNT_DESIRE_KEYS = Stream
       .of(EXPAND, BUILD_EXTRACTOR, BUILD_WORKER, INCREASE_CAPACITY, ENABLE_AIR,
           ENABLE_GROUND_RANGED, ENABLE_STATIC_ANTI_AIR, ENABLE_GROUND_MELEE, UPGRADE_TO_LAIR,
-          BOOST_AIR, BOOST_GROUND_MELEE, BOOST_GROUND_RANGED, HOLD_GROUND, HOLD_AIR, DEFEND,
+          BOOST_AIR, BOOST_GROUND_MELEE, BOOST_GROUND_RANGED, HOLD_GROUND, HOLD_AIR,
           BUILD_SUNKEN_COLONY, BUILD_SPORE_COLONY).collect(
           Collectors.toSet());
 
@@ -68,6 +67,8 @@ public class DesireKeys {
       "ESTIMATE_OUR_FORCE_IN_UNITS", 45);
   public static final DesireKeyID UPDATE_ENEMY_RACE = new DesireKeyID("UPDATE_ENEMY_RACE", 46);
   public static final DesireKeyID REASON_ABOUT_BASES = new DesireKeyID("REASON_ABOUT_BASES", 47);
+  public static final DesireKeyID ESTIMATE_ARMY_SUPPLY_RATIO = new DesireKeyID(
+      "ESTIMATE_ARMY_SUPPLY_RATIO", 48);
 
   //desires for agent representing base
   public static final DesireKeyID REASON_ABOUT_BASE_TYPE = new DesireKeyID("REASON_ABOUT_BASE_TYPE",
@@ -86,6 +87,14 @@ public class DesireKeys {
   public static final DesireKeyID MINE_GAS_IN_BASE = new DesireKeyID("MINE_GAS_IN_BASE", 58);
   public static final DesireKeyID REASON_ABOUT_OUR_BASE = new DesireKeyID("REASON_ABOUT_OUR_BASE",
       59);
+  public static final DesireKeyID REASON_ABOUT_ENEMY_BASE_WEAKNESSES = new DesireKeyID(
+      "REASON_ABOUT_ENEMY_BASE_WEAKNESSES", 60);
+  public static final DesireKeyID REASON_ABOUT_DISTANCES = new DesireKeyID(
+      "REASON_ABOUT_DISTANCES", 61);
+  public static final DesireKeyID REASON_ABOUT_SUFFERING_AND_INFLICTING_DMG = new DesireKeyID(
+      "REASON_ABOUT_SUFFERING_AND_INFLICTING_DMG", 62);
+  public static final DesireKeyID REASON_GLOBAL_SUPPLY_VS_LOCAL_ENEMIES_RATIO = new DesireKeyID(
+      "REASON_GLOBAL_SUPPLY_VS_LOCAL_ENEMIES_RATIO", 63);
 
   //desires for agent's representing unit
   public static final DesireKeyID SURROUNDING_UNITS_AND_LOCATION = new DesireKeyID(

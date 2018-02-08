@@ -4,6 +4,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DIFFERENCE_IN_BASES;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING_STATUS;
@@ -12,8 +13,9 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND_FOR
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_RACE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FORCE_SUPPLY_RATIO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FREE_SUPPLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
@@ -31,6 +33,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION_LIMIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
+import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ARMY_SUPPLY_RATIO;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_BUILDINGS;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_UNITS;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_OUR_FORCE_IN_BUILDINGS;
@@ -43,6 +46,7 @@ import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.WORKER_SCOUT;
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
@@ -68,7 +72,8 @@ public class PlayerAgentType {
       .agentTypeID(AgentTypes.PLAYER)
       .usingTypesForFacts(
           Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT, POPULATION,
-              IS_PLAYER, BASE_TO_MOVE, IS_BASE_LOCATION, LOCATION, FREE_SUPPLY)
+              IS_PLAYER, BASE_TO_MOVE, IS_BASE_LOCATION, LOCATION, FREE_SUPPLY, FORCE_SUPPLY_RATIO,
+              DIFFERENCE_IN_BASES)
               .collect(Collectors.toSet()))
       .usingTypesForFactSets(Stream.of(UPGRADE_STATUS, OUR_BASE, ENEMY_BASE,
           OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
@@ -123,16 +128,28 @@ public class PlayerAgentType {
             });
         type.addConfiguration(ESTIMATE_ENEMY_FORCE_IN_BUILDINGS, estimateEnemyForceByBuildings);
 
-        //TODO add to watchers
-        //todo difference in bases vs enemy
-        //todo ratio of supply of our army vs enemy - without workers
-        //todo does enemy have any structures producing military units
-        //TODO ratio of enemy ranged vs melee damage
-        //TODO ratio of own ranged vs melee damage
-        //TODO number of enemy bases unprotected against air
-        //TODO ratio of enemy ranged vs melee damage
-//      //TODO ratio of own ranged vs melee damage
-//      //TODO number of enemy bases unprotected against ground
+        //estimate supply ratio
+        ConfigurationWithCommand.WithReasoningCommandDesiredBySelf estimateArmySupplyRatio = ConfigurationWithCommand.
+            WithReasoningCommandDesiredBySelf.builder()
+            .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
+              @Override
+              public boolean act(WorkingMemory memory) {
+                memory.updateFact(FORCE_SUPPLY_RATIO, Utils
+                    .computeOurVsEnemyForceRatio(
+                        memory.returnFactSetValueForGivenKey(OWN_FORCE_STATUS),
+                        memory.returnFactSetValueForGivenKey(ENEMY_FORCE_STATUS)));
+                return true;
+              }
+            })
+            .decisionInDesire(CommitmentDeciderInitializer.builder()
+                .decisionStrategy(
+                    (dataForDecision, memory) -> true)
+                .build())
+            .decisionInIntention(CommitmentDeciderInitializer.builder()
+                .decisionStrategy((dataForDecision, memory) -> true)
+                .build())
+            .build();
+        type.addConfiguration(ESTIMATE_ARMY_SUPPLY_RATIO, estimateArmySupplyRatio);
 
         //estimate enemy force by units
         ConfigurationWithCommand.WithReasoningCommandDesiredBySelf estimateEnemyForceByUnits = createConfigurationTemplateForForceEstimator(
@@ -263,7 +280,8 @@ public class PlayerAgentType {
               public boolean act(WorkingMemory memory) {
                 memory.updateFactSetByFacts(OUR_BASE,
                     memory.getReadOnlyMemoriesForAgentType(BASE_LOCATION)
-                        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE)
+                        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
+                            IS_OUR_BASE)
                             .orElse(false))
                         .map(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
@@ -275,6 +293,9 @@ public class PlayerAgentType {
                         .map(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
                         .collect(Collectors.toSet()));
+                memory.updateFact(DIFFERENCE_IN_BASES, Utils
+                    .computeDifferenceInBases(memory.returnFactSetValueForGivenKey(OUR_BASE),
+                        memory.returnFactSetValueForGivenKey(ENEMY_BASE)));
                 return true;
               }
             })
@@ -290,7 +311,8 @@ public class PlayerAgentType {
       })
       .desiresWithIntentionToReason(Stream.of(READ_PLAYERS_DATA, ESTIMATE_ENEMY_FORCE_IN_BUILDINGS,
           ESTIMATE_ENEMY_FORCE_IN_UNITS, ESTIMATE_OUR_FORCE_IN_BUILDINGS,
-          ESTIMATE_OUR_FORCE_IN_UNITS, UPDATE_ENEMY_RACE, REASON_ABOUT_BASES)
+          ESTIMATE_ARMY_SUPPLY_RATIO, ESTIMATE_OUR_FORCE_IN_UNITS, UPDATE_ENEMY_RACE,
+          REASON_ABOUT_BASES)
           .collect(Collectors.toSet()))
       .desiresForOthers(Collections.singleton(WORKER_SCOUT))
       .build();

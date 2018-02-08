@@ -3,6 +3,7 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_MINERALS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DIFFERENCE_IN_BASES;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING_STATUS;
@@ -11,8 +12,9 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND_FOR
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_RACE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FORCE_SUPPLY_RATIO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FREE_SUPPLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
@@ -32,6 +34,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.UpgradeTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
@@ -60,7 +63,7 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
   public WatcherPlayer(Player player, Game game) {
     super(WatcherPlayerType.builder()
         .factKeys(Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT,
-            POPULATION, IS_PLAYER, FREE_SUPPLY)
+            POPULATION, IS_PLAYER, FREE_SUPPLY, FORCE_SUPPLY_RATIO, DIFFERENCE_IN_BASES)
             .collect(Collectors.toSet()))
         .factSetsKeys(Stream.of(UPGRADE_STATUS, OUR_BASE, ENEMY_BASE,
             OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
@@ -159,7 +162,9 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
           //enemy + our force
           bl.updateFactSetByFacts(OWN_FORCE_STATUS, ownUnitsTypes);
           bl.updateFactSetByFacts(ENEMY_FORCE_STATUS, enemyUnitsTypes);
-
+          bl.updateFact(FORCE_SUPPLY_RATIO, Utils
+              .computeOurVsEnemyForceRatio(bl.returnFactSetValueForGivenKey(OWN_FORCE_STATUS),
+                  bl.returnFactSetValueForGivenKey(ENEMY_FORCE_STATUS)));
 
           //enemy race
           Optional<Race> enemyRace = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
@@ -170,7 +175,8 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
           bl.updateFactSetByFacts(OUR_BASE, ms.getStreamOfWatchers()
               .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                   .equals(BASE_LOCATION.getName()))
-              .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(IS_BASE)
+              .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
+                  IS_OUR_BASE)
                   .orElse(false))
               .map(agentWatcher -> agentWatcher.getBeliefs()
                   .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
@@ -183,6 +189,9 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
               .map(agentWatcher -> agentWatcher.getBeliefs()
                   .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
               .collect(Collectors.toSet()));
+          bl.updateFact(DIFFERENCE_IN_BASES, Utils
+              .computeDifferenceInBases(bl.returnFactSetValueForGivenKey(OUR_BASE),
+                  bl.returnFactSetValueForGivenKey(ENEMY_BASE)));
         })
         .planWatchers(new ArrayList<>())
         .build()

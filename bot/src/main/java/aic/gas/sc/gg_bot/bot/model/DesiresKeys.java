@@ -43,6 +43,9 @@ public class DesiresKeys {
   public static final DesireKey REASON_ABOUT_BASES = DesireKey.builder()
       .id(DesireKeys.REASON_ABOUT_BASES)
       .build();
+  public static final DesireKey ESTIMATE_ARMY_SUPPLY_RATIO = DesireKey.builder()
+      .id(DesireKeys.ESTIMATE_ARMY_SUPPLY_RATIO)
+      .build();
 
   //for eco manager
   public static final DesireKey BUILD_WORKER = DesireKey.builder()
@@ -96,17 +99,28 @@ public class DesiresKeys {
   //attack
   public static final DesireKey HOLD_GROUND = DesireKey.builder()
       .id(DesireKeys.HOLD_GROUND)
+      .parametersTypesForFacts(Collections.singleton(IS_BASE_LOCATION))
       .build();
   public static final DesireKey HOLD_AIR = DesireKey.builder()
       .id(DesireKeys.HOLD_AIR)
-      .build();
-  public static final DesireKey DEFEND = DesireKey.builder()
-      .id(DesireKeys.DEFEND)
+      .parametersTypesForFacts(Collections.singleton(IS_BASE_LOCATION))
       .build();
 
   //for base
   public static final DesireKey ECO_STATUS_IN_LOCATION = DesireKey.builder()
       .id(DesireKeys.ECO_STATUS_IN_LOCATION)
+      .build();
+  public static final DesireKey REASON_GLOBAL_SUPPLY_VS_LOCAL_ENEMIES_RATIO = DesireKey.builder()
+      .id(DesireKeys.REASON_GLOBAL_SUPPLY_VS_LOCAL_ENEMIES_RATIO)
+      .build();
+  public static final DesireKey REASON_ABOUT_ENEMY_BASE_WEAKNESSES = DesireKey.builder()
+      .id(DesireKeys.REASON_ABOUT_ENEMY_BASE_WEAKNESSES)
+      .build();
+  public static final DesireKey REASON_ABOUT_DISTANCES = DesireKey.builder()
+      .id(DesireKeys.REASON_ABOUT_DISTANCES)
+      .build();
+  public static final DesireKey REASON_ABOUT_SUFFERING_AND_INFLICTING_DMG = DesireKey.builder()
+      .id(DesireKeys.REASON_ABOUT_SUFFERING_AND_INFLICTING_DMG)
       .build();
   public static final DesireKey REASON_ABOUT_BASE_TYPE = DesireKey.builder()
       .id(DesireKeys.REASON_ABOUT_BASE_TYPE)

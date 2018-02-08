@@ -245,6 +245,8 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
   private final boolean repairableMechanically;
   @Getter
   private final boolean healable;
+  @Getter
+  private final boolean enablesMilitaryUnits;
 
   AUnitTypeWrapper(UnitType type) {
     super(type, type.toString());
@@ -358,8 +360,16 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
     this.isMelee = isType(type,
         new UnitType[]{UnitType.Terran_SCV, UnitType.Terran_Firebat, UnitType.Protoss_Probe,
             UnitType.Protoss_Zealot, UnitType.Protoss_Dark_Templar, UnitType.Zerg_Drone,
-            UnitType.Zerg_Zergling,
-            UnitType.Zerg_Broodling}
+            UnitType.Zerg_Zergling, UnitType.Zerg_Broodling, UnitType.Zerg_Ultralisk,
+            UnitType.Zerg_Infested_Terran}
+    );
+
+    //enables military units production
+    this.enablesMilitaryUnits = isType(type,
+        new UnitType[]{UnitType.Zerg_Spawning_Pool, UnitType.Zerg_Hydralisk_Den,
+            UnitType.Zerg_Spire, UnitType.Zerg_Greater_Spire, UnitType.Terran_Barracks,
+            UnitType.Terran_Factory, UnitType.Terran_Starport, UnitType.Protoss_Gateway,
+            UnitType.Protoss_Stargate, UnitType.Protoss_Robotics_Facility}
     );
 
     // Repair & Heal
