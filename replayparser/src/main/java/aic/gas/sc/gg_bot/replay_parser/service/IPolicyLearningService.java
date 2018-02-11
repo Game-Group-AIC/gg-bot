@@ -14,6 +14,7 @@ public interface IPolicyLearningService {
   /**
    * Learn policy for given domain using episodes
    */
-  Policy learnPolicy(SADomain domain, List<Episode> episodes, Configuration configuration);
+  Policy learnPolicy(SADomain domain, List<Episode> episodes, Configuration configuration,
+      int numberOfClusters);
 
 }

@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SPORE_COLONY_TYPE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SUNKEN_COLONY_TYPE;
@@ -23,7 +23,7 @@ public class CreepColonyAgentType {
       .initializationStrategy(type -> {
 
         type.addConfiguration(
-            DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION, AgentTypeUnit.beliefsAboutConstruction);
+            DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION, AgentTypeUnit.beliefsAboutMorphing);
 
         //upgrade to sunken
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent upgradeToSunken = ConfigurationWithCommand.
@@ -71,7 +71,7 @@ public class CreepColonyAgentType {
         type.addConfiguration(DesiresKeys.MORPH_TO_SPORE_COLONY, upgradeToSporeColony);
 
       })
-      .usingTypesForFacts(Collections.singleton(IS_BEING_CONSTRUCTED))
+      .usingTypesForFacts(Collections.singleton(IS_MORPHING_TO))
       .desiresWithIntentionToReason(
           Collections.singleton(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION))
       .build();

@@ -1,5 +1,13 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_AIRS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_DRONES;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_EXTRACTORS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_HATCHERIES;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_MELEE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_OVERLORDS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_RANGED;
+
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -20,6 +28,7 @@ public class FeatureContainerHeaders {
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
           .collect(Collectors.toSet()))
+//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_EXTRACTORS))
       .build();
 
   public static final FeatureContainerHeader INCREASING_CAPACITY = FeatureContainerHeader.builder()
@@ -28,6 +37,7 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(
           FactConverters.FREE_SUPPLY, FactConverters.GAME_PHASE)
           .collect(Collectors.toSet()))
+//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_OVERLORDS))
       .build();
 
   public static final FeatureContainerHeader TRAINING_WORKER = FeatureContainerHeader.builder()
@@ -36,6 +46,7 @@ public class FeatureContainerHeaders {
           .collect(Collectors.toSet()))
       .convertersForFactSetsForGlobalBeliefsByAgentType(Collections.singleton(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE))
+//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_DRONES))
       .build();
 
   public static final FeatureContainerHeader EXPANDING = FeatureContainerHeader.builder()
@@ -46,6 +57,7 @@ public class FeatureContainerHeaders {
       .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE)
           .collect(Collectors.toSet()))
+//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_HATCHERIES))
       .build();
 
   //Build order manager
@@ -103,6 +115,7 @@ public class FeatureContainerHeaders {
           .of(FactConverters.DIFFERENCE_IN_BASES, FactConverters.HAS_AT_LEAST_TWO_BASES,
               FactConverters.GAME_PHASE, FactConverters.ENEMY_BASES_UNPROTECTED_AGAINST_AIR)
           .collect(Collectors.toSet()))
+//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_AIRS))
       .build();
 
   public static final FeatureContainerHeader BOOSTING_GROUND_MELEE = FeatureContainerHeader
@@ -115,6 +128,7 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(FactConverters.DIFFERENCE_IN_BASES,
           FactConverters.ENEMY_BASES_UNPROTECTED_AGAINST_GROUND, FactConverters.FORCE_SUPPLY_RATIO)
           .collect(Collectors.toSet()))
+//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_MELEE))
       .build();
 
   public static final FeatureContainerHeader BOOSTING_GROUND_RANGED = FeatureContainerHeader
@@ -127,6 +141,7 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(FactConverters.DIFFERENCE_IN_BASES,
           FactConverters.FORCE_SUPPLY_RATIO)
           .collect(Collectors.toSet()))
+//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_RANGED))
       .build();
 
   //BASE

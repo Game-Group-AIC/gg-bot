@@ -3,14 +3,19 @@ package aic.gas.sc.gg_bot.bot.service.implementation;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumerations;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,9 +40,6 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
                 .forEach(
                     desireKeyID -> loadDecisionPoint(agentTypeID, desireKeyID, mapSize, race))))
     );
-
-    //what is loaded
-
   }
 
   /**
@@ -64,6 +66,19 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
 
       //set cache
       mdpForDecisionWithPolicy.initCache();
+
+      //are all actions present
+      Set<NextActionEnumerations> actions = mdpForDecisionWithPolicy.getStates().stream()
+          .flatMap(stateWithPolicy -> stateWithPolicy.getNextActions().entrySet().stream()
+              .filter(entry -> entry.getValue() > 0)
+              .map(Entry::getKey))
+          .distinct()
+          .collect(Collectors.toSet());
+      if (Arrays.stream(NextActionEnumerations.values())
+          .anyMatch(nextActionEnumerations -> !actions.contains(nextActionEnumerations))) {
+        log.error("Missing action in " + mapSize.name() + ", " + race.name() + ", " + agentTypeID
+            .getName() + ", " + desireKeyID.getName());
+      }
 
       cache.computeIfAbsent(mapSize, id -> new HashMap<>())
           .computeIfAbsent(race, id -> new HashMap<>())

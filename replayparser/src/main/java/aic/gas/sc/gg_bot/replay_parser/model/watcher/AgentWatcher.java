@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AgentWatcher<T extends AgentWatcherType> {
 
   private static int idCounter = 0;
-  @Getter
   protected final T agentWatcherType;
   @Getter
   protected final Beliefs beliefs;
@@ -35,6 +34,10 @@ public class AgentWatcher<T extends AgentWatcherType> {
     this.plansToWatch = agentWatcherType.getPlanWatchers().stream()
         .map(AgentWatcherType.PlanWatcherInitializationStrategy::returnPlanWatcher)
         .collect(Collectors.toList());
+  }
+
+  public T getAgentWatcherType() {
+    return agentWatcherType;
   }
 
   /**

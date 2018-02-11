@@ -9,7 +9,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-//TODO lock buildings when constructing them + units
+//TODO do not use learnt decisions to remove commitment
+//TODO pull from agents only - have register when new type is morphed, lock it for X frames
+//TODO lock constructed (+being construct) buildings except spore, sunken, creep, extractor, hatchery
 public class BuildLockerService implements IBuildLockerService {
 
   private final ReadWriteLock lock = new ReentrantReadWriteLock(true);

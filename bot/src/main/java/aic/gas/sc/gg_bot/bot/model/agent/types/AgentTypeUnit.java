@@ -5,7 +5,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
@@ -21,7 +20,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
@@ -101,33 +99,6 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
           .build())
       .build();
 
-  //single definition of reasoning command to update beliefs about being under construction
-  public static final ConfigurationWithCommand.WithReasoningCommandDesiredBySelf beliefsAboutConstruction = ConfigurationWithCommand.
-      WithReasoningCommandDesiredBySelf.builder()
-      .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
-        @Override
-        public boolean act(WorkingMemory memory) {
-          return true;
-        }
-      })
-      .reactionOnChangeStrategy((memory, desireParameters) -> {
-        memory.updateFact(IS_BEING_CONSTRUCTED, true);
-      })
-      .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
-        memory.updateFact(IS_BEING_CONSTRUCTED, false);
-      })
-      .decisionInDesire(CommitmentDeciderInitializer.builder()
-          .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BEING_CONSTRUCTED) == 1)
-          .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BEING_CONSTRUCTED)))
-          .build())
-      .decisionInIntention(CommitmentDeciderInitializer.builder()
-          .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_BEING_CONSTRUCTED) == 0)
-          .beliefTypes(new HashSet<>(Collections.singleton(FactConverters.IS_BEING_CONSTRUCTED)))
-          .build())
-      .build();
-
   //single definition of reasoning command to update beliefs about morphing to
   public static final ConfigurationWithCommand.WithReasoningCommandDesiredBySelf beliefsAboutMorphing = ConfigurationWithCommand.
       WithReasoningCommandDesiredBySelf.builder()
@@ -139,7 +110,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
       })
       .reactionOnChangeStrategy((memory, desireParameters) -> {
         AUnitOfPlayer me = memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
-        if (me.getType().equals(AUnitTypeWrapper.EGG_TYPE)) {
+        if (!me.getTrainingQueue().isEmpty()) {
           memory.updateFact(IS_MORPHING_TO, me.getTrainingQueue().get(0));
         } else {
           memory.updateFact(IS_MORPHING_TO, me.getType());
@@ -149,17 +120,13 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
           (memory, desireParameters) -> memory.eraseFactValueForGivenKey(IS_MORPHING_TO))
       .decisionInDesire(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_CONSTRUCTING_BUILDING) == 1
-                  || dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 1)
-          .beliefTypes(new HashSet<>(
-              Arrays.asList(FactConverters.IS_MORPHING, FactConverters.IS_CONSTRUCTING_BUILDING)))
+              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 1)
+          .beliefTypes(Collections.singleton(FactConverters.IS_MORPHING))
           .build())
       .decisionInIntention(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_CONSTRUCTING_BUILDING) == 0
-                  && dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 0)
-          .beliefTypes(new HashSet<>(
-              Arrays.asList(FactConverters.IS_MORPHING, FactConverters.IS_CONSTRUCTING_BUILDING)))
+              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 0)
+          .beliefTypes(Collections.singleton(FactConverters.IS_MORPHING))
           .build())
       .build();
 

@@ -11,6 +11,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import aic.gas.sc.gg_bot.replay_parser.configuration.DecisionLearningConfiguration;
+import aic.gas.sc.gg_bot.replay_parser.model.clustering.PairWithOccurrenceCount;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.BatchIterator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionDomainGenerator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionModel;
@@ -20,6 +21,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.TrajectoryWrapper;
 import aic.gas.sc.gg_bot.replay_parser.service.IDecisionLearnerService;
 import aic.gas.sc.gg_bot.replay_parser.service.IFeatureNormalizerService;
+import aic.gas.sc.gg_bot.replay_parser.service.IPairFindingService;
 import aic.gas.sc.gg_bot.replay_parser.service.IPolicyLearningService;
 import aic.gas.sc.gg_bot.replay_parser.service.IStateClusteringService;
 import aic.gas.sc.gg_bot.replay_parser.service.IStorageService;
@@ -34,6 +36,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -60,6 +63,9 @@ public class DecisionLearnerService implements IDecisionLearnerService {
   private final IStateClusteringService stateClusteringService = new StateClusteringService();
   private final IPolicyLearningService policyLearningService = new PolicyLearningService();
   private final IFeatureNormalizerService featureNormalizerService = new FeatureNormalizerService();
+
+  private final IPairFindingService pairWithDifferentConsecutiveTransitionsFindingService = new PairWithDifferentConsecutiveTransitionsFindingService();
+  private final IPairFindingService differentConsecutivePairFindingService = new DifferentConsecutivePairFindingService();
 
   /**
    * Find nearest representative
@@ -210,7 +216,17 @@ public class DecisionLearnerService implements IDecisionLearnerService {
       List<FeatureNormalizer> normalizers = featureNormalizerService
           .computeFeatureNormalizersBasedOnStates(states, numberOfFeatures);
       List<Vec> classes = stateClusteringService
-          .computeStateRepresentatives(states, normalizers, configuration);
+          .computeStateRepresentatives(states, normalizers, configuration).stream()
+          .distinct()
+          .collect(Collectors.toList());
+
+      //TODO testing - how to filter
+//      Set<PairWithOccurrenceCount> pairsWithDifferentConsecutiveTransitions = pairWithDifferentConsecutiveTransitionsFindingService
+//          .findPairs(trajectoriesWrapped.stream()
+//              .map(TrajectoryWrapper::getTrajectory), normalizers);
+//      Set<PairWithOccurrenceCount> differentConsecutivePairFindingServicePairs = differentConsecutivePairFindingService
+//          .findPairs(trajectoriesWrapped.stream()
+//              .map(TrajectoryWrapper::getTrajectory), normalizers);
 
       //create states with corresponding mean
       List<DecisionState> decisionStates = IntStream.range(0, classes.size()).boxed()
@@ -285,7 +301,8 @@ public class DecisionLearnerService implements IDecisionLearnerService {
       BatchIterator batchIterator = new BatchIterator(
           configuration.getCountOfTrajectoriesPerIRLBatch(), episodesToLearnFrom);
       Policy policy = policyLearningService
-          .learnPolicy(domain, batchIterator.sampleBatchFromEpisodes(), configuration);
+          .learnPolicy(domain, batchIterator.sampleBatchFromEpisodes(), configuration,
+              classes.size());
 
       //form decision point data structure and store it
       MDPForDecisionWithPolicy mdpForDecisionWithPolicy = createDecisionPoint(normalizers,

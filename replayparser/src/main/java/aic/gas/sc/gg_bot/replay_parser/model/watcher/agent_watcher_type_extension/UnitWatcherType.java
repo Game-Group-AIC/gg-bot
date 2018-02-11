@@ -47,8 +47,7 @@ public class UnitWatcherType extends AgentWatcherType {
     super(agentTypeID, factKeys, factSetsKeys, planWatchers, reasoning);
     this.getFactSetsKeys().addAll(Arrays.asList(ENEMY_BUILDING, ENEMY_AIR,
         ENEMY_GROUND, OWN_BUILDING, OWN_AIR, OWN_GROUND));
-    this.getFactKeys().add(REPRESENTS_UNIT);
-    this.getFactKeys().add(LOCATION);
+    this.getFactKeys().addAll(Arrays.asList(REPRESENTS_UNIT, LOCATION));
   }
 
   /**

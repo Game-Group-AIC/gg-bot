@@ -30,7 +30,7 @@ public abstract class PlanWatcher {
     this.container = featureContainerInitializationStrategy.returnFeatureContainer();
     this.desireKey = desireKey;
     this.trajectory = new Trajectory(this.container.getNumberOfFeatures());
-    this.currentState = this.container.getFeatureVector().clone();
+    this.currentState = this.container.getFeatureVector();
   }
 
   public void addCommitment() {
@@ -58,12 +58,12 @@ public abstract class PlanWatcher {
    */
   public void addNewStateIfAgentHasTransitedToOne(Beliefs beliefs,
       IWatcherMediatorService mediatorService, Set<Integer> committedToIDs) {
-    double[] currentFeatureState = container.getFeatureVector().clone();
+    double[] currentFeatureState = container.getFeatureVector();
     boolean hasStatusChanged = false;
     if (isCommitted != isAgentCommitted(mediatorService, beliefs)) {
       isCommitted = !isCommitted;
 
-      //notify other agents that this one is commited to their desire
+      //notify other agents that this one is committed to their desire
       streamOfAgentsToNotifyAboutCommitment().forEach(agentWatcher -> agentWatcher
           .commitmentByOtherAgentToDesireOfThisAgentHasBeenChanged(isCommitted, desireKey));
 

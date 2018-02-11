@@ -12,6 +12,7 @@ public class Learner {
 
   public static void main(String[] args) throws Exception {
 
+    //TODO increase
     int num_proc = 8;
     String NUM_PROC = System.getenv("NUM_PROC");
     if (NUM_PROC != null) {

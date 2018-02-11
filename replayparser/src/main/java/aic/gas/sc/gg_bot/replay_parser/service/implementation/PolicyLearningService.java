@@ -30,28 +30,30 @@ public class PolicyLearningService implements IPolicyLearningService {
   private static final boolean doNotPrintDebug = false;
 
   @Override
-  public Policy learnPolicy(SADomain domain, List<Episode> episodes, Configuration configuration) {
+  public Policy learnPolicy(SADomain domain, List<Episode> episodes, Configuration configuration,
+      int numberOfClusters) {
 
     //create reward function features to use
-    LocationFeatures features = new LocationFeatures(configuration.getClusters() + 1);
+    LocationFeatures features = new LocationFeatures(numberOfClusters + 1);
 
     //create a reward function that is linear with respect to those features and has small random
     //parameter values to start
     LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(features,
-        configuration.getClusters() + 1);
+        numberOfClusters + 1);
     for (int i = 0; i < rf.numParameters() - 1; i++) {
       rf.setParameter(i, DecisionDomainGenerator.getRandomRewardInInterval(configuration));
     }
 
     //set dummy state
-    rf.setParameter(rf.numParameters() - 1, configuration.getMinReward() * configuration.getMultiplierOfRewardForDeadEnd());
+    rf.setParameter(rf.numParameters() - 1,
+        configuration.getMinReward() * configuration.getMultiplierOfRewardForDeadEnd());
 
     //use either DifferentiableVI or DifferentiableSparseSampling for planning. The latter enables receding horizon IRL,
     //but you will probably want to use a fairly large horizon for this kind of reward function.
     HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 //        DifferentiableVI dplanner = new DifferentiableVI(domain, rf, 0.99, beta, hashingFactory, 0.01, 100);
     DifferentiableSparseSampling dplanner = new DifferentiableSparseSampling(domain, rf,
-        configuration.getGamma(), hashingFactory, (int) Math.sqrt(configuration.getClusters()),
+        configuration.getGamma(), hashingFactory, (int) Math.sqrt(numberOfClusters + 1),
         configuration.getCountOfTrajectoriesPerIRLBatch(), configuration.getBeta());
 
     dplanner.toggleDebugPrinting(doNotPrintDebug);

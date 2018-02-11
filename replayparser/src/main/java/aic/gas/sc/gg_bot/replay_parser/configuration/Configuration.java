@@ -58,7 +58,7 @@ public class Configuration {
   private int steps = 1000;
 
   @Builder.Default
-  private long timeBudget = 1000 * 60;
+  private long timeBudget = 1000 * 60 * 1;
 
   @Builder.Default
   private int countOfTrajectoriesPerIRLBatch = 20;

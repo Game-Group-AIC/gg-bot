@@ -10,11 +10,11 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_SCOUT_BY_WORKER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL_TO_MINE;
@@ -423,7 +423,8 @@ public class DroneAgentType {
                     AgentTypes.BASE_LOCATION)
                     //is base
                     .filter(
-                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE).get())
+                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
+                            .get())
                     //is ready
                     .filter(readOnlyMemory -> readOnlyMemory.returnFactSetValueForGivenKey(HAS_BASE)
                         .orElse(Stream.empty())
@@ -640,10 +641,10 @@ public class DroneAgentType {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                 && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()
-//                //is idle or no one is idle
-//                && (memory.returnFactValueForGivenKey(IS_UNIT).get().isIdle()
-//                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_IDLE_DRONES) == 0)
-//                //is on location or no one is on location
+                //is idle or no one is idle
+                && (memory.returnFactValueForGivenKey(IS_UNIT).get().isIdle()
+                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_IDLE_DRONES) == 0)
+                //is on location or no one is on location
                 && (dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get().equals(
                 memory.returnFactValueForGivenKey(IS_UNIT).get().getNearestBaseLocation()
                     .orElse(null))

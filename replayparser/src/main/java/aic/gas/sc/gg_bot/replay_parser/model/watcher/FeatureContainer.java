@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 public class FeatureContainer {
 
   //cloning features...
-  private static final Cloner CLONER = new Cloner();
   private final FeatureContainerHeader containerHeader;
   private final Object syncLock = new Object();
   @Getter
@@ -35,7 +34,7 @@ public class FeatureContainer {
   }
 
   public double[] getFeatureVector() {
-    return CLONER.deepClone(featureVector);
+    return featureVector.clone();
   }
 
   public void addCommitment() {

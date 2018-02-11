@@ -6,7 +6,7 @@ import java.io.IOException;
 public class SimpleBot extends BotFacade {
 
   private SimpleBot() {
-    super(35, false, true, true);
+    super(60, false, true, true);
   }
 
   public static void main(String[] args) throws IOException, InterruptedException {

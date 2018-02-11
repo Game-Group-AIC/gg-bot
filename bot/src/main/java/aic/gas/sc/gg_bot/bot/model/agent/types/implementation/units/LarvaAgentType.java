@@ -20,7 +20,7 @@ public class LarvaAgentType {
 
   public static final AgentTypeUnit LARVA = AgentTypeUnit.builder()
       .agentTypeID(AgentTypes.LARVA)
-      .usingTypesForFacts(new HashSet<>(Collections.singletonList(IS_MORPHING_TO)))
+      .usingTypesForFacts(Collections.singleton(IS_MORPHING_TO))
       .initializationStrategy(type -> {
 
         //Template for morphing command

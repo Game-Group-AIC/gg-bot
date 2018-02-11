@@ -1,11 +1,8 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.CREEP_COLONY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.DRONE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.EGG;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.LARVA;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.SPORE_COLONY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.SUNKEN_COLONY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_CREEP_COLONY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_SPORE_COLONY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_SUNKEN_COLONY;
@@ -35,12 +32,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HOLD_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_START_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
@@ -89,6 +86,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extensio
 import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import bwapi.Game;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -126,8 +124,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
             OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS, STATIC_DEFENSE, ENEMY_UNIT)
             .collect(Collectors.toSet()))
         .reasoning((bl, ms) -> {
-          ABaseLocationWrapper base = bl.returnFactValueForGivenKey(IS_BASE_LOCATION)
-              .get();
+          ABaseLocationWrapper base = bl.returnFactValueForGivenKey(IS_BASE_LOCATION).get();
 
           //enemy's units
           Set<AUnit.Enemy> enemies = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
@@ -276,7 +273,9 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
               .collect(Collectors.toSet()));
           bl.updateFactSetByFacts(HAS_BASE,
               bl.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
-                  .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isBase())
+                  .filter(aUnitOfPlayer ->
+                      aUnitOfPlayer.getType().equals(AUnitTypeWrapper.HATCHERY_TYPE)
+                          || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.LAIR_TYPE))
                   .collect(Collectors.toSet()));
           bl.updateFactSetByFacts(HAS_EXTRACTOR,
               bl.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
@@ -474,158 +473,77 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
         .agentTypeID(AgentTypes.BASE_LOCATION)
         .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
 
-                //HOLD_GROUND
-                () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_GROUND_UNITS),
-                    HOLD_GROUND) {
+            //HOLD_GROUND
+            () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_GROUND_UNITS),
+                HOLD_GROUND) {
 
-                  @Override
-                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
-                      Beliefs beliefs) {
-                    ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                        .get();
-                    return mediatorService.getStreamOfWatchers()
-                        .filter(agentWatcher -> agentWatcher.getBeliefs()
-                            .isFactKeyForValueInMemory(HOLD_LOCATION))
-                        .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
-                        .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(REPRESENTS_UNIT))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .map(AUnit::getType)
-                        .filter(typeWrapper -> !typeWrapper.isFlyer() && !typeWrapper.isWorker()
-                            && !typeWrapper.isNotActuallyUnit())
-                        .count() > 3;
-                  }
+              @Override
+              protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
+                  Beliefs beliefs) {
+                ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                    .get();
+                return mediatorService.getStreamOfWatchers()
+                    .filter(agentWatcher -> agentWatcher.getBeliefs()
+                        .isFactKeyForValueInMemory(HOLD_LOCATION))
+                    .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
+                        .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
+                    .map(agentWatcher -> agentWatcher.getBeliefs()
+                        .returnFactValueForGivenKey(REPRESENTS_UNIT))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(AUnit::getType)
+                    .filter(typeWrapper -> !typeWrapper.isFlyer() && !typeWrapper.isWorker()
+                        && !typeWrapper.isNotActuallyUnit())
+                    .count() > 3;
+              }
 
-                  @Override
-                  protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
-                    return Stream.empty();
-                  }
-                },
+              @Override
+              protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
+                return Stream.empty();
+              }
+            },
 
-                //HOLD_AIR
-                () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_AIR_UNITS), HOLD_AIR) {
+            //HOLD_AIR
+            () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_AIR_UNITS), HOLD_AIR) {
 
-                  @Override
-                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
-                      Beliefs beliefs) {
-                    ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                        .get();
-                    return mediatorService.getStreamOfWatchers()
-                        .filter(agentWatcher -> agentWatcher.getBeliefs()
-                            .isFactKeyForValueInMemory(HOLD_LOCATION))
-                        .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
-                        .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(REPRESENTS_UNIT))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .map(AUnit::getType)
-                        .filter(typeWrapper -> typeWrapper.isFlyer()
-                            && !typeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE)
-                            && !typeWrapper.isNotActuallyUnit())
-                        .count() > 3;
-                  }
+              @Override
+              protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
+                  Beliefs beliefs) {
+                ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                    .get();
+                return mediatorService.getStreamOfWatchers()
+                    .filter(agentWatcher -> agentWatcher.getBeliefs()
+                        .isFactKeyForValueInMemory(HOLD_LOCATION))
+                    .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
+                        .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
+                    .map(agentWatcher -> agentWatcher.getBeliefs()
+                        .returnFactValueForGivenKey(REPRESENTS_UNIT))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(AUnit::getType)
+                    .filter(typeWrapper -> typeWrapper.isFlyer()
+                        && !typeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE))
+                    .count() > 3;
+              }
 
-                  @Override
-                  protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
-                    return Stream.empty();
-                  }
-                },
+              @Override
+              protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
+                return Stream.empty();
+              }
+            },
 
-                //BUILD_CREEP_COLONY
-                () -> new PlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_CREEP_COLONY) {
+            //BUILD_CREEP_COLONY
+            () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_CREEP_COLONY,
+                AUnitTypeWrapper.CREEP_COLONY_TYPE),
 
-                  @Override
-                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
-                      Beliefs beliefs) {
-                    ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                        .get();
+            //BUILD_SUNKEN_COLONY
+            () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SUNKEN_COLONY,
+                AUnitTypeWrapper.SUNKEN_COLONY_TYPE),
 
-                    //building colony only in base
-                    return beliefs.returnFactValueForGivenKey(IS_OUR_BASE).get() && mediatorService
-                        .getStreamOfWatchers()
-                        .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                            .equals(CREEP_COLONY.getName()))
-                        .filter(agentWatcher ->
-                            agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).isPresent()
-                                && agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
-                                .equals(me))
-                        .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
-                        .filter(Optional::isPresent)
-                        .anyMatch(Optional::get);
-                  }
-
-                  @Override
-                  protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
-                    return Stream.empty();
-                  }
-                },
-
-                //BUILD_SUNKEN_COLONY
-                () -> new PlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SUNKEN_COLONY) {
-
-                  @Override
-                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
-                      Beliefs beliefs) {
-                    ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                        .get();
-
-                    //building colony only in base
-                    return beliefs.returnFactValueForGivenKey(IS_OUR_BASE).get() && mediatorService
-                        .getStreamOfWatchers()
-                        .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                            .equals(SUNKEN_COLONY.getName()))
-                        .filter(agentWatcher ->
-                            agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).isPresent()
-                                && agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
-                                .equals(me))
-                        .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
-                        .filter(Optional::isPresent)
-                        .anyMatch(Optional::get);
-                  }
-
-                  @Override
-                  protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
-                    return Stream.empty();
-                  }
-                },
-
-                //BUILD_SPORE_COLONY
-                () -> new PlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SPORE_COLONY) {
-
-                  @Override
-                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
-                      Beliefs beliefs) {
-                    ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                        .get();
-
-                    //building colony only in base
-                    return beliefs.returnFactValueForGivenKey(IS_OUR_BASE).get() && mediatorService
-                        .getStreamOfWatchers()
-                        .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                            .equals(SPORE_COLONY.getName()))
-                        .filter(agentWatcher ->
-                            agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).isPresent()
-                                && agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
-                                .equals(me))
-                        .map(agentWatcher -> agentWatcher.getBeliefs()
-                            .returnFactValueForGivenKey(IS_BEING_CONSTRUCTED))
-                        .filter(Optional::isPresent)
-                        .anyMatch(Optional::get);
-                  }
-
-                  @Override
-                  protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
-                    return Stream.empty();
-                  }
-                }
-            }
-            )
-        )
+            //BUILD_SPORE_COLONY
+            () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SPORE_COLONY,
+                AUnitTypeWrapper.SPORE_COLONY_TYPE)
+        }))
         .build()
     );
     this.baseLocation = baseLocation;
@@ -635,6 +553,52 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
     beliefs.updateFact(IS_BASE_LOCATION, baseLocation);
 
     this.updateChecksStrategy = updateChecksStrategy;
+  }
+
+  private static class ColonyPlanWatcher extends PlanWatcher {
+
+    private Set<Integer> committedAgents = new HashSet<>();
+    private final AUnitTypeWrapper typeToWatchFor;
+
+    ColonyPlanWatcher(FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
+        DesireKeyID desireKey, AUnitTypeWrapper typeToWatchFor) {
+      super(featureContainerInitializationStrategy, desireKey);
+      this.typeToWatchFor = typeToWatchFor;
+    }
+
+    @Override
+    protected boolean isAgentCommitted(IWatcherMediatorService mediatorService, Beliefs beliefs) {
+
+      //building colony only in base
+      if (!beliefs.returnFactValueForGivenKey(IS_OUR_BASE).orElse(false)) {
+        committedAgents.clear();
+        return false;
+      }
+
+      ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION).get();
+
+      Set<Integer> agentsMorphingToType = mediatorService.getStreamOfWatchers()
+          .filter(
+              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForValueInMemory(IS_MORPHING_TO))
+          .filter(agentWatcher -> typeToWatchFor.equals(agentWatcher.getBeliefs()
+              .returnFactValueForGivenKey(IS_MORPHING_TO).orElse(null)))
+          .filter(agentWatcher ->
+              agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).isPresent()
+                  && agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
+                  .equals(me))
+          .map(AgentWatcher::getID)
+          .collect(Collectors.toSet());
+
+      boolean isCommitted = agentsMorphingToType.stream()
+          .anyMatch(integer -> !committedAgents.contains(integer));
+      committedAgents = agentsMorphingToType;
+      return isCommitted;
+    }
+
+    @Override
+    protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
+      return Stream.empty();
+    }
   }
 
   /**

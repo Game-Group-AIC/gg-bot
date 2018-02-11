@@ -22,8 +22,10 @@ import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import bwapi.DefaultBWListener;
 import bwapi.Game;
 import bwapi.Mirror;
+import bwapi.Order;
 import bwapi.Player;
 import bwapi.Unit;
+import bwapi.UnitType;
 import bwta.BWTA;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,8 +35,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -89,6 +91,8 @@ public class BotFacade extends DefaultBWListener {
   private Player self;
 
   private Annotator annotator;
+
+//  private String orders = "";
 
   public BotFacade(long maxFrameExecutionTime, boolean annotateMap, boolean drawDebug,
       boolean issueCommandFromGUI) {
@@ -340,6 +344,32 @@ public class BotFacade extends DefaultBWListener {
     //TODO hack to ensure frame sync
     masFacade.notifyAgentsAboutNextCycle();
 
+    //check types
+    REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);
+
+//    //TODO
+//    //print orders of workers + buildings
+//    String cOrders = self.getUnits().stream()
+//        .filter(Unit::exists)
+//        .filter(unit -> unit.getType().isWorker() || unit.getType().isBuilding() || Stream.of(
+//            UnitType.Zerg_Larva, UnitType.Zerg_Egg)
+//            .anyMatch(unitType -> unit.getType() == unitType))
+//        .filter(unit -> unit.getOrder() != null)
+//        .filter(unit -> Stream
+//            .of(Order.WaitForMinerals, Order.MiningMinerals, Order.HarvestGas, Order.MoveToMinerals,
+//                Order.MoveToGas, Order.ReturnGas, Order.ReturnMinerals, Order.WaitForGas,
+//                Order.Nothing, Order.PlayerGuard, Order.PlayerGuard, Order.Move,
+//                Order.ResetCollision,
+//                Order.ZergBirth, Order.Guard)
+//            .noneMatch(order -> unit.getOrder() == order))
+//        .map(unit -> (unit.getType().isWorker() ? "W" : "B") + " " + unit.getID() + ": " + unit
+//            .getOrder().toString())
+//        .collect(Collectors.joining(","));
+//    if (!cOrders.equals(orders)) {
+//      orders = cOrders;
+//      log.info(game.getFrameCount() + ": " + orders);
+//    }
+
     //hold frame for a small amount of time to give MAS time to handle new data
     {
       if ((execution = System.currentTimeMillis() - time) < maxFrameExecutionTime) {
@@ -350,9 +380,6 @@ public class BotFacade extends DefaultBWListener {
         }
       }
     }
-
-    //check types
-    REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);
 
     if ((execution = System.currentTimeMillis() - time) >= 75) {
       game.printf("On frame " + game.getFrameCount() + " execution took " + execution + " ms.");
@@ -401,17 +428,4 @@ public class BotFacade extends DefaultBWListener {
   }
 
   //TODO handle more events - unit renegade, visibility
-
-  @Getter
-  @EqualsAndHashCode(of = "id")
-  private static class WorkerTuple {
-
-    private final int id;
-    private final Unit unit;
-
-    private WorkerTuple(Unit unit) {
-      this.unit = unit;
-      this.id = unit.getID();
-    }
-  }
 }

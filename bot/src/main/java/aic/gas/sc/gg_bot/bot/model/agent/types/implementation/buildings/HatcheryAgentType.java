@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BEING_CONSTRUCTED;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.LAIR_TYPE;
 
@@ -12,7 +12,6 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import java.util.Collections;
-import java.util.HashSet;
 
 public class HatcheryAgentType {
 
@@ -20,7 +19,7 @@ public class HatcheryAgentType {
       .agentTypeID(AgentTypes.HATCHERY)
       .initializationStrategy(type -> {
         type.addConfiguration(
-            DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION, AgentTypeUnit.beliefsAboutConstruction);
+            DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION, AgentTypeUnit.beliefsAboutMorphing);
 
         //upgrade to lair
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent upgradeToLair = ConfigurationWithCommand.
@@ -42,8 +41,8 @@ public class HatcheryAgentType {
             .build();
         type.addConfiguration(DesiresKeys.UPGRADE_TO_LAIR, upgradeToLair);
       })
-      .usingTypesForFacts(new HashSet<>(Collections.singletonList(IS_BEING_CONSTRUCTED)))
-      .desiresWithIntentionToReason(new HashSet<>(Collections.singletonList(
-          DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION)))
+      .usingTypesForFacts(Collections.singleton(IS_MORPHING_TO))
+      .desiresWithIntentionToReason(
+          Collections.singleton(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION))
       .build();
 }

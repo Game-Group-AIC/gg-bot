@@ -306,19 +306,10 @@ public class FactKeys {
     }
   };
   public static final FactKey<TypeWrapperStrategy> MORPH_TO = new FactKey<TypeWrapperStrategy>(
-      "MORPH_TO_DRONE", false) {
+      "MORPH_TO", false) {
     @Override
     public TypeWrapperStrategy getInitValue() {
       return null;
-    }
-  };
-
-  //for buildings
-  public static final FactKey<Boolean> IS_BEING_CONSTRUCTED = new FactKey<Boolean>(
-      "IS_BEING_CONSTRUCTED", false) {
-    @Override
-    public Boolean getInitValue() {
-      return false;
     }
   };
 

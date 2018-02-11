@@ -7,7 +7,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWr
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
@@ -19,7 +18,10 @@ import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import bwapi.Order;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,15 +56,24 @@ public class FactConverters {
           .orElse(0.0)
       , AgentTypes.PLAYER);
 
+  //TODO refactor - move to player
   //converters for base
   public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> AVERAGE_COUNT_OF_WORKERS_PER_BASE = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(2, FactKeys.WORKER_ON_BASE), AgentTypes.BASE_LOCATION,
-      optionalStream -> (double) optionalStream
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .mapToLong(Stream::count)
-          .average().orElse(0.0)
+      optionalStream -> {
+        Set<Stream<AUnitOfPlayer>> streamSet = optionalStream
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toSet());
+        System.out.println("AVG WPB");
+        return (double) streamSet.stream()
+            .mapToLong(Stream::count)
+            .peek(System.out::println)
+            .average().orElse(0.0);
+      }
   );
+
+  //TODO refactor - move to player
   public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(4, FactKeys.WORKER_MINING_GAS), AgentTypes.BASE_LOCATION,
       optionalStream -> (double) optionalStream
@@ -85,9 +96,11 @@ public class FactConverters {
   public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_EXTRACTORS_ON_BASE = new FactWithOptionalValueSet<>(
       new FactConverterID<>(7, FactKeys.HAS_EXTRACTOR),
       aUnitStream -> aUnitStream.map(aUnitStream1 -> (double) aUnitStream1
-          .filter(
-              aUnitOfPlayer -> !aUnitOfPlayer.isMorphing() && !aUnitOfPlayer.isBeingConstructed())
+          .filter(aUnitOfPlayer -> !aUnitOfPlayer.isMorphing()
+              && !aUnitOfPlayer.isBeingConstructed())
           .count()).orElse(0.0));
+
+  //TODO refactor
   public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> COUNT_OF_BASES_WITHOUT_EXTRACTORS = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(8, FactKeys.HAS_EXTRACTOR), AgentTypes.BASE_LOCATION,
       optionalStream -> {
@@ -277,6 +290,7 @@ public class FactConverters {
   public static final FactWithOptionalValue<Boolean> IS_START_LOCATION = new FactWithOptionalValue<>(
       new FactConverterID<>(327, FactKeys.IS_START_LOCATION),
       aBoolean -> aBoolean.orElse(false) ? 1.0 : 0.0);
+
   //defense
   public static final FactWithOptionalValueSet<AUnitOfPlayer> COUNT_OF_CREEP_COLONIES_AT_BASE = new FactWithOptionalValueSet<>(
       new FactConverterID<>(328, FactKeys.STATIC_DEFENSE),
@@ -332,9 +346,6 @@ public class FactConverters {
       aDouble -> aDouble.orElse(0.0));
 
   //building
-  public static final FactWithOptionalValue<AUnitOfPlayer> IS_BEING_CONSTRUCTED = new FactWithOptionalValue<>(
-      new FactConverterID<>(401, FactKeys.REPRESENTS_UNIT),
-      aUnit -> aUnit.get().isBeingConstructed() && aUnit.get().getType().isBuilding() ? 1.0 : 0.0);
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_POOLS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(402, FactKeys.REPRESENTS_UNIT),
       optionalStream -> (double) optionalStream
@@ -363,10 +374,12 @@ public class FactConverters {
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .count(), AgentTypes.EVOLUTION_CHAMBER);
 
-  //"barracks"
+  //"is unit morphing - command was issued"
   public static final FactWithOptionalValue<AUnitOfPlayer> IS_MORPHING = new FactWithOptionalValue<>(
       new FactConverterID<>(502, FactKeys.REPRESENTS_UNIT),
-      aUnit -> aUnit.get().isMorphing() ? 1.0 : 0.0);
+      aUnit -> aUnit.get().getOrder().isPresent() && Stream
+          .of(Order.ZergBuildingMorph, Order.IncompleteBuilding, Order.ZergUnitMorph)
+          .anyMatch(order -> order == aUnit.get().getOrder().get()) ? 1.0 : 0.0);
 
   //worker
   public static final FactWithOptionalValue<AUnit> IS_MINING_MINERAL = new FactWithOptionalValue<>(
@@ -398,7 +411,63 @@ public class FactConverters {
       .map(Optional::get)
       .filter(AUnit::isIdle)
       .count(), AgentTypes.DRONE);
-  public static final FactWithOptionalValue<AUnitWithCommands> IS_CONSTRUCTING_BUILDING = new FactWithOptionalValue<>(
-      new FactConverterID<>(711, FactKeys.IS_UNIT),
-      aUnit -> aUnit.get().isConstructing() ? 1.0 : 0.0);
+
+  //morphing to - count has cap 3
+  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_EXTRACTORS = new FactWithSetOfOptionalValues<>(
+      new FactConverterID<>(801, FactKeys.IS_MORPHING_TO),
+      optionalStream -> Math.min(optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(AUnitTypeWrapper::isGasBuilding)
+          .count(), 3.0));
+  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_OVERLORDS = new FactWithSetOfOptionalValues<>(
+      new FactConverterID<>(802, FactKeys.IS_MORPHING_TO),
+      optionalStream -> Math.min(optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(unitTypeWrapper -> unitTypeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE))
+          .count(), 3.0));
+  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_DRONES = new FactWithSetOfOptionalValues<>(
+      new FactConverterID<>(803, FactKeys.IS_MORPHING_TO),
+      optionalStream -> Math.min(optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(AUnitTypeWrapper::isWorker)
+          .count(), 3.0));
+  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_HATCHERIES = new FactWithSetOfOptionalValues<>(
+      new FactConverterID<>(804, FactKeys.IS_MORPHING_TO),
+      optionalStream -> Math.min(optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(unitTypeWrapper -> unitTypeWrapper.equals(AUnitTypeWrapper.HATCHERY_TYPE))
+          .count(), 3.0));
+  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_AIRS = new FactWithSetOfOptionalValues<>(
+      new FactConverterID<>(805, FactKeys.IS_MORPHING_TO),
+      optionalStream -> Math.min(optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(
+              unitTypeWrapper -> unitTypeWrapper.isFlyer() && !unitTypeWrapper.isNotActuallyUnit()
+                  && !unitTypeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE))
+          .count(), 3.0));
+  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_RANGED = new FactWithSetOfOptionalValues<>(
+      new FactConverterID<>(806, FactKeys.IS_MORPHING_TO),
+      optionalStream -> Math.min(optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(
+              unitTypeWrapper -> !unitTypeWrapper.isWorker() && !unitTypeWrapper.isFlyer()
+                  && !unitTypeWrapper.isNotActuallyUnit()
+                  && !unitTypeWrapper.equals(AUnitTypeWrapper.ZERGLING_TYPE))
+          .count(), 3.0));
+  public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_MELEE = new FactWithSetOfOptionalValues<>(
+      new FactConverterID<>(807, FactKeys.IS_MORPHING_TO),
+      optionalStream -> Math.min(optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .filter(
+              unitTypeWrapper -> unitTypeWrapper.equals(AUnitTypeWrapper.ZERGLING_TYPE))
+          .count(), 3.0));
+
+
 }

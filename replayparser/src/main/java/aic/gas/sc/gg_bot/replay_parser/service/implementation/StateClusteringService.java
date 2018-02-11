@@ -28,7 +28,7 @@ public class StateClusteringService implements IStateClusteringService {
       List<FeatureNormalizer> normalizers, Configuration configuration) {
     MiniBatchKMeans batchKMeans = new MiniBatchKMeans(VectorNormalizer.DISTANCE_FUNCTION,
         configuration.getBatchSize(), configuration.getIterations(), SEED_SELECTION_METHOD);
-    batchKMeans.cluster(createDataSet(states, normalizers), configuration.getClusters());
+    batchKMeans.cluster(createDataSet(states, normalizers), Math.min(configuration.getClusters(), states.size()));
     return batchKMeans.getMeans();
   }
 
