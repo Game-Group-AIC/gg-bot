@@ -314,6 +314,27 @@ public class FactKeys {
   };
 
   //for player - general facts about the game
+  public static final FactKey<Double> AVERAGE_COUNT_OF_WORKERS_PER_BASE = new FactKey<Double>(
+      "AVERAGE_COUNT_OF_WORKERS_PER_BASE", false) {
+    @Override
+    public Double getInitValue() {
+      return 0.0;
+    }
+  };
+  public static final FactKey<Double> AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE = new FactKey<Double>(
+      "AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE", false) {
+    @Override
+    public Double getInitValue() {
+      return 0.0;
+    }
+  };
+  public static final FactKey<Integer> COUNT_OF_BASES_WITHOUT_EXTRACTORS = new FactKey<Integer>(
+      "COUNT_OF_BASES_WITHOUT_EXTRACTORS", false) {
+    @Override
+    public Integer getInitValue() {
+      return 0;
+    }
+  };
   public static final FactKey<Double> FORCE_SUPPLY_RATIO = new FactKey<Double>("FORCE_SUPPLY_RATIO",
       false) {
     @Override

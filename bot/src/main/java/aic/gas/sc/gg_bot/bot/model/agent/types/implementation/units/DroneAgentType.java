@@ -642,8 +642,8 @@ public class DroneAgentType {
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                 && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()
                 //is idle or no one is idle
-                && (memory.returnFactValueForGivenKey(IS_UNIT).get().isIdle()
-                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_IDLE_DRONES) == 0)
+//                && (memory.returnFactValueForGivenKey(IS_UNIT).get().isIdle()
+//                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_IDLE_DRONES) == 0)
                 //is on location or no one is on location
                 && (dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get().equals(
                 memory.returnFactValueForGivenKey(IS_UNIT).get().getNearestBaseLocation()

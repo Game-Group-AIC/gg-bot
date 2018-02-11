@@ -21,14 +21,12 @@ public class FeatureContainerHeaders {
   //ECO manager
   public static final FeatureContainerHeader BUILDING_EXTRACTOR = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(
-          Stream.of(FactConverters.COUNT_OF_BASES, FactConverters.IS_POOL_BUILT)
+          Stream.of(FactConverters.COUNT_OF_BASES, FactConverters.IS_POOL_BUILT,
+              FactConverters.COUNT_OF_BASES_WITHOUT_EXTRACTORS,
+              FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
+              FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
               .collect(Collectors.toSet()))
-      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
-          FactConverters.COUNT_OF_BASES_WITHOUT_EXTRACTORS,
-          FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
-          FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
-          .collect(Collectors.toSet()))
-//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_EXTRACTORS))
+      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_EXTRACTORS))
       .build();
 
   public static final FeatureContainerHeader INCREASING_CAPACITY = FeatureContainerHeader.builder()
@@ -37,37 +35,33 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(
           FactConverters.FREE_SUPPLY, FactConverters.GAME_PHASE)
           .collect(Collectors.toSet()))
-//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_OVERLORDS))
+      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_OVERLORDS))
       .build();
 
   public static final FeatureContainerHeader TRAINING_WORKER = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(FactConverters.GAME_PHASE,
-          FactConverters.IS_POOL_BUILT, FactConverters.FORCE_SUPPLY_RATIO)
+          FactConverters.IS_POOL_BUILT, FactConverters.FORCE_SUPPLY_RATIO,
+          FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE)
           .collect(Collectors.toSet()))
-      .convertersForFactSetsForGlobalBeliefsByAgentType(Collections.singleton(
-          FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE))
-//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_DRONES))
+      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_DRONES))
       .build();
 
   public static final FeatureContainerHeader EXPANDING = FeatureContainerHeader.builder()
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(
           FactConverters.FORCE_SUPPLY_RATIO, FactConverters.DIFFERENCE_IN_BASES,
-          FactConverters.COUNT_OF_MINERALS, FactConverters.GAME_PHASE)
-          .collect(Collectors.toSet()))
-      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream.of(
+          FactConverters.COUNT_OF_MINERALS, FactConverters.GAME_PHASE,
           FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE)
           .collect(Collectors.toSet()))
-//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_HATCHERIES))
+      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_HATCHERIES))
       .build();
 
   //Build order manager
   public static final FeatureContainerHeader BUILDING_POOL = FeatureContainerHeader.builder()
-      .convertersForFactsForGlobalBeliefsByAgentType(
-          Collections.singleton(FactConverters.FORCE_SUPPLY_RATIO))
-      .convertersForFactSetsForGlobalBeliefsByAgentType(Stream
-          .of(FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE,
-              FactConverters.CAN_ENEMY_PRODUCE_MILITARY_UNITS)
+      .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(FactConverters.FORCE_SUPPLY_RATIO,
+          FactConverters.AVERAGE_COUNT_OF_WORKERS_PER_BASE)
           .collect(Collectors.toSet()))
+      .convertersForFactSetsForGlobalBeliefsByAgentType(Collections
+          .singleton(FactConverters.CAN_ENEMY_PRODUCE_MILITARY_UNITS))
       .build();
 
   public static final FeatureContainerHeader UPGRADING_TO_LAIR = FeatureContainerHeader.builder()
@@ -106,16 +100,16 @@ public class FeatureContainerHeaders {
   //Unit order manager
   public static final FeatureContainerHeader BOOSTING_AIR = FeatureContainerHeader.builder()
       .convertersForFactSetsForGlobalBeliefsByAgentType(Stream
-          .of(FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-              FactConverters.SUM_OF_ENEMY_AIR_DMG, FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
+          .of(FactConverters.SUM_OF_ENEMY_AIR_DMG, FactConverters.SUM_OF_ENEMY_STATIC_AIR_DMG,
               FactConverters.SUM_OF_ENEMY_STATIC_GROUND_DMG,
               FactConverters.HAS_AT_LEAST_10_ARMY_SUPPLY)
           .collect(Collectors.toSet()))
       .convertersForFactsForGlobalBeliefsByAgentType(Stream
           .of(FactConverters.DIFFERENCE_IN_BASES, FactConverters.HAS_AT_LEAST_TWO_BASES,
-              FactConverters.GAME_PHASE, FactConverters.ENEMY_BASES_UNPROTECTED_AGAINST_AIR)
+              FactConverters.GAME_PHASE, FactConverters.ENEMY_BASES_UNPROTECTED_AGAINST_AIR,
+              FactConverters.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE)
           .collect(Collectors.toSet()))
-//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_AIRS))
+      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_AIRS))
       .build();
 
   public static final FeatureContainerHeader BOOSTING_GROUND_MELEE = FeatureContainerHeader
@@ -128,7 +122,7 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(FactConverters.DIFFERENCE_IN_BASES,
           FactConverters.ENEMY_BASES_UNPROTECTED_AGAINST_GROUND, FactConverters.FORCE_SUPPLY_RATIO)
           .collect(Collectors.toSet()))
-//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_MELEE))
+      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_MELEE))
       .build();
 
   public static final FeatureContainerHeader BOOSTING_GROUND_RANGED = FeatureContainerHeader
@@ -141,7 +135,7 @@ public class FeatureContainerHeaders {
       .convertersForFactsForGlobalBeliefsByAgentType(Stream.of(FactConverters.DIFFERENCE_IN_BASES,
           FactConverters.FORCE_SUPPLY_RATIO)
           .collect(Collectors.toSet()))
-//      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_RANGED))
+      .convertersForFactsForGlobalBeliefs(Collections.singleton(COUNT_OF_INCOMPLETE_RANGED))
       .build();
 
   //BASE

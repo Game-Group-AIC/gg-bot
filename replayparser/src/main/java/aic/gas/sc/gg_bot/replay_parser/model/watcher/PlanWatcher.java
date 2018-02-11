@@ -58,7 +58,6 @@ public abstract class PlanWatcher {
    */
   public void addNewStateIfAgentHasTransitedToOne(Beliefs beliefs,
       IWatcherMediatorService mediatorService, Set<Integer> committedToIDs) {
-    double[] currentFeatureState = container.getFeatureVector();
     boolean hasStatusChanged = false;
     if (isCommitted != isAgentCommitted(mediatorService, beliefs)) {
       isCommitted = !isCommitted;
@@ -72,7 +71,7 @@ public abstract class PlanWatcher {
     if (container.isStatusUpdated(beliefs, mediatorService, committedToIDs) || hasStatusChanged) {
       trajectory.addNewState(new State(currentState, isCommitted));
     }
-    currentState = currentFeatureState;
+    currentState = container.getFeatureVector();
   }
 
   @Override

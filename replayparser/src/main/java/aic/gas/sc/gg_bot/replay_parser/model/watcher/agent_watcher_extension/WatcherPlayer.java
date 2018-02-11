@@ -3,6 +3,9 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_MINERALS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVERAGE_COUNT_OF_WORKERS_PER_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.COUNT_OF_BASES_WITHOUT_EXTRACTORS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DIFFERENCE_IN_BASES;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BASE;
@@ -14,9 +17,10 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FORCE_SUPPLY_RATIO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FREE_SUPPLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
@@ -30,6 +34,8 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUN
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION_LIMIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.UpgradeTypeStatus;
@@ -42,6 +48,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.WatcherPlayerType;
 import bwapi.Game;
 import bwapi.Player;
@@ -63,7 +70,9 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
   public WatcherPlayer(Player player, Game game) {
     super(WatcherPlayerType.builder()
         .factKeys(Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT,
-            POPULATION, IS_PLAYER, FREE_SUPPLY, FORCE_SUPPLY_RATIO, DIFFERENCE_IN_BASES)
+            POPULATION, IS_PLAYER, FREE_SUPPLY, FORCE_SUPPLY_RATIO, DIFFERENCE_IN_BASES,
+            AVERAGE_COUNT_OF_WORKERS_PER_BASE, AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
+            COUNT_OF_BASES_WITHOUT_EXTRACTORS)
             .collect(Collectors.toSet()))
         .factSetsKeys(Stream.of(UPGRADE_STATUS, OUR_BASE, ENEMY_BASE,
             OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
@@ -192,6 +201,34 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
           bl.updateFact(DIFFERENCE_IN_BASES, Utils
               .computeDifferenceInBases(bl.returnFactSetValueForGivenKey(OUR_BASE),
                   bl.returnFactSetValueForGivenKey(ENEMY_BASE)));
+
+          //our bases aggregated info
+          Set<Beliefs> ourBases = ms.getStreamOfWatchers()
+              .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
+                  .equals(BASE_LOCATION.getName()))
+              .map(AgentWatcher::getBeliefs)
+              .filter(blf -> blf.returnFactValueForGivenKey(IS_OUR_BASE).orElse(false))
+              .collect(Collectors.toSet());
+          bl.updateFact(AVERAGE_COUNT_OF_WORKERS_PER_BASE, ourBases.stream()
+              .map(readOnlyMemory -> readOnlyMemory
+                  .returnFactSetValueForGivenKey(WORKER_ON_BASE))
+              .map(str -> str.orElse(Stream.empty()))
+              .mapToDouble(Stream::count)
+              .average().orElse(0.0));
+          bl.updateFact(AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE, ourBases.stream()
+              .map(readOnlyMemory -> readOnlyMemory
+                  .returnFactSetValueForGivenKey(WORKER_MINING_GAS))
+              .map(str -> str.orElse(Stream.empty()))
+              .mapToDouble(Stream::count)
+              .average().orElse(0.0));
+          bl.updateFact(COUNT_OF_BASES_WITHOUT_EXTRACTORS, (int) ourBases.stream()
+              .filter(readOnlyMemory -> readOnlyMemory
+                  .returnFactSetValueForGivenKey(HAS_EXTRACTOR)
+                  .orElse(Stream.empty()).count() == 0)
+              .map(readOnlyMemory -> readOnlyMemory
+                  .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
+              .filter(locationWrapper -> !locationWrapper.isMineralOnly())
+              .count());
         })
         .planWatchers(new ArrayList<>())
         .build()

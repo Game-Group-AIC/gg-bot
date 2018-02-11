@@ -3,7 +3,10 @@ package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.player;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_MINERALS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVERAGE_COUNT_OF_WORKERS_PER_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.COUNT_OF_BASES_WITHOUT_EXTRACTORS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DIFFERENCE_IN_BASES;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BASE;
@@ -15,9 +18,10 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FORCE_SUPPLY_RATIO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FREE_SUPPLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
@@ -33,6 +37,8 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION_LIMIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ARMY_SUPPLY_RATIO;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_BUILDINGS;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_UNITS;
@@ -52,6 +58,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypePlayer;
+import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
@@ -73,7 +80,8 @@ public class PlayerAgentType {
       .usingTypesForFacts(
           Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT, POPULATION,
               IS_PLAYER, BASE_TO_MOVE, IS_BASE_LOCATION, LOCATION, FREE_SUPPLY, FORCE_SUPPLY_RATIO,
-              DIFFERENCE_IN_BASES)
+              DIFFERENCE_IN_BASES, AVERAGE_COUNT_OF_WORKERS_PER_BASE,
+              AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE, COUNT_OF_BASES_WITHOUT_EXTRACTORS)
               .collect(Collectors.toSet()))
       .usingTypesForFactSets(Stream.of(UPGRADE_STATUS, OUR_BASE, ENEMY_BASE,
           OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
@@ -296,6 +304,33 @@ public class PlayerAgentType {
                 memory.updateFact(DIFFERENCE_IN_BASES, Utils
                     .computeDifferenceInBases(memory.returnFactSetValueForGivenKey(OUR_BASE),
                         memory.returnFactSetValueForGivenKey(ENEMY_BASE)));
+
+                //our bases aggregated info
+                Set<ReadOnlyMemory> ourBases = memory.getReadOnlyMemoriesForAgentType(BASE_LOCATION)
+                    .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
+                        .orElse(false))
+                    .collect(Collectors.toSet());
+                memory.updateFact(AVERAGE_COUNT_OF_WORKERS_PER_BASE, ourBases.stream()
+                    .map(readOnlyMemory -> readOnlyMemory
+                        .returnFactSetValueForGivenKey(WORKER_ON_BASE))
+                    .map(str -> str.orElse(Stream.empty()))
+                    .mapToDouble(Stream::count)
+                    .average().orElse(0.0));
+                memory.updateFact(AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE, ourBases.stream()
+                    .map(readOnlyMemory -> readOnlyMemory
+                        .returnFactSetValueForGivenKey(WORKER_MINING_GAS))
+                    .map(str -> str.orElse(Stream.empty()))
+                    .mapToDouble(Stream::count)
+                    .average().orElse(0.0));
+                memory.updateFact(COUNT_OF_BASES_WITHOUT_EXTRACTORS, (int) ourBases.stream()
+                    .filter(readOnlyMemory -> readOnlyMemory
+                        .returnFactSetValueForGivenKey(HAS_EXTRACTOR)
+                        .orElse(Stream.empty()).count() == 0)
+                    .map(readOnlyMemory -> readOnlyMemory
+                        .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
+                    .filter(locationWrapper -> !locationWrapper.isMineralOnly())
+                    .count());
+
                 return true;
               }
             })

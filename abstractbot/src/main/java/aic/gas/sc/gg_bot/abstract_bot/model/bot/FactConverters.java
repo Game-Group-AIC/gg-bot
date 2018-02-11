@@ -20,8 +20,6 @@ import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValu
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
 import bwapi.Order;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,35 +51,19 @@ public class FactConverters {
             }
           })
           .findFirst()
-          .orElse(0.0)
-      , AgentTypes.PLAYER);
+          .orElse(0.0), AgentTypes.PLAYER);
 
-  //TODO refactor - move to player
   //converters for base
-  public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> AVERAGE_COUNT_OF_WORKERS_PER_BASE = new FactWithOptionalValueSetsForAgentType<>(
-      new FactConverterID<>(2, FactKeys.WORKER_ON_BASE), AgentTypes.BASE_LOCATION,
-      optionalStream -> {
-        Set<Stream<AUnitOfPlayer>> streamSet = optionalStream
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toSet());
-        System.out.println("AVG WPB");
-        return (double) streamSet.stream()
-            .mapToLong(Stream::count)
-            .peek(System.out::println)
-            .average().orElse(0.0);
-      }
-  );
-
-  //TODO refactor - move to player
-  public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE = new FactWithOptionalValueSetsForAgentType<>(
-      new FactConverterID<>(4, FactKeys.WORKER_MINING_GAS), AgentTypes.BASE_LOCATION,
-      optionalStream -> (double) optionalStream
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .mapToLong(Stream::count)
-          .average().orElse(0.0)
-  );
+  public static final FactWithSetOfOptionalValuesForAgentType<Double> AVERAGE_COUNT_OF_WORKERS_PER_BASE = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(2, FactKeys.AVERAGE_COUNT_OF_WORKERS_PER_BASE), optionalStream ->
+      optionalStream.filter(Optional::isPresent)
+          .mapToDouble(Optional::get)
+          .sum(), AgentTypes.PLAYER);
+  public static final FactWithSetOfOptionalValuesForAgentType<Double> AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(3, FactKeys.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE),
+      optionalStream -> optionalStream.filter(Optional::isPresent)
+          .mapToDouble(Optional::get)
+          .sum(), AgentTypes.PLAYER);
   public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> COUNT_OF_EXTRACTORS = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(5, FactKeys.HAS_EXTRACTOR), AgentTypes.BASE_LOCATION,
       optionalStream -> (double) optionalStream
@@ -99,17 +81,11 @@ public class FactConverters {
           .filter(aUnitOfPlayer -> !aUnitOfPlayer.isMorphing()
               && !aUnitOfPlayer.isBeingConstructed())
           .count()).orElse(0.0));
-
-  //TODO refactor
-  public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> COUNT_OF_BASES_WITHOUT_EXTRACTORS = new FactWithOptionalValueSetsForAgentType<>(
-      new FactConverterID<>(8, FactKeys.HAS_EXTRACTOR), AgentTypes.BASE_LOCATION,
-      optionalStream -> {
-        long count = optionalStream.filter(aUnitOfPlayerStream -> !aUnitOfPlayerStream.isPresent()
-            || aUnitOfPlayerStream.get().count() == 0)
-            .count();
-        return count > 3 ? 3 : count;
-      }
-  );
+  public static final FactWithSetOfOptionalValuesForAgentType<Integer> COUNT_OF_BASES_WITHOUT_EXTRACTORS = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(8, FactKeys.COUNT_OF_BASES_WITHOUT_EXTRACTORS),
+      optionalStream -> Math.min(optionalStream.filter(Optional::isPresent)
+          .mapToInt(Optional::get)
+          .sum(), 3), AgentTypes.PLAYER);
 
   //converters for player's - aggregated data
   public static final FactWithSetOfOptionalValuesForAgentType<Boolean> COUNT_OF_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
