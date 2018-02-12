@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Random;
 import jsat.linear.distancemetrics.DistanceMetric;
 import jsat.linear.distancemetrics.EuclideanDistance;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class VectorNormalizer {
 
   public static final DistanceMetric DISTANCE_FUNCTION = new EuclideanDistance();
@@ -23,6 +25,7 @@ public class VectorNormalizer {
       //TODO features with mean and std equals to zero should be disabled
       if (normalizedValue.isNaN()) {
         normalizeFeatureVector[i] = 0;
+//        log.error("NaN value when normilizing vector on index " + i);
       } else {
         normalizeFeatureVector[i] = normalizedValue;
       }

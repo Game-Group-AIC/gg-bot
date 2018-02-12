@@ -58,13 +58,19 @@ public class Configuration {
   private int steps = 1000;
 
   @Builder.Default
-  private long timeBudget = 1000 * 60 * 1;
+  private long timeBudget = 1000 * 60 * 5;
 
   @Builder.Default
   private int countOfTrajectoriesPerIRLBatch = 20;
 
   @Builder.Default
   private int multiplierOfRewardForDeadEnd = 4;
+
+  @Builder.Default
+  private PSOParameters psoParameters = PSOParameters.builder().build();
+
+  @Builder.Default
+  private boolean usePSOForClustering = true;
 
   @Override
   public String toString() {
@@ -87,6 +93,8 @@ public class Configuration {
         ", timeBudget=" + timeBudget +
         ", countOfTrajectoriesPerIRLBatch=" + countOfTrajectoriesPerIRLBatch +
         ", multiplierOfRewardForDeadEnd=" + multiplierOfRewardForDeadEnd +
+        ", psoParameters=" + psoParameters +
+        ", usePSOForClustering=" + usePSOForClustering +
         '}';
   }
 }

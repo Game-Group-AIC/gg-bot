@@ -388,35 +388,35 @@ public class FactConverters {
       .filter(AUnit::isIdle)
       .count(), AgentTypes.DRONE);
 
-  //morphing to - count has cap 3
+  //morphing to - count has cap 2
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_EXTRACTORS = new FactWithSetOfOptionalValues<>(
       new FactConverterID<>(801, FactKeys.IS_MORPHING_TO),
       optionalStream -> Math.min(optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(AUnitTypeWrapper::isGasBuilding)
-          .count(), 3.0));
+          .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_OVERLORDS = new FactWithSetOfOptionalValues<>(
       new FactConverterID<>(802, FactKeys.IS_MORPHING_TO),
       optionalStream -> Math.min(optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(unitTypeWrapper -> unitTypeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE))
-          .count(), 3.0));
+          .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_DRONES = new FactWithSetOfOptionalValues<>(
       new FactConverterID<>(803, FactKeys.IS_MORPHING_TO),
       optionalStream -> Math.min(optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(AUnitTypeWrapper::isWorker)
-          .count(), 3.0));
+          .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_HATCHERIES = new FactWithSetOfOptionalValues<>(
       new FactConverterID<>(804, FactKeys.IS_MORPHING_TO),
       optionalStream -> Math.min(optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(unitTypeWrapper -> unitTypeWrapper.equals(AUnitTypeWrapper.HATCHERY_TYPE))
-          .count(), 3.0));
+          .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_AIRS = new FactWithSetOfOptionalValues<>(
       new FactConverterID<>(805, FactKeys.IS_MORPHING_TO),
       optionalStream -> Math.min(optionalStream
@@ -425,7 +425,7 @@ public class FactConverters {
           .filter(
               unitTypeWrapper -> unitTypeWrapper.isFlyer() && !unitTypeWrapper.isNotActuallyUnit()
                   && !unitTypeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE))
-          .count(), 3.0));
+          .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_RANGED = new FactWithSetOfOptionalValues<>(
       new FactConverterID<>(806, FactKeys.IS_MORPHING_TO),
       optionalStream -> Math.min(optionalStream
@@ -435,7 +435,7 @@ public class FactConverters {
               unitTypeWrapper -> !unitTypeWrapper.isWorker() && !unitTypeWrapper.isFlyer()
                   && !unitTypeWrapper.isNotActuallyUnit()
                   && !unitTypeWrapper.equals(AUnitTypeWrapper.ZERGLING_TYPE))
-          .count(), 3.0));
+          .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_MELEE = new FactWithSetOfOptionalValues<>(
       new FactConverterID<>(807, FactKeys.IS_MORPHING_TO),
       optionalStream -> Math.min(optionalStream
@@ -443,7 +443,7 @@ public class FactConverters {
           .map(Optional::get)
           .filter(
               unitTypeWrapper -> unitTypeWrapper.equals(AUnitTypeWrapper.ZERGLING_TYPE))
-          .count(), 3.0));
+          .count(), 2.0));
 
 
 }

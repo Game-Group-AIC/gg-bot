@@ -3,9 +3,11 @@ package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.utils.VectorNormalizer;
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
+import aic.gas.sc.gg_bot.replay_parser.model.clustering.PairWithOccurrenceCount;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.State;
 import aic.gas.sc.gg_bot.replay_parser.service.IStateClusteringService;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import jsat.SimpleDataSet;
 import jsat.classifiers.DataPoint;
@@ -25,10 +27,15 @@ public class StateClusteringService implements IStateClusteringService {
 
   @Override
   public List<Vec> computeStateRepresentatives(List<State> states,
-      List<FeatureNormalizer> normalizers, Configuration configuration) {
+      List<FeatureNormalizer> normalizers, Configuration configuration,
+      Set<PairWithOccurrenceCount> differentConsecutivePairFindingServicePairs) {
     MiniBatchKMeans batchKMeans = new MiniBatchKMeans(VectorNormalizer.DISTANCE_FUNCTION,
         configuration.getBatchSize(), configuration.getIterations(), SEED_SELECTION_METHOD);
-    batchKMeans.cluster(createDataSet(states, normalizers), Math.min(configuration.getClusters(), states.size()));
+    batchKMeans.cluster(createDataSet(states, normalizers),
+        (int) Math.min(configuration.getClusters(), states.stream()
+            .map(State::getFeatureVector)
+            .distinct()
+            .count()));
     return batchKMeans.getMeans();
   }
 
