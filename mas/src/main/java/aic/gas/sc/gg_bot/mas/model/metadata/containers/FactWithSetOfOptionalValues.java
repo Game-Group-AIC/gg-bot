@@ -16,7 +16,7 @@ public class FactWithSetOfOptionalValues<V> extends FactConverterID<V> {
 
   public FactWithSetOfOptionalValues(FactConverterID<V> factConverterID,
       FeatureRawValueObtainingStrategy<Stream<Optional<V>>> strategyToObtainValue) {
-    super(factConverterID.getID(), factConverterID.getFactKey());
+    super(factConverterID.getId(), factConverterID.getFactKey(), factConverterID.getName());
     this.strategyToObtainValue = strategyToObtainValue;
   }
 }

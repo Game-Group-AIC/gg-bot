@@ -39,6 +39,11 @@ public abstract class Key {
   }
 
   @Override
+  public String toString() {
+    return "Key: " + name;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

@@ -1,9 +1,11 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumerations;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.StateWithPolicy;
+import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.VectorNormalizer;
@@ -193,8 +195,24 @@ public class DecisionLearnerService implements IDecisionLearnerService {
           .getRandomListOfTrajectories(tuple.agentTypeID, tuple.desireKeyID, tuple.getMapSize(),
               tuple.getRace(), -1);
 
-      //get number of features for state
-      int numberOfFeatures = trajectoriesWrapped.get(0).getTrajectory().getNumberOfFeatures();
+      //load headers
+      Optional<FeatureContainerHeader> header = FeatureContainerHeaders
+          .getHeader(tuple.agentTypeID, tuple.desireKeyID);
+      String[] headers;
+      if (header.isPresent()) {
+        headers = header.get().getHeaders();
+      } else {
+
+        log.error(
+            "Could not find header for " + tuple.agentTypeID.getName() + ", " + tuple.desireKeyID
+                .getName());
+
+        //get number of features for state
+        int numberOfFeatures = trajectoriesWrapped.get(0).getTrajectory().getNumberOfFeatures();
+        headers = new String[numberOfFeatures];
+        IntStream.range(0, numberOfFeatures).boxed()
+            .forEach(integer -> headers[integer] = "N/A");
+      }
 
       //encountered states
       List<State> states = trajectoriesWrapped.stream()
@@ -204,13 +222,20 @@ public class DecisionLearnerService implements IDecisionLearnerService {
           .collect(Collectors.toList());
 
       log.info("Number of trajectories: " + trajectoriesWrapped.size()
-          + " with cardinality of features: " + numberOfFeatures + " for " + tuple.desireKeyID
+          + " with cardinality of features: " + headers.length + " for " + tuple.desireKeyID
           .getName() + " of " + tuple.agentTypeID.getName() + " on " + tuple.mapSize + " with "
           + tuple.race + ". Number of states: " + states.size() + ". With configuration "
           + configuration.toString());
 
       List<FeatureNormalizer> normalizers = featureNormalizerService
-          .computeFeatureNormalizersBasedOnStates(states, numberOfFeatures);
+          .computeFeatureNormalizersBasedOnStates(states, headers);
+
+      //print normilizers
+      String normalizersS = normalizers.stream()
+          .map(FeatureNormalizer::toString)
+          .collect(Collectors.joining(","));
+      log.info("Normalizers: " + normalizersS);
+
       List<Vec> classes = stateClusteringService
           .computeStateRepresentatives(states, normalizers, configuration,
               differentConsecutivePairFindingService.findPairs(trajectoriesWrapped.stream()
@@ -266,21 +291,20 @@ public class DecisionLearnerService implements IDecisionLearnerService {
 
               //add transition to episode. Do not add last transition if agent is committed. add positive reward only
               episode.transition(new SimpleAction(stateTransitionPair.nextActionEnumeration.name()),
-                  nextPair.decisionState,
-                  Math.abs(DecisionDomainGenerator.getRandomRewardInInterval(configuration)));
+                  nextPair.decisionState, Math.abs(DecisionDomainGenerator.getRandomRewardInInterval(configuration)));
 
               stateTransitionPair = nextPair;
             }
             return episode;
-          }).collect(Collectors.toList());
+          })
+          .collect(Collectors.toList());
 
       //init transition probabilities
       decisionStates.forEach(DecisionState::initTransitionProbabilities);
       DecisionModel decisionModel = new DecisionModel(decisionStates.size());
 
       //learn policy
-      DecisionDomainGenerator decisionDomainGenerator = new DecisionDomainGenerator(decisionModel,
-          configuration);
+      DecisionDomainGenerator decisionDomainGenerator = new DecisionDomainGenerator(decisionModel, configuration);
       SADomain domain = decisionDomainGenerator.generateDomain();
 
       log.info("Learning policy for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID

@@ -64,33 +64,33 @@ public class FeatureContainerHeader {
     Set<Integer> indexesSet = new HashSet<>();
 
     //add indexes
-    addIndexes(convertersForFacts.stream().map(FactConverterID::getID).collect(Collectors.toList()),
+    addIndexes(convertersForFacts.stream().map(FactConverterID::getId).collect(Collectors.toList()),
         indexesSet);
     strategiesToFillVectorOrdered.addAll(convertersForFacts.stream()
         .map(StrategyToFillValueInVectorUsingBeliefs.FromBeliefs::new)
         .collect(Collectors.toList()));
     addIndexes(
-        convertersForFactSets.stream().map(FactConverterID::getID).collect(Collectors.toList()),
+        convertersForFactSets.stream().map(FactConverterID::getId).collect(Collectors.toList()),
         indexesSet);
     strategiesToFillVectorOrdered.addAll(convertersForFactSets.stream()
         .map(StrategyToFillValueInVectorUsingBeliefs.FromBeliefsSet::new)
         .collect(Collectors.toList()));
-    addIndexes(convertersForFactsForGlobalBeliefs.stream().map(FactConverterID::getID)
+    addIndexes(convertersForFactsForGlobalBeliefs.stream().map(FactConverterID::getId)
         .collect(Collectors.toList()), indexesSet);
     strategiesToFillVectorOrdered.addAll(convertersForFactsForGlobalBeliefs.stream()
         .map(StrategyToFillValueInVectorUsingBeliefs.FromGlobalBeliefs::new)
         .collect(Collectors.toList()));
-    addIndexes(convertersForFactSetsForGlobalBeliefs.stream().map(FactConverterID::getID)
+    addIndexes(convertersForFactSetsForGlobalBeliefs.stream().map(FactConverterID::getId)
         .collect(Collectors.toList()), indexesSet);
     strategiesToFillVectorOrdered.addAll(convertersForFactSetsForGlobalBeliefs.stream()
         .map(StrategyToFillValueInVectorUsingBeliefs.FromGlobalBeliefsSets::new)
         .collect(Collectors.toList()));
-    addIndexes(convertersForFactsForGlobalBeliefsByAgentType.stream().map(FactConverterID::getID)
+    addIndexes(convertersForFactsForGlobalBeliefsByAgentType.stream().map(FactConverterID::getId)
         .collect(Collectors.toList()), indexesSet);
     strategiesToFillVectorOrdered.addAll(convertersForFactsForGlobalBeliefsByAgentType.stream()
         .map(StrategyToFillValueInVectorUsingBeliefs.FromGlobalBeliefsByAgentType::new)
         .collect(Collectors.toList()));
-    addIndexes(convertersForFactSetsForGlobalBeliefsByAgentType.stream().map(FactConverterID::getID)
+    addIndexes(convertersForFactSetsForGlobalBeliefsByAgentType.stream().map(FactConverterID::getId)
         .collect(Collectors.toList()), indexesSet);
     strategiesToFillVectorOrdered.addAll(convertersForFactSetsForGlobalBeliefsByAgentType.stream()
         .map(StrategyToFillValueInVectorUsingBeliefs.FromGlobalBeliefsSetsByAgentType::new)
@@ -143,6 +143,28 @@ public class FeatureContainerHeader {
     return vector;
   }
 
+  public String[] getHeaders() {
+    String[] headers = new String[sizeOfFeatureVector];
+
+    //do beliefs
+    for (int i = 0; i < strategiesToFillVectorOrdered.size(); i++) {
+      headers[i] = strategiesToFillVectorOrdered.get(i).converterID.toString();
+    }
+
+    //do commitments
+    for (int i = 0; i < desiresToFillVectorOrdered.size(); i++) {
+      headers[i + strategiesToFillVectorOrdered.size()] = desiresToFillVectorOrdered.get(i)
+          .toString();
+    }
+
+    //do count of committed agents
+    if (trackCommittedOtherAgents) {
+      headers[headers.length - 1] = "# commited agents";
+    }
+
+    return headers;
+  }
+
   /**
    * Check for duplicity
    */
@@ -190,7 +212,7 @@ public class FeatureContainerHeader {
 
     @Override
     public int compareTo(@NotNull StrategyToFillValueInVectorUsingBeliefs<?> o) {
-      return Integer.compare(converterID.getID(), o.converterID.getID());
+      return Integer.compare(converterID.getId(), o.converterID.getId());
     }
 
     /**

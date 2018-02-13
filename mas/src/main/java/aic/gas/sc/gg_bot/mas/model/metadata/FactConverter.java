@@ -33,7 +33,7 @@ public abstract class FactConverter<V, K> implements Converter {
   }
 
   @Override
-  public int getID() {
+  public int getId() {
     return id;
   }
 
@@ -82,7 +82,7 @@ public abstract class FactConverter<V, K> implements Converter {
 
     public BeliefFromKey(DataForDecision dataForDecision, DesireKey desireKey,
         FactWithOptionalValue<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
       hasUpdatedValueFromRegisterChanged(desireKey);
     }
@@ -115,6 +115,11 @@ public abstract class FactConverter<V, K> implements Converter {
       result = 31 * result + converter.hashCode();
       return result;
     }
+
+    @Override
+    public String getName() {
+      return converter.getName();
+    }
   }
 
   /**
@@ -126,7 +131,7 @@ public abstract class FactConverter<V, K> implements Converter {
 
     public BeliefSetFromKey(DataForDecision dataForDecision, DesireKey desireKey,
         FactWithOptionalValueSet<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
       hasUpdatedValueFromRegisterChanged(desireKey);
     }
@@ -156,6 +161,11 @@ public abstract class FactConverter<V, K> implements Converter {
       result = 31 * result + converter.hashCode();
       return result;
     }
+
+    @Override
+    public String getName() {
+      return converter.getName();
+    }
   }
 
   /**
@@ -167,7 +177,7 @@ public abstract class FactConverter<V, K> implements Converter {
 
     public BeliefFromDesire(DataForDecision dataForDecision, DesireParameters desireParameters,
         FactWithOptionalValue<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
       hasUpdatedValueFromRegisterChanged(desireParameters);
     }
@@ -175,6 +185,11 @@ public abstract class FactConverter<V, K> implements Converter {
     @Override
     public void hasUpdatedValueFromRegisterChanged(DesireParameters register) {
       hasValueChanged(register.returnFactValueForGivenKey(converter.getFactKey()));
+    }
+
+    @Override
+    public String getName() {
+      return converter.getName();
     }
 
     @Override
@@ -209,7 +224,7 @@ public abstract class FactConverter<V, K> implements Converter {
 
     public BeliefSetFromDesire(DataForDecision dataForDecision, DesireParameters desireParameters,
         FactWithOptionalValueSet<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
       hasUpdatedValueFromRegisterChanged(desireParameters);
     }
@@ -234,6 +249,11 @@ public abstract class FactConverter<V, K> implements Converter {
     }
 
     @Override
+    public String getName() {
+      return converter.getName();
+    }
+
+    @Override
     public int hashCode() {
       int result = super.hashCode();
       result = 31 * result + converter.hashCode();
@@ -249,13 +269,18 @@ public abstract class FactConverter<V, K> implements Converter {
     private final FactWithOptionalValue<V> converter;
 
     public Belief(DataForDecision dataForDecision, FactWithOptionalValue<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
     }
 
     @Override
     public void hasUpdatedValueFromRegisterChanged(WorkingMemory register) {
       hasValueChanged(register.returnFactValueForGivenKey(converter.getFactKey()));
+    }
+
+    @Override
+    public String getName() {
+      return converter.getName();
     }
 
     @Override
@@ -288,7 +313,7 @@ public abstract class FactConverter<V, K> implements Converter {
     private final FactWithSetOfOptionalValues<V> converter;
 
     public GlobalBelief(DataForDecision dataForDecision, FactWithSetOfOptionalValues<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
     }
 
@@ -298,6 +323,11 @@ public abstract class FactConverter<V, K> implements Converter {
           readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(converter.getFactKey()))
           .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(converter.getFactKey()))
       );
+    }
+
+    @Override
+    public String getName() {
+      return converter.getName();
     }
 
     @Override
@@ -332,7 +362,7 @@ public abstract class FactConverter<V, K> implements Converter {
 
     public GlobalBeliefForAgentType(DataForDecision dataForDecision,
         FactWithSetOfOptionalValuesForAgentType<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
     }
 
@@ -342,6 +372,11 @@ public abstract class FactConverter<V, K> implements Converter {
           readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(converter.getFactKey()))
           .map(
               readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(converter.getFactKey())));
+    }
+
+    @Override
+    public String getName() {
+      return converter.getName();
     }
 
     @Override
@@ -374,7 +409,7 @@ public abstract class FactConverter<V, K> implements Converter {
     private final FactWithOptionalValueSet<V> converter;
 
     public BeliefSet(DataForDecision dataForDecision, FactWithOptionalValueSet<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
     }
 
@@ -401,6 +436,11 @@ public abstract class FactConverter<V, K> implements Converter {
     }
 
     @Override
+    public String getName() {
+      return converter.getName();
+    }
+
+    @Override
     public int hashCode() {
       int result = super.hashCode();
       result = 31 * result + converter.hashCode();
@@ -418,7 +458,7 @@ public abstract class FactConverter<V, K> implements Converter {
 
     public GlobalBeliefSet(DataForDecision dataForDecision,
         FactWithOptionalValueSets<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
       this.converter = container;
     }
 
@@ -429,6 +469,11 @@ public abstract class FactConverter<V, K> implements Converter {
           .map(readOnlyMemory -> readOnlyMemory
               .returnFactSetValueForGivenKey(converter.getFactKey()))
       );
+    }
+
+    @Override
+    public String getName() {
+      return converter.getName();
     }
 
     @Override
@@ -462,20 +507,25 @@ public abstract class FactConverter<V, K> implements Converter {
   public static class GlobalBeliefSetForAgentType<V> extends
       FactConverter<Stream<Optional<Stream<V>>>, WorkingMemory> {
 
-    private final FactWithOptionalValueSetsForAgentType<V> converterID;
+    private final FactWithOptionalValueSetsForAgentType<V> converter;
 
     public GlobalBeliefSetForAgentType(DataForDecision dataForDecision,
         FactWithOptionalValueSetsForAgentType<V> container) {
-      super(dataForDecision, container.getStrategyToObtainValue(), container.getID());
-      this.converterID = container;
+      super(dataForDecision, container.getStrategyToObtainValue(), container.getId());
+      this.converter = container;
     }
 
     @Override
     public void hasUpdatedValueFromRegisterChanged(WorkingMemory register) {
-      hasValueChanged(register.getReadOnlyMemoriesForAgentType(converterID.getAgentType()).filter(
-          readOnlyMemory -> readOnlyMemory.isFactKeyForSetInMemory(converterID.getFactKey()))
+      hasValueChanged(register.getReadOnlyMemoriesForAgentType(converter.getAgentType()).filter(
+          readOnlyMemory -> readOnlyMemory.isFactKeyForSetInMemory(converter.getFactKey()))
           .map(readOnlyMemory -> readOnlyMemory
-              .returnFactSetValueForGivenKey(converterID.getFactKey())));
+              .returnFactSetValueForGivenKey(converter.getFactKey())));
+    }
+
+    @Override
+    public String getName() {
+      return converter.getName();
     }
 
     @Override
@@ -489,13 +539,13 @@ public abstract class FactConverter<V, K> implements Converter {
 
       GlobalBeliefSetForAgentType<?> that = (GlobalBeliefSetForAgentType<?>) o;
 
-      return converterID.equals(that.converterID);
+      return converter.equals(that.converter);
     }
 
     @Override
     public int hashCode() {
       int result = super.hashCode();
-      result = 31 * result + converterID.hashCode();
+      result = 31 * result + converter.hashCode();
       return result;
     }
   }
@@ -544,6 +594,11 @@ public abstract class FactConverter<V, K> implements Converter {
       int result = super.hashCode();
       result = 31 * result + desireKey.hashCode();
       return result;
+    }
+
+    @Override
+    public String getName() {
+      return desireKey.getName();
     }
   }
 

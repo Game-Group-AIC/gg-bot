@@ -165,7 +165,7 @@ public class AUnit {
 
     //ids
 //        this.enemyUnitsInWeaponRangeIds = this.enemyUnitsInWeaponRange.stream()
-//                .map(Unit::getID)
+//                .map(Unit::getId)
 //                .collect(Collectors.toList());
 
     //units in radius of sight

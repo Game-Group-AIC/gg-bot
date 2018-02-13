@@ -99,8 +99,8 @@ public class AgentUnitFactory implements IAgentUnitHandler {
     if (order.isPresent() && ordersCheckForAttack.contains(order.get())) {
 
       //what is the target position
-      APosition targetPosition = me.getOrderTargetPosition().orElse(me.getTargetPosition()
-          .orElse(me.getPosition()));
+      APosition targetPosition = me.getTargetPosition()
+          .orElse(me.getOrderTargetPosition().orElse(me.getPosition()));
 
       //select closest location to target - iteration over all base location agents
       Optional<ABaseLocationWrapper> holdInBaseLocation = mediatorService.getStreamOfWatchers()

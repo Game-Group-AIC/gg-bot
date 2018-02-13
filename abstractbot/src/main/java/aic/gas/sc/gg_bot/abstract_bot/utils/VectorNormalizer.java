@@ -2,7 +2,6 @@ package aic.gas.sc.gg_bot.abstract_bot.utils;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import java.util.List;
-import java.util.Random;
 import jsat.linear.distancemetrics.DistanceMetric;
 import jsat.linear.distancemetrics.EuclideanDistance;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 public class VectorNormalizer {
 
   public static final DistanceMetric DISTANCE_FUNCTION = new EuclideanDistance();
-  private static final Random RANDOM = new Random();
 
   /**
    * Standardize each part of feature vector according to normalizers
@@ -25,7 +23,8 @@ public class VectorNormalizer {
       //TODO features with mean and std equals to zero should be disabled
       if (normalizedValue.isNaN()) {
         normalizeFeatureVector[i] = 0;
-//        log.error("NaN value when normilizing vector on index " + i);
+//        log.error("NaN value when normilizing vector for feature "
+//            + normalizers.get(i).getHeader());
       } else {
         normalizeFeatureVector[i] = normalizedValue;
       }

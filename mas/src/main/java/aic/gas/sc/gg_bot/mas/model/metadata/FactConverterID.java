@@ -5,16 +5,17 @@ import lombok.Getter;
 /**
  * Class to identify fact converter
  */
+@Getter
 public class FactConverterID<V> implements Converter {
 
   private final int id;
-
-  @Getter
+  private final String name;
   private final FactKey<V> factKey;
 
-  public FactConverterID(int id, FactKey<V> factKey) {
+  public FactConverterID(int id, FactKey<V> factKey, String name) {
     this.factKey = factKey;
     this.id = id;
+    this.name = name;
   }
 
   @Override
@@ -39,7 +40,7 @@ public class FactConverterID<V> implements Converter {
   }
 
   @Override
-  public int getID() {
-    return id;
+  public String toString() {
+    return "FactConverter: " + "id=" + id + ", name='" + name;
   }
 }

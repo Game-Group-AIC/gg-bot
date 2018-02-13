@@ -7,6 +7,6 @@ import java.util.List;
 public interface IFeatureNormalizerService {
 
   List<FeatureNormalizer> computeFeatureNormalizersBasedOnStates(List<State> states,
-      int cardinality);
+      String[] headers);
 
 }

@@ -6,24 +6,23 @@ import aic.gas.sc.gg_bot.replay_parser.service.IFeatureNormalizerService;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
 
 public class FeatureNormalizerService implements IFeatureNormalizerService {
 
   @Override
   public List<FeatureNormalizer> computeFeatureNormalizersBasedOnStates(List<State> states,
-      int cardinality) {
-    return IntStream.range(0, cardinality).boxed()
-        .map(integer -> states.stream()
+      String[] headers) {
+    return IntStream.range(0, headers.length).boxed()
+        .map(integer -> new Tuple<>(integer, states.stream()
             .map(State::getFeatureVector)
             .mapToDouble(doubles -> doubles[integer])
-            .boxed())
-        .map(doubleStream -> doubleStream.mapToDouble(Double::doubleValue))
-        .map(doubleStream -> doubleStream.boxed().collect(Collectors.toList()))
-        .map(doubles -> {
-          double mean = computeAverage(doubles);
-          double std = computeStandardDeviation(doubles, mean);
-          return new FeatureNormalizer(mean, std);
+            .boxed()
+            .collect(Collectors.toList())))
+        .map(tuple -> {
+          double mean = computeAverage(tuple.content);
+          double std = computeStandardDeviation(tuple.content, mean);
+          return new FeatureNormalizer(mean, std, headers[tuple.index]);
         })
         .collect(Collectors.toList());
   }
@@ -41,13 +40,11 @@ public class FeatureNormalizerService implements IFeatureNormalizerService {
         .average().orElse(0);
   }
 
+  @AllArgsConstructor
+  private static class Tuple<V> {
 
-  private Stream<Double> removeOutliers(Stream<Double> doubleStream, int count) {
-    return doubleStream.sorted()
-        //skip first tenth
-        .skip(count / 10)
-        //exclude last tenth
-        .limit(count - count / 5);
+    private final int index;
+    private final V content;
   }
 
 }

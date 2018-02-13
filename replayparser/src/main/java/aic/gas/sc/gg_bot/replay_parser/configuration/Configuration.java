@@ -74,7 +74,7 @@ public class Configuration {
 
   @Override
   public String toString() {
-    return "Configuration{" +
+    return "Utils{" +
         "sampleStates=" + sampleStates +
         ", batchSize=" + batchSize +
         ", iterations=" + iterations +

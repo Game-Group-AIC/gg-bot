@@ -3,7 +3,6 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
 import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
-import com.rits.cloning.Cloner;
 import java.util.Set;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -106,7 +105,7 @@ public class FeatureContainer {
    * Compare values. If differ update value and set flag that value has changed
    */
   private void updatedFact(FactConverterID<?> converter, double computedValue) {
-    int index = containerHeader.getIndexes().indexOf(converter.getID());
+    int index = containerHeader.getIndexes().indexOf(converter.getId());
     if (featureVector[index] != computedValue) {
       featureVector[index] = computedValue;
       if (!hasChanged) {

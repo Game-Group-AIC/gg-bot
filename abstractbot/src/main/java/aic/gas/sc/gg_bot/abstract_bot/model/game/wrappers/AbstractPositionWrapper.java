@@ -26,6 +26,14 @@ public abstract class AbstractPositionWrapper<T> {
     this.y = y;
   }
 
+  @Override
+  public String toString() {
+    return "Position{" +
+        "x=" + x +
+        ", y=" + y +
+        '}';
+  }
+
   /**
    * Clear cache
    */

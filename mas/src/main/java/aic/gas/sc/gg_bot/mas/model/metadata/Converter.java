@@ -8,6 +8,11 @@ public interface Converter {
   /**
    * Get order of converted feature
    */
-  int getID();
+  int getId();
+
+  /**
+   * Get name of converter
+   */
+  String getName();
 
 }

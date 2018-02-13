@@ -9,13 +9,20 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_I
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_RANGED;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
+import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
 /*
  * Enumeration of all feature container headers as static classes
  */
+@Slf4j
 public class FeatureContainerHeaders {
 
   //ECO manager
@@ -187,5 +194,58 @@ public class FeatureContainerHeaders {
   //TODO (un)burrow lurker
   //TODO mutate lurkers
   //TODO research
+
+  private static final Map<AgentTypeID, Map<DesireKeyID, FeatureContainerHeader>> ASSIGNMENT = new HashMap<>();
+
+  static {
+
+    //ECO manager
+    Map<DesireKeyID, FeatureContainerHeader> ecomDesires = new HashMap<>();
+    ecomDesires.put(DesireKeys.BUILD_EXTRACTOR, BUILDING_EXTRACTOR);
+    ecomDesires.put(DesireKeys.INCREASE_CAPACITY, INCREASING_CAPACITY);
+    ecomDesires.put(DesireKeys.BUILD_WORKER, TRAINING_WORKER);
+    ecomDesires.put(DesireKeys.EXPAND, EXPANDING);
+    ASSIGNMENT.put(AgentTypes.ECO_MANAGER, ecomDesires);
+
+    //Build order manager
+    Map<DesireKeyID, FeatureContainerHeader> bmoDesires = new HashMap<>();
+    bmoDesires.put(DesireKeys.ENABLE_GROUND_MELEE, BUILDING_POOL);
+    bmoDesires.put(DesireKeys.UPGRADE_TO_LAIR, UPGRADING_TO_LAIR);
+    bmoDesires.put(DesireKeys.ENABLE_AIR, BUILDING_SPIRE);
+    bmoDesires.put(DesireKeys.ENABLE_GROUND_RANGED, BUILDING_HYDRALISK_DEN);
+    bmoDesires.put(DesireKeys.ENABLE_STATIC_ANTI_AIR, BUILDING_EVOLUTION_CHAMBER);
+    ASSIGNMENT.put(AgentTypes.BUILDING_ORDER_MANAGER, bmoDesires);
+
+    //Unit order manager
+    Map<DesireKeyID, FeatureContainerHeader> umoDesires = new HashMap<>();
+    umoDesires.put(DesireKeys.BOOST_AIR, BOOSTING_AIR);
+    umoDesires.put(DesireKeys.BOOST_GROUND_MELEE, BOOSTING_GROUND_MELEE);
+    umoDesires.put(DesireKeys.BOOST_GROUND_RANGED, BOOSTING_GROUND_RANGED);
+    ASSIGNMENT.put(AgentTypes.UNIT_ORDER_MANAGER, umoDesires);
+
+    //BASE
+    Map<DesireKeyID, FeatureContainerHeader> baseDesires = new HashMap<>();
+    baseDesires.put(DesireKeys.HOLD_AIR, HOLDING_BY_AIR_UNITS);
+    baseDesires.put(DesireKeys.HOLD_GROUND, HOLDING_BY_GROUND_UNITS);
+    baseDesires.put(DesireKeys.BUILD_CREEP_COLONY, DEFENSE);
+    baseDesires.put(DesireKeys.BUILD_SUNKEN_COLONY, DEFENSE);
+    baseDesires.put(DesireKeys.BUILD_SPORE_COLONY, DEFENSE);
+    ASSIGNMENT.put(AgentTypes.BASE_LOCATION, baseDesires);
+  }
+
+
+  public static Optional<FeatureContainerHeader> getHeader(AgentTypeID agentType,
+      DesireKeyID desireKey) {
+    if (!ASSIGNMENT.containsKey(agentType)) {
+      log.info("Agent: " + agentType.getName() + " is not contained.");
+      return Optional.empty();
+    }
+    Map<DesireKeyID, FeatureContainerHeader> map = ASSIGNMENT.get(agentType);
+    if (!map.containsKey(desireKey)) {
+      log.info("Desire: " + desireKey.getName() + " is not contained.");
+      return Optional.empty();
+    }
+    return Optional.ofNullable(map.get(desireKey));
+  }
 
 }

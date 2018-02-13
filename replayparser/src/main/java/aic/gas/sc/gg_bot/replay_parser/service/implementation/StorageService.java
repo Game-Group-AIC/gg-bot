@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
-import static aic.gas.sc.gg_bot.abstract_bot.utils.Configuration.getParsedAgentTypesContainedInStorage;
-import static aic.gas.sc.gg_bot.abstract_bot.utils.Configuration.getParsedDesireTypesForAgentTypeContainedInStorage;
+import static aic.gas.sc.gg_bot.abstract_bot.utils.Utils.getParsedAgentTypesContainedInStorage;
+import static aic.gas.sc.gg_bot.abstract_bot.utils.Utils.getParsedDesireTypesForAgentTypeContainedInStorage;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;

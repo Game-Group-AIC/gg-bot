@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
  * Contains configuration...
  */
 @Slf4j
-public class Configuration {
+public class Utils {
 
   /**
    * Map static fields of agentTypeId from AgentTypes to folders in storage

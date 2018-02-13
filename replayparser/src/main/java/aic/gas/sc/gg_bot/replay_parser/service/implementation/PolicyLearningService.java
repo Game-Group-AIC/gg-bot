@@ -41,7 +41,8 @@ public class PolicyLearningService implements IPolicyLearningService {
     LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(features,
         numberOfClusters + 1);
     for (int i = 0; i < rf.numParameters() - 1; i++) {
-      rf.setParameter(i, DecisionDomainGenerator.getRandomRewardInInterval(configuration));
+      rf.setParameter(i,
+          Math.abs(DecisionDomainGenerator.getRandomRewardInInterval(configuration)));
     }
 
     //set dummy state

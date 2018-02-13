@@ -191,9 +191,7 @@ public class PSOClustering implements IStateClusteringService {
           .sum();
       double pairRatio = pairsInSameCluster / sumOfPairs;
 
-      if (pairRatio > 0 || clustersDistance > longestPossibleDistance) {
-        log.info("Here");
-      }
+      //TODO add other criteria
 
       return clusters + (dataPointDistance / longestPossibleDistance) + (1 - (clustersDistance
           / longestPossibleDistance)) + pairRatio;

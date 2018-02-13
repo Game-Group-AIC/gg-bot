@@ -101,9 +101,16 @@ public class AWeaponTypeWrapper extends AbstractWrapper<WeaponType> {
 
   public double getDamagePerSecondNormalized() {
     if (isForType(WeaponType.Psi_Blades)) {
-      return 16 * (24 / getDamageCooldown());
+      return 16.0 * (24.0 / (double) getDamageCooldown());
     } else {
-      return getDamageAmount() * getDamageFactor() * (24 / (getDamageCooldown() + 1));
+      return ((double) getDamageAmount()) * ((double) getDamageFactor()) * (24.0 /
+          ((double) getDamageCooldown() + 1.0));
     }
   }
+
+  public String test() {
+    return "DPSN: " + getDamagePerSecondNormalized() + ", DA: " + getDamageAmount() + ", DF: "
+        + getDamageFactor() + ", DC: " + getDamageCooldown();
+  }
+
 }

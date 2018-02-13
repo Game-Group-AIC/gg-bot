@@ -94,10 +94,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of watcher for base
  */
+@Slf4j
 public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentMakingObservations {
 
   private final ABaseLocationWrapper baseLocation;
@@ -106,445 +108,473 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
   public BaseWatcher(ABaseLocationWrapper baseLocation, Game game,
       UpdateChecksStrategy updateChecksStrategy) {
     super(BaseWatcherType.builder()
-        .factKeys(Stream.of(IS_OUR_BASE, IS_ENEMY_BASE, IS_MINERAL_ONLY, IS_ISLAND,
-            IS_START_LOCATION, IS_BASE_LOCATION, DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE,
-            DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE, AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE,
-            AIR_DISTANCE_TO_OUR_CLOSEST_BASE, GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE,
-            GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER,
-            RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE, DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
-            RATIO_GLOBAL_GROUND_VS_ANTI_GROUND_ON_BASE, DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER,
-            DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER)
-            .collect(Collectors.toSet()))
-        .factSetsKeys(Stream.of(MINERAL, WORKER_ON_BASE, GEYSER, ENEMY_BUILDING, ENEMY_AIR,
-            ENEMY_GROUND, HAS_BASE, HAS_EXTRACTOR, OWN_BUILDING, OWN_AIR, OWN_GROUND,
-            WORKER_MINING_MINERALS, WORKER_MINING_GAS, OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS,
-            OWN_GROUND_FORCE_STATUS, ENEMY_AIR_FORCE_STATUS, ENEMY_BUILDING_STATUS,
-            ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS, LOCKED_BUILDINGS,
-            ENEMY_STATIC_AIR_FORCE_STATUS, ENEMY_STATIC_GROUND_FORCE_STATUS,
-            OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS, STATIC_DEFENSE, ENEMY_UNIT)
-            .collect(Collectors.toSet()))
-        .reasoning((bl, ms) -> {
-          ABaseLocationWrapper base = bl.returnFactValueForGivenKey(IS_BASE_LOCATION).get();
+            .factKeys(Stream.of(IS_OUR_BASE, IS_ENEMY_BASE, IS_MINERAL_ONLY, IS_ISLAND,
+                IS_START_LOCATION, IS_BASE_LOCATION, DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE,
+                DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE, AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE,
+                AIR_DISTANCE_TO_OUR_CLOSEST_BASE, GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE,
+                GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+                RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE, DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+                RATIO_GLOBAL_GROUND_VS_ANTI_GROUND_ON_BASE, DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER,
+                DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER)
+                .collect(Collectors.toSet()))
+            .factSetsKeys(Stream.of(MINERAL, WORKER_ON_BASE, GEYSER, ENEMY_BUILDING, ENEMY_AIR,
+                ENEMY_GROUND, HAS_BASE, HAS_EXTRACTOR, OWN_BUILDING, OWN_AIR, OWN_GROUND,
+                WORKER_MINING_MINERALS, WORKER_MINING_GAS, OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS,
+                OWN_GROUND_FORCE_STATUS, ENEMY_AIR_FORCE_STATUS, ENEMY_BUILDING_STATUS,
+                ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS, LOCKED_BUILDINGS,
+                ENEMY_STATIC_AIR_FORCE_STATUS, ENEMY_STATIC_GROUND_FORCE_STATUS,
+                OWN_STATIC_AIR_FORCE_STATUS, OWN_STATIC_GROUND_FORCE_STATUS, STATIC_DEFENSE, ENEMY_UNIT)
+                .collect(Collectors.toSet()))
+            .reasoning((bl, ms) -> {
+              ABaseLocationWrapper base = bl.returnFactValueForGivenKey(IS_BASE_LOCATION).get();
 
-          //enemy's units
-          Set<AUnit.Enemy> enemies = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
-              .filter(enemy -> {
-                Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
-                return bL.isPresent() && bL.get().equals(base);
-              })
-              .collect(Collectors.toSet());
-          bl.updateFactSetByFacts(ENEMY_UNIT, enemies);
-          bl.updateFactSetByFacts(ENEMY_BUILDING,
-              enemies.stream().filter(enemy -> enemy.getType().isBuilding())
+              //enemy's units
+              Set<AUnit.Enemy> enemies = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
+                  .filter(enemy -> {
+                    Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
+                    return bL.isPresent() && bL.get().equals(base);
+                  })
+                  .collect(Collectors.toSet());
+              bl.updateFactSetByFacts(ENEMY_UNIT, enemies);
+              bl.updateFactSetByFacts(ENEMY_BUILDING,
+                  enemies.stream().filter(enemy -> enemy.getType().isBuilding())
+                      .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(ENEMY_GROUND, enemies.stream()
+                  .filter(enemy -> !enemy.getType().isBuilding() && !enemy.getType().isFlyer())
                   .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(ENEMY_GROUND, enemies.stream()
-              .filter(enemy -> !enemy.getType().isBuilding() && !enemy.getType().isFlyer())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(ENEMY_AIR, enemies.stream()
-              .filter(enemy -> !enemy.getType().isBuilding() && enemy.getType().isFlyer())
-              .collect(Collectors.toSet()));
-
-          //player's units
-          Set<AUnitOfPlayer> playersUnits = UnitWrapperFactory.getStreamOfAllAlivePlayersUnits()
-              .filter(enemy -> {
-                Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
-                return bL.isPresent() && bL.get().equals(base);
-              })
-              .collect(Collectors.toSet());
-          bl.updateFactSetByFacts(OWN_BUILDING,
-              playersUnits.stream().filter(own -> own.getType().isBuilding())
+              bl.updateFactSetByFacts(ENEMY_AIR, enemies.stream()
+                  .filter(enemy -> !enemy.getType().isBuilding() && enemy.getType().isFlyer())
                   .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(OWN_GROUND, playersUnits.stream()
-              .filter(own -> !own.getType().isBuilding() && !own.getType().isFlyer())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(OWN_AIR, playersUnits.stream()
-              .filter(own -> !own.getType().isBuilding() && own.getType().isFlyer())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(STATIC_DEFENSE, playersUnits.stream()
-              .filter(aUnitOfPlayer ->
-                  aUnitOfPlayer.getType().equals(AUnitTypeWrapper.SUNKEN_COLONY_TYPE)
-                      || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.CREEP_COLONY_TYPE)
-                      || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.SPORE_COLONY_TYPE))
-              .collect(Collectors.toSet()));
 
-          //estimate enemy force
-          Set<UnitTypeStatus> enemyBuildingsTypes = UnitWrapperFactory
-              .getStreamOfAllAliveEnemyUnits()
-              .filter(enemy -> enemy.getType().isBuilding())
-              .filter(enemy -> enemy.getNearestBaseLocation().isPresent())
-              .filter(enemy -> enemy.getNearestBaseLocation().get().equals(base))
-              .collect(Collectors.groupingBy(AUnit::getType)).entrySet().stream()
-              .map(entry -> new UnitTypeStatus(entry.getKey(), entry.getValue().stream()))
-              .collect(Collectors.toSet());
-          bl.updateFactSetByFacts(ENEMY_BUILDING_STATUS, enemyBuildingsTypes);
-          bl.updateFactSetByFacts(ENEMY_STATIC_AIR_FORCE_STATUS, enemyBuildingsTypes.stream()
-              .filter(
-                  unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().isMilitaryBuildingAntiAir())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(ENEMY_STATIC_GROUND_FORCE_STATUS, enemyBuildingsTypes.stream()
-              .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper()
-                  .isMilitaryBuildingAntiGround())
-              .collect(Collectors.toSet()));
-          Set<UnitTypeStatus> enemyUnitsTypes = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
-              .filter(
-                  enemy -> !enemy.getType().isNotActuallyUnit() && !enemy.getType().isBuilding())
-              .collect(Collectors.groupingBy(AUnit::getType)).entrySet().stream()
-              .map(entry -> new UnitTypeStatus(entry.getKey(), entry.getValue().stream()))
-              .collect(Collectors.toSet());
-          bl.updateFactSetByFacts(ENEMY_AIR_FORCE_STATUS, enemyUnitsTypes.stream()
-              .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackAirUnits())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(ENEMY_GROUND_FORCE_STATUS, enemyUnitsTypes.stream()
-              .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackGroundUnits())
-              .collect(Collectors.toSet()));
-
-          //estimate our force
-          Set<UnitTypeStatus> ownBuildingsTypes = UnitWrapperFactory
-              .getStreamOfAllAlivePlayersUnits()
-              .filter(enemy -> enemy.getType().isBuilding())
-              .filter(enemy -> enemy.getNearestBaseLocation().isPresent())
-              .filter(enemy -> enemy.getNearestBaseLocation().get().equals(base))
-              .collect(Collectors.groupingBy(AUnit::getType)).entrySet().stream()
-              .map(entry -> new UnitTypeStatus(entry.getKey(), entry.getValue().stream()))
-              .collect(Collectors.toSet());
-          bl.updateFactSetByFacts(OWN_BUILDING_STATUS, ownBuildingsTypes);
-          bl.updateFactSetByFacts(OWN_STATIC_AIR_FORCE_STATUS, ownBuildingsTypes.stream()
-              .filter(
-                  unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().isMilitaryBuildingAntiAir())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(OWN_STATIC_GROUND_FORCE_STATUS, ownBuildingsTypes.stream()
-              .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper()
-                  .isMilitaryBuildingAntiGround())
-              .collect(Collectors.toSet()));
-          Set<UnitTypeStatus> ownUnitsTypes = UnitWrapperFactory.getStreamOfAllAlivePlayersUnits()
-              .filter(
-                  enemy -> !enemy.getType().isNotActuallyUnit() && !enemy.getType().isBuilding())
-              .filter(enemy -> enemy.getNearestBaseLocation().isPresent())
-              .filter(enemy -> enemy.getNearestBaseLocation().get().equals(base))
-              .collect(Collectors.groupingBy(AUnit::getType)).entrySet().stream()
-              .map(entry -> new UnitTypeStatus(entry.getKey(), entry.getValue().stream()))
-              .collect(Collectors.toSet());
-          bl.updateFactSetByFacts(OWN_AIR_FORCE_STATUS, ownUnitsTypes.stream()
-              .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackAirUnits())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(OWN_GROUND_FORCE_STATUS, ownUnitsTypes.stream()
-              .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackGroundUnits())
-              .collect(Collectors.toSet()));
-
-          //eco concerns
-          Set<AgentWatcher<?>> workersAroundBase = ms.getStreamOfWatchers()
-              .filter(agentWatcher ->
-                  agentWatcher.getAgentWatcherType().getName().equals(DRONE.getName())
-                      || agentWatcher.getAgentWatcherType().getName().equals(EGG.getName())
-                      || agentWatcher.getAgentWatcherType().getName().equals(LARVA.getName())
-              )
-              .filter(agentWatcher ->
-                  agentWatcher.getBeliefs().returnFactValueForGivenKey(REPRESENTS_UNIT).get()
-                      .getType().isWorker()
-                      || (
-                      !agentWatcher.getBeliefs().returnFactValueForGivenKey(REPRESENTS_UNIT).get()
-                          .getTrainingQueue().isEmpty()
-                          && agentWatcher.getBeliefs().returnFactValueForGivenKey(REPRESENTS_UNIT)
-                          .get().getTrainingQueue().get(0).isWorker()))
-              .filter(agentWatcher ->
-                  agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).isPresent() &&
-                      agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
-                          .equals(base))
-              .collect(Collectors.toSet());
-          bl.updateFactSetByFacts(WORKER_ON_BASE, workersAroundBase.stream()
-              .map(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(REPRESENTS_UNIT).get())
-              .collect(Collectors.toSet()));
-          workersAroundBase = workersAroundBase.stream()
-              .filter(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getType().isWorker())
-              .collect(Collectors.toSet());
-          bl.updateFactSetByFacts(WORKER_MINING_MINERALS, workersAroundBase.stream()
-              .filter(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(IS_GATHERING_MINERALS).get())
-              .map(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(REPRESENTS_UNIT).get())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(WORKER_MINING_GAS, workersAroundBase.stream()
-              .filter(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(IS_GATHERING_GAS).get())
-              .map(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(REPRESENTS_UNIT).get())
-              .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(HAS_BASE,
-              bl.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
+              //player's units
+              Set<AUnitOfPlayer> playersUnits = UnitWrapperFactory.getStreamOfAllAlivePlayersUnits()
+                  .filter(enemy -> {
+                    Optional<ABaseLocationWrapper> bL = enemy.getNearestBaseLocation();
+                    return bL.isPresent() && bL.get().equals(base);
+                  })
+                  .collect(Collectors.toSet());
+              bl.updateFactSetByFacts(OWN_BUILDING,
+                  playersUnits.stream().filter(own -> own.getType().isBuilding())
+                      .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(OWN_GROUND, playersUnits.stream()
+                  .filter(own -> !own.getType().isBuilding() && !own.getType().isFlyer())
+                  .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(OWN_AIR, playersUnits.stream()
+                  .filter(own -> !own.getType().isBuilding() && own.getType().isFlyer())
+                  .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(STATIC_DEFENSE, playersUnits.stream()
                   .filter(aUnitOfPlayer ->
-                      aUnitOfPlayer.getType().equals(AUnitTypeWrapper.HATCHERY_TYPE)
-                          || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.LAIR_TYPE))
-                  .collect(Collectors.toSet()));
-          bl.updateFactSetByFacts(HAS_EXTRACTOR,
-              bl.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
-                  .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isGasBuilding())
+                      aUnitOfPlayer.getType().equals(AUnitTypeWrapper.SUNKEN_COLONY_TYPE)
+                          || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.CREEP_COLONY_TYPE)
+                          || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.SPORE_COLONY_TYPE))
                   .collect(Collectors.toSet()));
 
-          //status
-          boolean isOurBase = bl.returnFactSetValueForGivenKey(HAS_BASE)
-              .orElse(Stream.empty()).findAny().isPresent();
-          bl.updateFact(IS_OUR_BASE, isOurBase);
-          boolean isEnemyBase = !isOurBase && bl.returnFactSetValueForGivenKey(ENEMY_BUILDING)
-              .orElse(Stream.empty()).findAny().isPresent();
-          bl.updateFact(IS_ENEMY_BASE, isEnemyBase);
+              //estimate enemy force
+              Set<UnitTypeStatus> enemyBuildingsTypes = UnitWrapperFactory
+                  .getStreamOfAllAliveEnemyUnits()
+                  .filter(enemy -> enemy.getType().isBuilding())
+                  .filter(enemy -> enemy.getNearestBaseLocation().isPresent())
+                  .filter(enemy -> enemy.getNearestBaseLocation().get().equals(base))
+                  .collect(Collectors.groupingBy(AUnit::getType)).entrySet().stream()
+                  .map(entry -> new UnitTypeStatus(entry.getKey(), entry.getValue().stream()))
+                  .collect(Collectors.toSet());
+              bl.updateFactSetByFacts(ENEMY_BUILDING_STATUS, enemyBuildingsTypes);
+              bl.updateFactSetByFacts(ENEMY_STATIC_AIR_FORCE_STATUS, enemyBuildingsTypes.stream()
+                  .filter(
+                      unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().isMilitaryBuildingAntiAir())
+                  .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(ENEMY_STATIC_GROUND_FORCE_STATUS, enemyBuildingsTypes.stream()
+                  .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper()
+                      .isMilitaryBuildingAntiGround())
+                  .collect(Collectors.toSet()));
+              Set<UnitTypeStatus> enemyUnitsTypes = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
+                  .filter(
+                      enemy -> !enemy.getType().isNotActuallyUnit() && !enemy.getType().isBuilding())
+                  .collect(Collectors.groupingBy(AUnit::getType)).entrySet().stream()
+                  .map(entry -> new UnitTypeStatus(entry.getKey(), entry.getValue().stream()))
+                  .collect(Collectors.toSet());
+              bl.updateFactSetByFacts(ENEMY_AIR_FORCE_STATUS, enemyUnitsTypes.stream()
+                  .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackAirUnits())
+                  .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(ENEMY_GROUND_FORCE_STATUS, enemyUnitsTypes.stream()
+                  .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackGroundUnits())
+                  .collect(Collectors.toSet()));
 
-          //update checks
-          updateChecksStrategy.updateChecks(isOurBase, isEnemyBase);
+              //estimate our force
+              Set<UnitTypeStatus> ownBuildingsTypes = UnitWrapperFactory
+                  .getStreamOfAllAlivePlayersUnits()
+                  .filter(enemy -> enemy.getType().isBuilding())
+                  .filter(enemy -> enemy.getNearestBaseLocation().isPresent())
+                  .filter(enemy -> enemy.getNearestBaseLocation().get().equals(base))
+                  .collect(Collectors.groupingBy(AUnit::getType)).entrySet().stream()
+                  .map(entry -> new UnitTypeStatus(entry.getKey(), entry.getValue().stream()))
+                  .collect(Collectors.toSet());
+              bl.updateFactSetByFacts(OWN_BUILDING_STATUS, ownBuildingsTypes);
+              bl.updateFactSetByFacts(OWN_STATIC_AIR_FORCE_STATUS, ownBuildingsTypes.stream()
+                  .filter(
+                      unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().isMilitaryBuildingAntiAir())
+                  .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(OWN_STATIC_GROUND_FORCE_STATUS, ownBuildingsTypes.stream()
+                  .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper()
+                      .isMilitaryBuildingAntiGround())
+                  .collect(Collectors.toSet()));
+              Set<UnitTypeStatus> ownUnitsTypes = UnitWrapperFactory.getStreamOfAllAlivePlayersUnits()
+                  .filter(
+                      enemy -> !enemy.getType().isNotActuallyUnit() && !enemy.getType().isBuilding())
+                  .filter(enemy -> enemy.getNearestBaseLocation().isPresent())
+                  .filter(enemy -> enemy.getNearestBaseLocation().get().equals(base))
+                  .collect(Collectors.groupingBy(AUnit::getType)).entrySet().stream()
+                  .map(entry -> new UnitTypeStatus(entry.getKey(), entry.getValue().stream()))
+                  .collect(Collectors.toSet());
+              bl.updateFactSetByFacts(OWN_AIR_FORCE_STATUS, ownUnitsTypes.stream()
+                  .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackAirUnits())
+                  .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(OWN_GROUND_FORCE_STATUS, ownUnitsTypes.stream()
+                  .filter(unitTypeStatus -> unitTypeStatus.getUnitTypeWrapper().canAttackGroundUnits())
+                  .collect(Collectors.toSet()));
 
-          if (isEnemyBase) {
+              //eco concerns
+              Set<AgentWatcher<?>> workersAroundBase = ms.getStreamOfWatchers()
+                  .filter(agentWatcher ->
+                      agentWatcher.getAgentWatcherType().getName().equals(DRONE.getName())
+                          || agentWatcher.getAgentWatcherType().getName().equals(EGG.getName())
+                          || agentWatcher.getAgentWatcherType().getName().equals(LARVA.getName())
+                  )
+                  .filter(agentWatcher ->
+                      agentWatcher.getBeliefs().returnFactValueForGivenKey(REPRESENTS_UNIT).get()
+                          .getType().isWorker()
+                          || (
+                          !agentWatcher.getBeliefs().returnFactValueForGivenKey(REPRESENTS_UNIT).get()
+                              .getTrainingQueue().isEmpty()
+                              && agentWatcher.getBeliefs().returnFactValueForGivenKey(REPRESENTS_UNIT)
+                              .get().getTrainingQueue().get(0).isWorker()))
+                  .filter(agentWatcher ->
+                      agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).isPresent() &&
+                          agentWatcher.getBeliefs().returnFactValueForGivenKey(LOCATION).get()
+                              .equals(base))
+                  .collect(Collectors.toSet());
+              bl.updateFactSetByFacts(WORKER_ON_BASE, workersAroundBase.stream()
+                  .map(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(REPRESENTS_UNIT).get())
+                  .collect(Collectors.toSet()));
+              workersAroundBase = workersAroundBase.stream()
+                  .filter(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getType().isWorker())
+                  .collect(Collectors.toSet());
+              bl.updateFactSetByFacts(WORKER_MINING_MINERALS, workersAroundBase.stream()
+                  .filter(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(IS_GATHERING_MINERALS).get())
+                  .map(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(REPRESENTS_UNIT).get())
+                  .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(WORKER_MINING_GAS, workersAroundBase.stream()
+                  .filter(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(IS_GATHERING_GAS).get())
+                  .map(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(REPRESENTS_UNIT).get())
+                  .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(HAS_BASE,
+                  bl.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
+                      .filter(aUnitOfPlayer ->
+                          aUnitOfPlayer.getType().equals(AUnitTypeWrapper.HATCHERY_TYPE)
+                              || aUnitOfPlayer.getType().equals(AUnitTypeWrapper.LAIR_TYPE))
+                      .collect(Collectors.toSet()));
+              bl.updateFactSetByFacts(HAS_EXTRACTOR,
+                  bl.returnFactSetValueForGivenKey(OWN_BUILDING).orElse(Stream.empty())
+                      .filter(aUnitOfPlayer -> aUnitOfPlayer.getType().isGasBuilding())
+                      .collect(Collectors.toSet()));
 
-            //count anti-air and anti-ground
-            bl.updateFact(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE, enemies.stream()
-                .map(AUnit::getType)
-                .filter(AUnitTypeWrapper::canAttackAirUnits)
-                .mapToDouble(value -> value.getAirWeapon().getDamagePerSecondNormalized())
-                .sum());
-            bl.updateFact(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE, enemies.stream()
-                .map(AUnit::getType)
-                .filter(AUnitTypeWrapper::canAttackGroundUnits)
-                .mapToDouble(value -> value.getGroundWeapon().getDamagePerSecondNormalized())
-                .sum());
-          } else {
+              //status
+              boolean isOurBase = bl.returnFactSetValueForGivenKey(HAS_BASE)
+                  .orElse(Stream.empty()).findAny().isPresent();
+              bl.updateFact(IS_OUR_BASE, isOurBase);
+              boolean isEnemyBase = !isOurBase && bl.returnFactSetValueForGivenKey(ENEMY_BUILDING)
+                  .orElse(Stream.empty()).findAny().isPresent();
+              bl.updateFact(IS_ENEMY_BASE, isEnemyBase);
 
-            //we do not care whether base is unprotected against unit type if it does not belong to enemy
-            bl.eraseFactValueForGivenKey(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE);
-            bl.eraseFactValueForGivenKey(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE);
-          }
+              //update checks
+              updateChecksStrategy.updateChecks(isOurBase, isEnemyBase);
 
-          //distances
-          bl.updateFact(GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
-              .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                  .equals(AgentTypes.BASE_LOCATION.getName()))
-              .filter(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(IS_ENEMY_BASE)
-                  .orElse(false))
-              .map(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(IS_BASE_LOCATION))
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .filter(locationWrapper -> !base.equals(locationWrapper))
-              .map(locationWrapper -> locationWrapper.getGroundDistanceToBase(base))
-              .min(Double::compareTo)
-              .orElse(MAX_DISTANCE));
-          bl.updateFact(AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
-              .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                  .equals(AgentTypes.BASE_LOCATION.getName()))
-              .filter(
-                  agentWatcher -> agentWatcher.getBeliefs()
+              if (isEnemyBase) {
+
+                //count anti-air and anti-ground
+                bl.updateFact(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE, enemies.stream()
+                    .map(AUnit::getType)
+                    .filter(AUnitTypeWrapper::canAttackAirUnits)
+                    .mapToDouble(value -> value.getAirWeapon().getDamagePerSecondNormalized())
+                    .sum());
+                bl.updateFact(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE, enemies.stream()
+                    .map(AUnit::getType)
+                    .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                    .mapToDouble(value -> value.getGroundWeapon().getDamagePerSecondNormalized())
+                    .sum());
+              } else {
+
+                //we do not care whether base is unprotected against unit type if it does not belong to enemy
+                bl.eraseFactValueForGivenKey(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE);
+                bl.eraseFactValueForGivenKey(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE);
+              }
+
+              //distances
+              bl.updateFact(GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
+                  .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
+                      .equals(AgentTypes.BASE_LOCATION.getName()))
+                  .filter(agentWatcher -> agentWatcher.getBeliefs()
                       .returnFactValueForGivenKey(IS_ENEMY_BASE)
                       .orElse(false))
-              .map(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(IS_BASE_LOCATION))
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .filter(locationWrapper -> !base.equals(locationWrapper))
-              .map(locationWrapper -> locationWrapper.getAirDistanceToBase(base))
-              .min(Double::compareTo)
-              .orElse(MAX_DISTANCE));
-          bl.updateFact(GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
-              .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                  .equals(AgentTypes.BASE_LOCATION.getName()))
-              .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
-                  IS_OUR_BASE)
-                  .orElse(false))
-              .map(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(IS_BASE_LOCATION))
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .filter(locationWrapper -> !base.equals(locationWrapper))
-              .map(locationWrapper -> locationWrapper.getGroundDistanceToBase(base))
-              .min(Double::compareTo)
-              .orElse(MAX_DISTANCE));
-          bl.updateFact(AIR_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
-              .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                  .equals(AgentTypes.BASE_LOCATION.getName()))
-              .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
-                  IS_OUR_BASE)
-                  .orElse(false))
-              .map(agentWatcher -> agentWatcher.getBeliefs()
-                  .returnFactValueForGivenKey(IS_BASE_LOCATION))
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .filter(locationWrapper -> !base.equals(locationWrapper))
-              .map(locationWrapper -> locationWrapper.getAirDistanceToBase(base))
-              .min(Double::compareTo)
-              .orElse(MAX_DISTANCE));
+                  .map(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                  .filter(Optional::isPresent)
+                  .map(Optional::get)
+                  .filter(locationWrapper -> !base.equals(locationWrapper))
+                  .map(locationWrapper -> locationWrapper.getGroundDistanceToBase(base))
+                  .min(Double::compareTo)
+                  .orElse(MAX_DISTANCE));
+              bl.updateFact(AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
+                  .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
+                      .equals(AgentTypes.BASE_LOCATION.getName()))
+                  .filter(
+                      agentWatcher -> agentWatcher.getBeliefs()
+                          .returnFactValueForGivenKey(IS_ENEMY_BASE)
+                          .orElse(false))
+                  .map(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                  .filter(Optional::isPresent)
+                  .map(Optional::get)
+                  .filter(locationWrapper -> !base.equals(locationWrapper))
+                  .map(locationWrapper -> locationWrapper.getAirDistanceToBase(base))
+                  .min(Double::compareTo)
+                  .orElse(MAX_DISTANCE));
+              bl.updateFact(GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
+                  .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
+                      .equals(AgentTypes.BASE_LOCATION.getName()))
+                  .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
+                      IS_OUR_BASE)
+                      .orElse(false))
+                  .map(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                  .filter(Optional::isPresent)
+                  .map(Optional::get)
+                  .filter(locationWrapper -> !base.equals(locationWrapper))
+                  .map(locationWrapper -> locationWrapper.getGroundDistanceToBase(base))
+                  .min(Double::compareTo)
+                  .orElse(MAX_DISTANCE));
+              bl.updateFact(AIR_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
+                  .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
+                      .equals(AgentTypes.BASE_LOCATION.getName()))
+                  .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
+                      IS_OUR_BASE)
+                      .orElse(false))
+                  .map(agentWatcher -> agentWatcher.getBeliefs()
+                      .returnFactValueForGivenKey(IS_BASE_LOCATION))
+                  .filter(Optional::isPresent)
+                  .map(Optional::get)
+                  .filter(locationWrapper -> !base.equals(locationWrapper))
+                  .map(locationWrapper -> locationWrapper.getAirDistanceToBase(base))
+                  .min(Double::compareTo)
+                  .orElse(MAX_DISTANCE));
 
-          //damage to air by enemy
-          double dpsToAirsByEnemy = bl.returnFactSetValueForGivenKey(ENEMY_UNIT)
-              .orElse(Stream.empty())
-              .map(AUnit::getType)
-              .filter(AUnitTypeWrapper::canAttackAirUnits)
-              .map(AUnitTypeWrapper::getAirWeapon)
-              .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
-              .sum();
-
-          //damage to ground by enemy
-          double dpsToGroundsByEnemy = bl.returnFactSetValueForGivenKey(ENEMY_UNIT)
-              .orElse(Stream.empty())
-              .map(AUnit::getType)
-              .filter(AUnitTypeWrapper::canAttackGroundUnits)
-              .map(AUnitTypeWrapper::getGroundWeapon)
-              .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
-              .sum();
-
-          //air
-          bl.updateFact(DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER,
-              Utils.computeRatio(
-                  bl.returnFactSetValueForGivenKey(OWN_AIR).orElse(Stream.empty())
-                      .map(AUnit::getType)
-                      .filter(AUnitTypeWrapper::canAttackGroundUnits)
-                      .map(AUnitTypeWrapper::getGroundWeapon)
-                      .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
-                      .sum(), dpsToAirsByEnemy));
-          bl.updateFact(DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER,
-              Utils.computeRatio(
-                  bl.returnFactSetValueForGivenKey(OWN_AIR).orElse(Stream.empty())
-                      .map(AUnit::getType)
-                      .filter(AUnitTypeWrapper::canAttackAirUnits)
-                      .map(AUnitTypeWrapper::getAirWeapon)
-                      .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
-                      .sum(), dpsToAirsByEnemy));
-
-          //ground
-          bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
-              Utils.computeRatio(
-                  bl.returnFactSetValueForGivenKey(OWN_GROUND).orElse(Stream.empty())
-                      .map(AUnit::getType)
-                      .filter(AUnitTypeWrapper::canAttackGroundUnits)
-                      .map(AUnitTypeWrapper::getGroundWeapon)
-                      .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
-                      .sum(), dpsToGroundsByEnemy));
-          bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER,
-              Utils.computeRatio(
-                  bl.returnFactSetValueForGivenKey(OWN_GROUND).orElse(Stream.empty())
-                      .map(AUnit::getType)
-                      .filter(AUnitTypeWrapper::canAttackAirUnits)
-                      .map(AUnitTypeWrapper::getAirWeapon)
-                      .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
-                      .sum(), dpsToGroundsByEnemy));
-
-          //supply of enemy anti-air
-          double supplyOfAntiAir = bl.returnFactSetValueForGivenKey(ENEMY_UNIT)
-              .orElse(Stream.empty())
-              .map(AUnit::getType)
-              .filter(AUnitTypeWrapper::canAttackAirUnits)
-              .mapToDouble(AUnitTypeWrapper::supplyRequired)
-              .sum();
-
-          //supply of enemy anti-bl
-          double supplyOfAntiGround = bl.returnFactSetValueForGivenKey(ENEMY_UNIT)
-              .orElse(Stream.empty())
-              .map(AUnit::getType)
-              .filter(unitTypeWrapper -> !unitTypeWrapper.isWorker())
-              .filter(AUnitTypeWrapper::canAttackGroundUnits)
-              .mapToDouble(AUnitTypeWrapper::supplyRequired)
-              .sum();
-
-          //player's units
-          Set<AUnitOfPlayer> playersUnitsGlobal = UnitWrapperFactory
-              .getStreamOfAllAlivePlayersUnits()
-              .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isNotActuallyUnit())
-              .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker())
-              .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isBuilding())
-              .collect(Collectors.toSet());
-
-          //air
-          bl.updateFact(RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE,
-              Utils.computeRatio(playersUnitsGlobal.stream()
+              //damage to air by enemy
+              double dpsToAirsByEnemy = bl.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                  .orElse(Stream.empty())
                   .map(AUnit::getType)
-                  .filter(AUnitTypeWrapper::isFlyer)
-                  .mapToDouble(AUnitTypeWrapper::supplyRequired)
-                  .sum(), supplyOfAntiAir));
+                  .filter(AUnitTypeWrapper::canAttackAirUnits)
+                  .map(AUnitTypeWrapper::getAirWeapon)
+                  .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                  .sum();
 
-          //ground
-          bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
-              Utils.computeRatio(playersUnitsGlobal.stream()
+              //damage to ground by enemy
+              double dpsToGroundsByEnemy = bl.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                  .orElse(Stream.empty())
                   .map(AUnit::getType)
-                  .filter(unitTypeWrapper -> !unitTypeWrapper.isFlyer())
+                  .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                  .map(AUnitTypeWrapper::getGroundWeapon)
+                  .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                  .sum();
+
+              //air
+              bl.updateFact(DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+                  Utils.computeRatio(
+                      bl.returnFactSetValueForGivenKey(OWN_AIR).orElse(Stream.empty())
+                          .map(AUnit::getType)
+                          .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                          .map(AUnitTypeWrapper::getGroundWeapon)
+                          .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                          .sum(), dpsToAirsByEnemy));
+              bl.updateFact(DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER,
+                  Utils.computeRatio(
+                      bl.returnFactSetValueForGivenKey(OWN_AIR).orElse(Stream.empty())
+                          .map(AUnit::getType)
+                          .filter(AUnitTypeWrapper::canAttackAirUnits)
+                          .map(AUnitTypeWrapper::getAirWeapon)
+                          .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                          .sum(), dpsToAirsByEnemy));
+
+              //ground
+              bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+                  Utils.computeRatio(
+                      bl.returnFactSetValueForGivenKey(OWN_GROUND).orElse(Stream.empty())
+                          .map(AUnit::getType)
+                          .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                          .map(AUnitTypeWrapper::getGroundWeapon)
+                          .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                          .sum(), dpsToGroundsByEnemy));
+              bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER,
+                  Utils.computeRatio(
+                      bl.returnFactSetValueForGivenKey(OWN_GROUND).orElse(Stream.empty())
+                          .map(AUnit::getType)
+                          .filter(AUnitTypeWrapper::canAttackAirUnits)
+                          .map(AUnitTypeWrapper::getAirWeapon)
+                          .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
+                          .sum(), dpsToGroundsByEnemy));
+
+              //supply of enemy anti-air
+              double supplyOfAntiAir = bl.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                  .orElse(Stream.empty())
+                  .map(AUnit::getType)
+                  .filter(AUnitTypeWrapper::canAttackAirUnits)
                   .mapToDouble(AUnitTypeWrapper::supplyRequired)
-                  .sum(), supplyOfAntiGround));
+                  .sum();
 
-        })
-        .baseEnvironmentObservation(
-            (aBaseLocation, beliefs) -> makeObservation(aBaseLocation, beliefs, game))
-        .agentTypeID(AgentTypes.BASE_LOCATION)
-        .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
+              //supply of enemy anti-bl
+              double supplyOfAntiGround = bl.returnFactSetValueForGivenKey(ENEMY_UNIT)
+                  .orElse(Stream.empty())
+                  .map(AUnit::getType)
+                  .filter(unitTypeWrapper -> !unitTypeWrapper.isWorker())
+                  .filter(AUnitTypeWrapper::canAttackGroundUnits)
+                  .mapToDouble(AUnitTypeWrapper::supplyRequired)
+                  .sum();
 
-            //HOLD_GROUND
-            () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_GROUND_UNITS),
-                HOLD_GROUND) {
+              //player's units
+              Set<AUnitOfPlayer> playersUnitsGlobal = UnitWrapperFactory
+                  .getStreamOfAllAlivePlayersUnits()
+                  .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isNotActuallyUnit())
+                  .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker())
+                  .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isBuilding())
+                  .collect(Collectors.toSet());
 
-              @Override
-              protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
-                  Beliefs beliefs) {
-                ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                    .get();
-                return mediatorService.getStreamOfWatchers()
-                    .filter(agentWatcher -> agentWatcher.getBeliefs()
-                        .isFactKeyForValueInMemory(HOLD_LOCATION))
-                    .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
-                        .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
-                    .map(agentWatcher -> agentWatcher.getBeliefs()
-                        .returnFactValueForGivenKey(REPRESENTS_UNIT))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .map(AUnit::getType)
-                    .filter(typeWrapper -> !typeWrapper.isFlyer() && !typeWrapper.isWorker()
-                        && !typeWrapper.isNotActuallyUnit())
-                    .count() > 3;
-              }
+              //air
+              bl.updateFact(RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE,
+                  Utils.computeRatio(playersUnitsGlobal.stream()
+                      .map(AUnit::getType)
+                      .filter(AUnitTypeWrapper::isFlyer)
+                      .mapToDouble(AUnitTypeWrapper::supplyRequired)
+                      .sum(), supplyOfAntiAir));
 
-              @Override
-              protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
-                return Stream.empty();
-              }
-            },
+              //ground
+              bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+                  Utils.computeRatio(playersUnitsGlobal.stream()
+                      .map(AUnit::getType)
+                      .filter(unitTypeWrapper -> !unitTypeWrapper.isFlyer())
+                      .mapToDouble(AUnitTypeWrapper::supplyRequired)
+                      .sum(), supplyOfAntiGround));
 
-            //HOLD_AIR
-            () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_AIR_UNITS), HOLD_AIR) {
+            })
+            .baseEnvironmentObservation(
+                (aBaseLocation, beliefs) -> makeObservation(aBaseLocation, beliefs, game))
+            .agentTypeID(AgentTypes.BASE_LOCATION)
+            .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
 
-              @Override
-              protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
-                  Beliefs beliefs) {
-                ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
-                    .get();
-                return mediatorService.getStreamOfWatchers()
-                    .filter(agentWatcher -> agentWatcher.getBeliefs()
-                        .isFactKeyForValueInMemory(HOLD_LOCATION))
-                    .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
-                        .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
-                    .map(agentWatcher -> agentWatcher.getBeliefs()
-                        .returnFactValueForGivenKey(REPRESENTS_UNIT))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .map(AUnit::getType)
-                    .filter(typeWrapper -> typeWrapper.isFlyer()
-                        && !typeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE))
-                    .count() > 3;
-              }
+                //TODO handle relly points
 
-              @Override
-              protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
-                return Stream.empty();
-              }
-            },
+                //HOLD_GROUND
+                () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_GROUND_UNITS),
+                    HOLD_GROUND) {
 
-            //BUILD_CREEP_COLONY
-            () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_CREEP_COLONY,
-                AUnitTypeWrapper.CREEP_COLONY_TYPE),
+                  @Override
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
+                      Beliefs beliefs) {
+                    ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                        .get();
+                    long groundUnitsTargetingBase = mediatorService.getStreamOfWatchers()
+                        .filter(agentWatcher -> agentWatcher.getBeliefs()
+                            .isFactKeyForValueInMemory(HOLD_LOCATION))
+                        .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
+                            .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
+                        .map(agentWatcher -> agentWatcher.getBeliefs()
+                            .returnFactValueForGivenKey(REPRESENTS_UNIT))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .map(AUnit::getType)
+                        .filter(typeWrapper -> !typeWrapper.isFlyer() && !typeWrapper.isWorker()
+                            && !typeWrapper.isNotActuallyUnit())
+                        .count();
+                    if (groundUnitsTargetingBase < 3) {
+                      return false;
+                    }
+                    long ourGroundArmy = UnitWrapperFactory.getStreamOfAllAlivePlayersUnits()
+                        .map(AUnit::getType)
+                        .filter(typeWrapper -> !typeWrapper.isFlyer() && !typeWrapper.isWorker()
+                            && !typeWrapper.isNotActuallyUnit())
+                        .count();
+                    if (((double) groundUnitsTargetingBase / (double) ourGroundArmy) < 1 / 3) {
+                      return false;
+                    }
+//                log.info("Holding " + me.toString() + " by GROUND.");
+                    return true;
+                  }
 
-            //BUILD_SUNKEN_COLONY
-            () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SUNKEN_COLONY,
-                AUnitTypeWrapper.SUNKEN_COLONY_TYPE),
+                  @Override
+                  protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
+                    return Stream.empty();
+                  }
+                },
 
-            //BUILD_SPORE_COLONY
-            () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SPORE_COLONY,
-                AUnitTypeWrapper.SPORE_COLONY_TYPE)
-        }))
-        .build()
+                //HOLD_AIR
+                () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_AIR_UNITS), HOLD_AIR) {
+
+                  @Override
+                  protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,
+                      Beliefs beliefs) {
+                    ABaseLocationWrapper me = beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION)
+                        .get();
+                    long groundUnitsTargetingBase = mediatorService.getStreamOfWatchers()
+                        .filter(agentWatcher -> agentWatcher.getBeliefs()
+                            .isFactKeyForValueInMemory(HOLD_LOCATION))
+                        .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
+                            .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
+                        .map(agentWatcher -> agentWatcher.getBeliefs()
+                            .returnFactValueForGivenKey(REPRESENTS_UNIT))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .map(AUnit::getType)
+                        .filter(typeWrapper -> typeWrapper.isFlyer()
+                            && !typeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE))
+                        .count();
+                    if (groundUnitsTargetingBase < 3) {
+                      return false;
+                    }
+                    long ourAirArmy = UnitWrapperFactory.getStreamOfAllAlivePlayersUnits()
+                        .map(AUnit::getType)
+                        .filter(typeWrapper -> typeWrapper.isFlyer() && !typeWrapper
+                            .equals(AUnitTypeWrapper.OVERLORD_TYPE))
+                        .count();
+                    if (((double) groundUnitsTargetingBase / (double) ourAirArmy) < 1 / 3) {
+                      return false;
+                    }
+//                log.info("Holding " + me.toString() + " by AIR.");
+                    return true;
+                  }
+
+                  @Override
+                  protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
+                    return Stream.empty();
+                  }
+                },
+
+                //BUILD_CREEP_COLONY
+                () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_CREEP_COLONY,
+                    AUnitTypeWrapper.CREEP_COLONY_TYPE),
+
+                //BUILD_SUNKEN_COLONY
+                () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SUNKEN_COLONY,
+                    AUnitTypeWrapper.SUNKEN_COLONY_TYPE),
+
+                //BUILD_SPORE_COLONY
+                () -> new ColonyPlanWatcher(() -> new FeatureContainer(DEFENSE), BUILD_SPORE_COLONY,
+                    AUnitTypeWrapper.SPORE_COLONY_TYPE)
+            }))
+            .build()
     );
     this.baseLocation = baseLocation;
     beliefs.updateFact(IS_MINERAL_ONLY, baseLocation.isMineralOnly());
