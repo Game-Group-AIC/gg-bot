@@ -27,11 +27,11 @@ public class DifferentConsecutivePairFindingService implements IPairFindingServi
                 .equals(states.get(i).getFeatureVector(), states.get(i + 1).getFeatureVector()))
             .boxed()
             .map(i -> new Pair(createDataPoint(states.get(i), normalizers),
-                createDataPoint(states.get(i + 1), normalizers))))
+                createDataPoint(states.get(i + 1), normalizers),
+                states.get(i).isCommittedWhenTransiting())))
         .collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet()
         .stream()
-        .map(pairLongEntry -> new PairWithOccurrenceCount(pairLongEntry.getKey().getFirst(),
-            pairLongEntry.getKey().getSecond(), pairLongEntry.getValue().intValue()))
+        .map(entry -> new PairWithOccurrenceCount(entry.getKey(), entry.getValue().intValue()))
         .collect(Collectors.toSet());
   }
 }

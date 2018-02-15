@@ -33,10 +33,13 @@ import burlap.mdp.singleagent.SADomain;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -239,10 +242,7 @@ public class DecisionLearnerService implements IDecisionLearnerService {
       List<Vec> classes = stateClusteringService
           .computeStateRepresentatives(states, normalizers, configuration,
               differentConsecutivePairFindingService.findPairs(trajectoriesWrapped.stream()
-                  .map(TrajectoryWrapper::getTrajectory), normalizers))
-          .stream()
-          .distinct()
-          .collect(Collectors.toList());
+                  .map(TrajectoryWrapper::getTrajectory), normalizers));
 
       //create states with corresponding mean
       List<DecisionState> decisionStates = IntStream.range(0, classes.size()).boxed()
@@ -291,7 +291,8 @@ public class DecisionLearnerService implements IDecisionLearnerService {
 
               //add transition to episode. Do not add last transition if agent is committed. add positive reward only
               episode.transition(new SimpleAction(stateTransitionPair.nextActionEnumeration.name()),
-                  nextPair.decisionState, Math.abs(DecisionDomainGenerator.getRandomRewardInInterval(configuration)));
+                  nextPair.decisionState,
+                  Math.abs(DecisionDomainGenerator.getRandomRewardInInterval(configuration)));
 
               stateTransitionPair = nextPair;
             }
@@ -304,7 +305,8 @@ public class DecisionLearnerService implements IDecisionLearnerService {
       DecisionModel decisionModel = new DecisionModel(decisionStates.size());
 
       //learn policy
-      DecisionDomainGenerator decisionDomainGenerator = new DecisionDomainGenerator(decisionModel, configuration);
+      DecisionDomainGenerator decisionDomainGenerator = new DecisionDomainGenerator(decisionModel,
+          configuration);
       SADomain domain = decisionDomainGenerator.generateDomain();
 
       log.info("Learning policy for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
@@ -322,6 +324,20 @@ public class DecisionLearnerService implements IDecisionLearnerService {
       MDPForDecisionWithPolicy mdpForDecisionWithPolicy = createDecisionPoint(normalizers,
           decisionStates,
           policy);
+
+      //are all actions present
+      Set<NextActionEnumerations> actions = mdpForDecisionWithPolicy.getStates().stream()
+          .flatMap(stateWithPolicy -> stateWithPolicy.getNextActions().entrySet().stream()
+              .filter(entry -> entry.getValue() > 0)
+              .map(Entry::getKey))
+          .distinct()
+          .collect(Collectors.toSet());
+      if (Arrays.stream(NextActionEnumerations.values())
+          .anyMatch(nextActionEnumerations -> !actions.contains(nextActionEnumerations))) {
+        log.error("Missing action in " + tuple.mapSize.name() + ", " + tuple.race.name() + ", "
+            + tuple.agentTypeID
+            .getName() + ", " + tuple.desireKeyID.getName());
+      }
 
       try {
         storageService.storeLearntDecision(mdpForDecisionWithPolicy, tuple.getAgentTypeID(),

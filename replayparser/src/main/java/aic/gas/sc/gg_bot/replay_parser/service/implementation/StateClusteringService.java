@@ -6,7 +6,11 @@ import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import aic.gas.sc.gg_bot.replay_parser.model.clustering.PairWithOccurrenceCount;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.State;
 import aic.gas.sc.gg_bot.replay_parser.service.IStateClusteringService;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jsat.SimpleDataSet;
@@ -31,25 +35,37 @@ public class StateClusteringService implements IStateClusteringService {
       Set<PairWithOccurrenceCount> differentConsecutivePairFindingServicePairs) {
     MiniBatchKMeans batchKMeans = new MiniBatchKMeans(VectorNormalizer.DISTANCE_FUNCTION,
         configuration.getBatchSize(), configuration.getIterations(), SEED_SELECTION_METHOD);
-    batchKMeans.cluster(createDataSet(states, normalizers),
+    List<DataPoint> dataSet = createDataSet(states, normalizers);
+    batchKMeans.cluster(new SimpleDataSet(dataSet),
         (int) Math.min(configuration.getClusters(), states.stream()
             .map(State::getFeatureVector)
             .distinct()
             .count()));
-    return batchKMeans.getMeans();
+    Map<Vec, List<DataPoint>> assignment = new HashMap<>();
+    List<Vec> vecs = batchKMeans.getMeans().stream()
+        .distinct()
+        .collect(Collectors.toList());
+    dataSet.forEach(point -> {
+      Vec representant = vecs.stream()
+          .min(Comparator.comparingDouble(
+              o -> VectorNormalizer.DISTANCE_FUNCTION.dist(o, point.getNumericalValues())))
+          .get();
+      assignment.computeIfAbsent(representant, vec -> new ArrayList<>()).add(point);
+    });
+    return new ArrayList<>(assignment.keySet());
   }
+
 
   /**
    * Create data set
    */
-  private static SimpleDataSet createDataSet(List<State> states,
+  private static List<DataPoint> createDataSet(List<State> states,
       List<FeatureNormalizer> normalizers) {
-    List<DataPoint> dataPoints = states.stream()
+    return states.stream()
         .map(State::getFeatureVector)
         .map(doubles -> VectorNormalizer.normalizeFeatureVector(doubles, normalizers))
         .map(doubles -> new DataPoint(new DenseVector(doubles)))
         .collect(Collectors.toList());
-    return new SimpleDataSet(dataPoints);
   }
 
 }

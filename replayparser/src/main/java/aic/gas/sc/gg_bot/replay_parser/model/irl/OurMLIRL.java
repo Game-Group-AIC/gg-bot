@@ -58,7 +58,7 @@ public class OurMLIRL extends MLIRL {
     this.request.getPlanner().setModel(new CustomRewardModel(request.getDomain().getModel(), rf));
     double lastLikelihood = this.logLikelihood();
 //    log.info("RF: " + this.request.getRf().toString());
-    log.info("Log likelihood: " + lastLikelihood);
+//    log.info("Log likelihood: " + lastLikelihood);
 
     Map<Integer, Double> nextValuesOfParameters = new HashMap<>(), bestValuesOfParameters = new HashMap<>();
     double bestLikelihood = lastLikelihood;
@@ -115,10 +115,9 @@ public class OurMLIRL extends MLIRL {
       double likelihoodChange = newLikelihood - lastLikelihood;
       lastLikelihood = newLikelihood;
 
-      log.info(i + ": Log likelihood: " + lastLikelihood + " (change: " + likelihoodChange
-          + "). Best so far " + bestLikelihood);
-
       if (newLikelihood > bestLikelihood) {
+        log.info(i + ": Previous Best Log likelihood: " + bestLikelihood + ". New Best: "
+            + newLikelihood + " (improvment: " + Math.abs(bestLikelihood - newLikelihood) + ")");
         bestLikelihood = newLikelihood;
         bestValuesOfParameters.clear();
         for (int j = 0; j < rf.numParameters(); j++) {
@@ -131,12 +130,19 @@ public class OurMLIRL extends MLIRL {
       if (!configuration.isStaticLearningRate() && i != 0
           && i % configuration.getDropAfterIterations() == 0) {
         this.currentLearningRate = this.currentLearningRate * configuration.getDropLearningRate();
-        log.info("Setting learning rate to " + this.currentLearningRate);
+
+        //change to best one
+        bestValuesOfParameters
+            .put(rf.numParameters() - 1, (double) (minReward * multiplierOfRewardForDeadEnd));
+        for (Entry<Integer, Double> entry : bestValuesOfParameters.entrySet()) {
+          rf.setParameter(entry.getKey(), entry.getValue());
+        }
       }
 
       if ((Math.abs(likelihoodChange) < this.maxLikelihoodChange
           && lastLikelihood == bestLikelihood) || Double.isNaN(likelihoodChange)
-          || System.currentTimeMillis() - start > timeBudget) {
+          || System.currentTimeMillis() - start > timeBudget
+          || configuration.getIrlNoChangeStopCondition() <= i - bestIt) {
         i++;
         break;
       }
@@ -151,6 +157,7 @@ public class OurMLIRL extends MLIRL {
 
     log.info("\nNum gradient ascent steps: " + i + " using reward from iteration: " + bestIt
         + " with Log likelihood: " + bestLikelihood);
+    log.info("RF: " + this.request.getRf().toString());
   }
 
 
@@ -160,8 +167,6 @@ public class OurMLIRL extends MLIRL {
    * @return the log-likelihood of all expert trajectories under the current reward function parameters.
    */
   public double logLikelihood() {
-    long start = System.currentTimeMillis();
-
     double[] weights = this.request.getEpisodeWeights();
     List<Episode> exampleTrajectories = batchIterator.sampleBatchFromEpisodes();
 
@@ -169,8 +174,6 @@ public class OurMLIRL extends MLIRL {
     for (int i = 0; i < exampleTrajectories.size(); i++) {
       sum += this.logLikelihoodOfTrajectory(exampleTrajectories.get(i), weights[i]);
     }
-
-    log.info("LogLikelihood computation executed in " + (System.currentTimeMillis() - start));
     return sum;
 
   }
@@ -196,8 +199,6 @@ public class OurMLIRL extends MLIRL {
    * @return the gradient of the log-likelihood of all trajectories
    */
   public FunctionGradient logLikelihoodGradient() {
-    long start = System.currentTimeMillis();
-
     HashedAggregator<Integer> gradientSum = new HashedAggregator<>();
 
     double[] weights = this.request.getEpisodeWeights();
@@ -222,9 +223,6 @@ public class OurMLIRL extends MLIRL {
     for (Map.Entry<Integer, Double> e : gradientSum.entrySet()) {
       gradient.put(e.getKey(), e.getValue());
     }
-
-    log.info(
-        "LogLikelihood gradient computation executed in " + (System.currentTimeMillis() - start));
     return gradient;
   }
 

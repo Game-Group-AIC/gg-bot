@@ -1,14 +1,14 @@
 package aic.gas.sc.gg_bot.replay_parser.model.clustering;
 
-import jsat.classifiers.DataPoint;
 import lombok.Getter;
 
 @Getter
 public class PairWithOccurrenceCount extends Pair {
+
   private final int occurrence;
 
-  public PairWithOccurrenceCount(DataPoint first, DataPoint second, int occurrence) {
-    super(first, second);
+  public PairWithOccurrenceCount(Pair pair, int occurrence) {
+    super(pair.getFirst(), pair.getSecond(), pair.isCommittedWhenTransiting());
     this.occurrence = occurrence;
   }
 }

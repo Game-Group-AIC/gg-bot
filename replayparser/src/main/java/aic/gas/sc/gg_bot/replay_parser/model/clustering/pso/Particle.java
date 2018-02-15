@@ -6,14 +6,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
-import jsat.classifiers.DataPoint;
 import jsat.linear.DenseVector;
 import jsat.linear.Vec;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@EqualsAndHashCode(of = "particleAsVector")
 public class Particle {
 
   private final List<Centroid> centroids;
@@ -24,7 +25,7 @@ public class Particle {
   private static final Random RANDOM = new Random();
 
   public Particle(IFitnessFunctionEvaluationStrategy fitnessFunctionStrategy,
-      List<Centroid> centroids, List<DataPoint> dataSet) {
+      List<Centroid> centroids, List<DataPointWithDistanceCache> dataSet) {
     this.centroids = centroids;
     this.fitnessFunctionStrategy = fitnessFunctionStrategy;
 
@@ -82,8 +83,6 @@ public class Particle {
           RANDOM.nextDouble(), globalBest.bestSolutionSoFar.centroids.get(i), bounds);
     }
 
-    long start = System.currentTimeMillis();
-
     //make new assignment
     List<Centroid> enabledCentroids = centroids.stream()
         .filter(ICentroid::isEnabled)
@@ -106,6 +105,7 @@ public class Particle {
     }
   }
 
+  @EqualsAndHashCode(of = {"centroids", "fitness", "particleAsVector"})
   private static class BestSolutionSoFar {
 
     private final List<StaticCentroid> centroids;
@@ -122,6 +122,7 @@ public class Particle {
     }
   }
 
+  @EqualsAndHashCode(of = {"center", "isEnabled", "hasPointsInCluster"})
   @AllArgsConstructor
   private static class StaticCentroid implements ICentroid {
 

@@ -22,7 +22,7 @@ public class PSOParameters {
   private final int neighborhoodSize = 5;
 
   @Builder.Default
-  private final int noImprovmentTerminationCondition = 20;
+  private final int noImprovmentTerminationCondition = 2;
 
   @Builder.Default
   private final int clusteringRunsForInitialization = 5;
