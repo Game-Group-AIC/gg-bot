@@ -63,7 +63,7 @@ public class DecisionLearnerService implements IDecisionLearnerService {
       .filter(race -> !race.equals(ARace.UNKNOWN))
       .collect(Collectors.toList());
   private final IStorageService storageService = StorageService.getInstance();
-  private final IStateClusteringService stateClusteringService = new PSOClustering();
+  private final IStateClusteringService stateClusteringService = new StateClusteringService();
   private final IPolicyLearningService policyLearningService = new PolicyLearningService();
   private final IFeatureNormalizerService featureNormalizerService = new FeatureNormalizerService();
   private final IPairFindingService differentConsecutivePairFindingService = new DifferentConsecutivePairFindingService();

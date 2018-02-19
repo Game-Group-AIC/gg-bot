@@ -76,6 +76,17 @@ public class EcoManagerAgentType {
         .findAny();
   }
 
+  public static final ConfigurationWithSharedDesire BUILD_EXTRACTOR_SHARED = createConfigurationWithSharedDesireToBuildFromTemplate(
+      MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, (memory, desireParameters) -> {
+        Optional<ABaseLocationWrapper> baseWithoutExtractor = getOurBaseWithoutExtractor(
+            memory);
+        if (baseWithoutExtractor.isPresent()) {
+          memory.updateFact(BASE_TO_MOVE, baseWithoutExtractor.get());
+        } else {
+          memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
+        }
+      }, (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+
   public static final AgentType ECO_MANAGER = AgentType.builder()
       .agentTypeID(AgentTypes.ECO_MANAGER)
       .usingTypesForFacts(Stream.of(BASE_TO_MOVE, LOCATION)
@@ -234,17 +245,7 @@ public class EcoManagerAgentType {
         type.addConfiguration(BUILD_EXTRACTOR, buildExtractorAbstract, true);
 
         //share desire to build extractor with the system
-        ConfigurationWithSharedDesire buildExtractorShared = createConfigurationWithSharedDesireToBuildFromTemplate(
-            MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, (memory, desireParameters) -> {
-              Optional<ABaseLocationWrapper> baseWithoutExtractor = getOurBaseWithoutExtractor(
-                  memory);
-              if (baseWithoutExtractor.isPresent()) {
-                memory.updateFact(BASE_TO_MOVE, baseWithoutExtractor.get());
-              } else {
-                memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
-              }
-            }, (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
-        type.addConfiguration(BUILD_EXTRACTOR, BUILD_EXTRACTOR, buildExtractorShared);
+        type.addConfiguration(BUILD_EXTRACTOR, BUILD_EXTRACTOR, BUILD_EXTRACTOR_SHARED);
 
         //morph to overlord abstract plan
         ConfigurationWithAbstractPlan trainOverlord = ConfigurationWithAbstractPlan

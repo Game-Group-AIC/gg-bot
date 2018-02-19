@@ -8,8 +8,8 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_P
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPIRES;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EVOLUTION_CHAMBER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_HYDRALISK_DEN;
@@ -22,6 +22,7 @@ import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ENABLE_GROUND_MELEE;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ENABLE_GROUND_RANGED;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ENABLE_STATIC_ANTI_AIR;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER;
+import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_EXTRACTOR;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_HYDRALISK_DEN;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_POOL;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_SPIRE;
@@ -163,7 +164,7 @@ public class BuildingOrderManager {
                         && dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS)
                         == 0)
                 .globalBeliefSetTypesByAgentType(Collections.singleton(COUNT_OF_EXTRACTORS))
-                .desiresToConsider(new HashSet<>(Collections.singleton(BUILD_EXTRACTOR)))
+                .desiresToConsider(Collections.singleton(BUILD_EXTRACTOR))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
@@ -182,7 +183,7 @@ public class BuildingOrderManager {
 
         //share desire to build extractor with system
         ConfigurationWithSharedDesire buildExtractor = createConfigurationWithSharedDesireToBuildFromTemplate(
-            BUILD_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, new FindBaseForBuilding(),
+            MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, new FindBaseForBuilding(),
             (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(BUILD_EXTRACTOR, BUILD_EXTRACTOR, buildExtractor);
 
@@ -223,10 +224,10 @@ public class BuildingOrderManager {
             (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(ENABLE_GROUND_RANGED, ENABLE_GROUND_RANGED, buildHydraliskDen);
 
-        //tell system to build pool if needed
+        //tell system to build extractor if it is missing
         type.addConfiguration(BUILD_EXTRACTOR, ENABLE_GROUND_RANGED, buildExtractorIfNotPresent);
 
-        //tell system to build extractor if it is missing
+        //tell system to build pool if needed
         type.addConfiguration(ENABLE_GROUND_MELEE, ENABLE_GROUND_RANGED, buildPoolIfNotPresent);
 
         //spire as abstract plan. needs to meet dependencies - lair and at least one extractor
