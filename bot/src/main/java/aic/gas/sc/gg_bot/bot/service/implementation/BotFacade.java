@@ -22,20 +22,12 @@ import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import bwapi.DefaultBWListener;
 import bwapi.Game;
 import bwapi.Mirror;
-import bwapi.Order;
 import bwapi.Player;
 import bwapi.Unit;
-import bwapi.UnitType;
 import bwta.BWTA;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -47,28 +39,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BotFacade extends DefaultBWListener {
 
+  //track types available to check requirements
+  private static final IRequirementsChecker REQUIREMENTS_CHECKER = new RequirementsChecker();
+  public static final ResourceManager RESOURCE_MANAGER = new ResourceManager(REQUIREMENTS_CHECKER);
   //TODO !!!THIS IS HACK DO NOT USE INSIDE OTHER COMMAND INTERACTING WITH GAME!!!
   //class to handle additional commands with observations requests
   public static AdditionalCommandToObserveGameProcessor ADDITIONAL_OBSERVATIONS_PROCESSOR;
-
-  //track types available to check requirements
-  private static final IRequirementsChecker REQUIREMENTS_CHECKER = new RequirementsChecker();
-
-  public static final ResourceManager RESOURCE_MANAGER = new ResourceManager(REQUIREMENTS_CHECKER);
-
   //TODO increase + block frame for a while
+
   private final long maxFrameExecutionTime;
   private final boolean annotateMap;
   private final boolean drawDebug;
   private final boolean issueCommandFromGUI;
 
-  private long time, execution;
-
   //TODO hack to prevent building same types
   private final BuildLockerService buildLockerService = BuildLockerService.getInstance();
-
   //keep track of agent units
   private final Map<Integer, AgentUnit> agentsWithGameRepresentation = new HashMap<>();
+  private long time, execution;
   //executor of game commands
   private GameCommandExecutor gameCommandExecutor;
   //facade for MAS
@@ -104,7 +92,7 @@ public class BotFacade extends DefaultBWListener {
     this.drawDebug = drawDebug;
 
     //load decision points
-    DecisionLoadingServiceImpl.getInstance();
+    DecisionLoadingService.getInstance();
 
     //init factories
     playerInitializer = new PlayerInitializer();
@@ -112,44 +100,6 @@ public class BotFacade extends DefaultBWListener {
     agentUnitFactory = new AgentUnitHandler();
 
     log.info("Facade ready. It took " + (System.currentTimeMillis() - start));
-  }
-
-  /**
-   * Initialize agents out of start method - concurrently
-   */
-  @AllArgsConstructor
-  private class InitializationThread implements Runnable {
-
-    private final APlayer playerToInitAsAgent;
-    private final List<ABaseLocationWrapper> baseLocations;
-    private final BotFacade botFacade;
-    private final ARace enemyRace;
-
-    @Override
-    public void run() {
-      long start = System.currentTimeMillis();
-      log.info("Agent initialization has started.");
-
-      //init player as another agent
-      AgentPlayer agentPlayer = playerInitializer
-          .createAgentForPlayer(playerToInitAsAgent, botFacade, enemyRace);
-      masFacade.addAgentToSystem(agentPlayer);
-
-      //init base locations as agents
-      baseLocations.stream()
-          .map(location -> locationInitializer.createAgent(location, botFacade))
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .forEach(agentBaseLocation -> {
-            masFacade.addAgentToSystem(agentBaseLocation);
-            agentBaseLocations.add(agentBaseLocation);
-          });
-
-      //run abstract agents
-      abstractAgents.forEach(abstractAgent -> masFacade.addAgentToSystem(abstractAgent));
-
-      log.info("Agent initialization has ended. It took " + (System.currentTimeMillis() - start));
-    }
   }
 
   @Override
@@ -293,7 +243,7 @@ public class BotFacade extends DefaultBWListener {
 
   public void run() throws IOException, InterruptedException {
     mirror.getModule().setEventListener(this);
-    DecisionLoadingServiceImpl.getInstance();
+    DecisionLoadingService.getInstance();
     mirror.startGame();
   }
 
@@ -425,6 +375,44 @@ public class BotFacade extends DefaultBWListener {
         .filter(Objects::nonNull)
         .forEach(agent -> Annotator.paintText(agent.getUnit().getPosition().getWrappedPosition(),
             agent.getCommitmentsAsText(), game));
+  }
+
+  /**
+   * Initialize agents out of start method - concurrently
+   */
+  @AllArgsConstructor
+  private class InitializationThread implements Runnable {
+
+    private final APlayer playerToInitAsAgent;
+    private final List<ABaseLocationWrapper> baseLocations;
+    private final BotFacade botFacade;
+    private final ARace enemyRace;
+
+    @Override
+    public void run() {
+      long start = System.currentTimeMillis();
+      log.info("Agent initialization has started.");
+
+      //init player as another agent
+      AgentPlayer agentPlayer = playerInitializer
+          .createAgentForPlayer(playerToInitAsAgent, botFacade, enemyRace);
+      masFacade.addAgentToSystem(agentPlayer);
+
+      //init base locations as agents
+      baseLocations.stream()
+          .map(location -> locationInitializer.createAgent(location, botFacade))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .forEach(agentBaseLocation -> {
+            masFacade.addAgentToSystem(agentBaseLocation);
+            agentBaseLocations.add(agentBaseLocation);
+          });
+
+      //run abstract agents
+      abstractAgents.forEach(abstractAgent -> masFacade.addAgentToSystem(abstractAgent));
+
+      log.info("Agent initialization has ended. It took " + (System.currentTimeMillis() - start));
+    }
   }
 
   //TODO handle more events - unit renegade, visibility

@@ -5,7 +5,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumerations;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
-import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
+import aic.gas.sc.gg_bot.abstract_bot.service.IDecisionLoadingService;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
@@ -23,16 +23,16 @@ import lombok.extern.slf4j.Slf4j;
  * Implementation for DecisionLoadingService
  */
 @Slf4j
-public class DecisionLoadingServiceImpl implements DecisionLoadingService {
+public class DecisionLoadingService implements IDecisionLoadingService {
 
-  private static DecisionLoadingServiceImpl instance = new DecisionLoadingServiceImpl();
+  private static DecisionLoadingService instance = new DecisionLoadingService();
   private final Map<MapSizeEnums, Map<ARace, Map<AgentTypeID, Map<DesireKeyID, MDPForDecisionWithPolicy>>>> cache = new ConcurrentHashMap<>();
   private Map<AgentTypeID, Map<DesireKeyID, MDPForDecisionWithPolicy>> loaded = new HashMap<>();
 
   /**
    * Initialize cache (loads models from resources)
    */
-  private DecisionLoadingServiceImpl() {
+  private DecisionLoadingService() {
     Stream.of(MapSizeEnums.values()).forEach(mapSize -> Stream.of(ARace.values())
         .filter(race -> !race.equals(ARace.UNKNOWN))
         .forEach(race -> DecisionConfiguration.decisionsToLoad
@@ -45,9 +45,9 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
   /**
    * Only one instance
    */
-  public synchronized static DecisionLoadingService getInstance() {
+  public synchronized static IDecisionLoadingService getInstance() {
     if (instance == null) {
-      instance = new DecisionLoadingServiceImpl();
+      instance = new DecisionLoadingService();
     }
     return instance;
   }
@@ -62,7 +62,7 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
           "/" + mapSize.name() + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID
               .getName() + ".db";
       MDPForDecisionWithPolicy mdpForDecisionWithPolicy = SerializationUtil.deserialize(
-          DecisionLoadingServiceImpl.class.getResourceAsStream(fileName));
+          DecisionLoadingService.class.getResourceAsStream(fileName));
 
       //set cache
       mdpForDecisionWithPolicy.initCache();
