@@ -1,17 +1,10 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
@@ -40,11 +33,11 @@ public class UnitWatcherType extends AgentWatcherType {
   };
 
   @Builder
-  private UnitWatcherType(AgentTypeID agentTypeID, Set<FactKey<?>> factKeys,
+  private UnitWatcherType(AgentTypes agentType, Set<FactKey<?>> factKeys,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers,
       ReasoningForAgentWithUnitRepresentation reasoning) {
-    super(agentTypeID, factKeys, factSetsKeys, planWatchers, reasoning);
+    super(agentType, factKeys, factSetsKeys, planWatchers, reasoning);
     this.getFactSetsKeys().addAll(Arrays.asList(ENEMY_BUILDING, ENEMY_AIR,
         ENEMY_GROUND, OWN_BUILDING, OWN_AIR, OWN_GROUND));
     this.getFactKeys().addAll(Arrays.asList(REPRESENTS_UNIT, LOCATION));

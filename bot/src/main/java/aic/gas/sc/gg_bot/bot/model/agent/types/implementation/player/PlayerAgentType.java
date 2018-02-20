@@ -1,53 +1,7 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.player;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVAILABLE_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AVERAGE_COUNT_OF_WORKERS_PER_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.COUNT_OF_BASES_WITHOUT_EXTRACTORS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DIFFERENCE_IN_BASES;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_RACE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FORCE_SUPPLY_RATIO;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.FREE_SUPPLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OUR_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.POPULATION_LIMIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.UPGRADE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ARMY_SUPPLY_RATIO;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_BUILDINGS;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_ENEMY_FORCE_IN_UNITS;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_OUR_FORCE_IN_BUILDINGS;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.ESTIMATE_OUR_FORCE_IN_UNITS;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.READ_PLAYERS_DATA;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.REASON_ABOUT_BASES;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.UPDATE_ENEMY_RACE;
-import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.WORKER_SCOUT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
+import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.*;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
@@ -76,7 +30,7 @@ public class PlayerAgentType {
   private static final boolean SEND_SIXTH_WORKER = (new Random()).nextBoolean();
 
   public static final AgentTypePlayer PLAYER = AgentTypePlayer.builder()
-      .agentTypeID(AgentTypes.PLAYER)
+      .agentTypeID(AgentTypes.PLAYER.getId())
       .usingTypesForFacts(
           Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT, POPULATION,
               IS_PLAYER, BASE_TO_MOVE, IS_BASE_LOCATION, LOCATION, FREE_SUPPLY, FORCE_SUPPLY_RATIO,
@@ -241,11 +195,11 @@ public class PlayerAgentType {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
                     //we haven't found enemy base
-                    memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                         .noneMatch(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false))
                         //there are unvisited main bases
-                        && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                         .filter(readOnlyMemory -> !readOnlyMemory
                             .returnFactValueForGivenKey(WAS_VISITED)
                             .orElse(false))
@@ -256,16 +210,16 @@ public class PlayerAgentType {
                         .anyMatch(ABaseLocationWrapper::isStartLocation)
                         //there is more workers then 6 or 7
                         && (SEND_SIXTH_WORKER ? 6 : 7) <= memory
-                        .getReadOnlyMemoriesForAgentType(AgentTypes.DRONE).count())
+                        .getReadOnlyMemoriesForAgentType(AgentTypes.DRONE.getId()).count())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
                     //we have found enemy base
-                    memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                         .anyMatch(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false))
                         //all main bases were visited
-                        || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                         .filter(readOnlyMemory -> !readOnlyMemory
                             .returnFactValueForGivenKey(WAS_VISITED)
                             .orElse(false))
@@ -287,7 +241,7 @@ public class PlayerAgentType {
               @Override
               public boolean act(WorkingMemory memory) {
                 memory.updateFactSetByFacts(OUR_BASE,
-                    memory.getReadOnlyMemoriesForAgentType(BASE_LOCATION)
+                    memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                         .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
                             IS_OUR_BASE)
                             .orElse(false))
@@ -295,7 +249,7 @@ public class PlayerAgentType {
                             .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
                         .collect(Collectors.toSet()));
                 memory.updateFactSetByFacts(ENEMY_BASE,
-                    memory.getReadOnlyMemoriesForAgentType(BASE_LOCATION)
+                    memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                         .filter(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false))
                         .map(readOnlyMemory -> readOnlyMemory
@@ -306,7 +260,8 @@ public class PlayerAgentType {
                         memory.returnFactSetValueForGivenKey(ENEMY_BASE)));
 
                 //our bases aggregated info
-                Set<ReadOnlyMemory> ourBases = memory.getReadOnlyMemoriesForAgentType(BASE_LOCATION)
+                Set<ReadOnlyMemory> ourBases = memory
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                     .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
                         .orElse(false))
                     .collect(Collectors.toSet());

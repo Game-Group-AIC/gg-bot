@@ -27,7 +27,7 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
 
   public UnitOrderManagerWatcher() {
     super(UnitOrderManagerWatcherType.builder()
-        .agentTypeID(AgentTypes.UNIT_ORDER_MANAGER)
+        .agentType(AgentTypes.UNIT_ORDER_MANAGER)
         .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
 
             //BOOST_AIR

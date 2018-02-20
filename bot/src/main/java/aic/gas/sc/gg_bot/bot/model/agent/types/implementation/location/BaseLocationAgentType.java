@@ -1,61 +1,14 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.location;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.BASE_IS_COMPLETED;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_CREEP_COLONIES_AT_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_EXTRACTORS_ON_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS_ON_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SPORE_COLONIES_AT_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_SUNKEN_COLONIES_AT_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.*;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AIR_DISTANCE_TO_OUR_CLOSEST_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.CREEP_COLONY_COUNT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GROUND_DISTANCE_TO_OUR_CLOSEST_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OUR_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUND_FORCE_STATUS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.RATIO_GLOBAL_GROUND_VS_ANTI_GROUND_ON_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SPORE_COLONY_COUNT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.STATIC_DEFENSE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.SUNKEN_COLONY_COUNT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.DEFENSE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper.MAX_DISTANCE;
 import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.AgentTypeUtils.createConfigurationWithSharedDesireToBuildFromTemplate;
@@ -68,14 +21,8 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AWeaponTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.bot.model.Decider;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeBaseLocation;
@@ -102,100 +49,6 @@ import java.util.stream.Stream;
 
 //TODO maybe it could be wise to split to different agents
 public class BaseLocationAgentType {
-
-  private interface SimpleDecisionStrategy {
-
-    boolean isTrue(double value);
-  }
-
-  /**
-   * Template to create desire initiated by learnt decision.
-   * Initialize abstract build plan top - make reservation + check conditions (for building).
-   * It is unlocked only when building is built
-   */
-  private static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-      FactWithOptionalValueSet<T> completedCount, FactKey<Integer> factCountToTrackPreviousCount,
-      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
-      FeatureContainerHeader featureContainerHeader,
-      Stream<DesireKey> desireKeysWithSharedIntentionStream,
-      Stream<DesireKey> desireKeysWithAbstractIntentionStream,
-      SimpleDecisionStrategy forCommitment) {
-    return ConfigurationWithAbstractPlan.builder()
-        .reactionOnChangeStrategy((memory, desireParameters) -> {
-              BotFacade.RESOURCE_MANAGER
-                  .makeReservation(unitTypeWrapper, memory.getAgentId());
-              memory.updateFact(factCountToTrackPreviousCount,
-                  (int) memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(Stream.empty())
-                      .map(AUnit::getType)
-                      .filter(typeWrapper -> typeWrapper.equals(unitTypeWrapper))
-                      .count());
-            }
-        )
-        .reactionOnChangeStrategyInIntention(
-            (memory, desireParameters) -> {
-              BotFacade.RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId());
-              memory.eraseFactValueForGivenKey(factCountToTrackPreviousCount);
-            })
-        .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    !BotFacade.RESOURCE_MANAGER
-                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
-                        && !dataForDecision.madeDecisionToAny()
-                        && !BuildLockerService.getInstance()
-                        .isLocked(unitTypeWrapper)
-                        //is base
-                        && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
-                        //we have base completed
-                        && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                        //there is/will be no creep colony available
-                        && forCommitment
-                        .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
-                        && Decider
-                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
-                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
-            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
-            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
-            .globalBeliefTypesByAgentType(
-                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
-            .globalBeliefSetTypesByAgentType(
-                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-            .beliefTypes(featureContainerHeader.getConvertersForFacts())
-            .beliefSetTypes(
-                Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
-                    Stream.of(BASE_IS_COMPLETED, completedCount))
-                    .collect(Collectors.toSet()))
-            .desiresToConsider(Collections.singleton(desireKey))
-            .build())
-        .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    (!Decider
-                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
-                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
-                        && !BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
-                        || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
-                        || memory.returnFactValueForGivenKey(factCountToTrackPreviousCount)
-                        .orElse(0) != dataForDecision.getFeatureValueBeliefSets(completedCount))
-            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
-            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
-            .globalBeliefTypesByAgentType(
-                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
-            .globalBeliefSetTypesByAgentType(
-                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-            .beliefTypes(featureContainerHeader.getConvertersForFacts())
-            .beliefSetTypes(
-                Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
-                    Stream.of(BASE_IS_COMPLETED, completedCount))
-                    .collect(Collectors.toSet()))
-            .build())
-        .desiresWithAbstractIntention(
-            desireKeysWithAbstractIntentionStream.collect(Collectors.toSet()))
-        .desiresForOthers(desireKeysWithSharedIntentionStream.collect(Collectors.toSet()))
-        .build();
-  }
 
   public static final AgentTypeBaseLocation BASE_LOCATION = AgentTypeBaseLocation.builder()
       .initializationStrategy((AgentType type) -> {
@@ -359,7 +212,7 @@ public class BaseLocationAgentType {
                 //is not visited + other start base location were visited - set as enemy base
                 if (!memory.returnFactValueForGivenKey(IS_OUR_BASE).orElse(false)
                     && !memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false)
-                    && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                     .filter(
                         readOnlyMemory -> readOnlyMemory.getAgentId() != memory.getAgentId())
                     .filter(readOnlyMemory -> readOnlyMemory
@@ -409,7 +262,7 @@ public class BaseLocationAgentType {
                   }
 
                   List<ABaseLocationWrapper> unvisitedBases = memory
-                      .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                      .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                       .filter(
                           readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(WAS_VISITED)
                               .orElse(false))
@@ -458,7 +311,7 @@ public class BaseLocationAgentType {
                   //it was visited, it is not enemy base and there exist position which was not visited
                   if (memory.returnFactValueForGivenKey(WAS_VISITED).orElse(false)
                       && !memory.returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false)
-                      && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                      && memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                       .anyMatch(
                           readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(WAS_VISITED)
                               .orElse(false))) {
@@ -719,9 +572,10 @@ public class BaseLocationAgentType {
                     .get();
 
                 memory.updateFact(GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE, memory
-                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                     .filter(
-                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_ENEMY_BASE)
+                        readOnlyMemory -> readOnlyMemory
+                            .returnFactValueForGivenKey(IS_ENEMY_BASE)
                             .orElse(false))
                     .map(readOnlyMemory -> readOnlyMemory
                         .returnFactValueForGivenKey(IS_BASE_LOCATION))
@@ -733,7 +587,7 @@ public class BaseLocationAgentType {
                     .orElse(MAX_DISTANCE));
 
                 memory.updateFact(AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE, memory
-                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                     .filter(
                         readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_ENEMY_BASE)
                             .orElse(false))
@@ -747,7 +601,7 @@ public class BaseLocationAgentType {
                     .orElse(MAX_DISTANCE));
 
                 memory.updateFact(GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, memory
-                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                     .filter(
                         readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
                             .orElse(false))
@@ -761,7 +615,7 @@ public class BaseLocationAgentType {
                     .orElse(MAX_DISTANCE));
 
                 memory.updateFact(AIR_DISTANCE_TO_OUR_CLOSEST_BASE, memory
-                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                     .filter(
                         readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
                             .orElse(false))
@@ -951,30 +805,38 @@ public class BaseLocationAgentType {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                        dataForDecision, FeatureContainerHeaders.HOLD_GROUND, memory.getCurrentClock(),
+                        dataForDecision, FeatureContainerHeaders.HOLD_GROUND,
+                        memory.getCurrentClock(),
                         memory.getAgentId()))
-                .globalBeliefTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypes(
+                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
                     FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_GROUND
+                        .getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_GROUND
+                        .getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .beliefTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFacts())
                 .beliefSetTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSets())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> !Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                        dataForDecision, FeatureContainerHeaders.HOLD_GROUND, memory.getCurrentClock(),
+                        dataForDecision, FeatureContainerHeaders.HOLD_GROUND,
+                        memory.getCurrentClock(),
                         memory.getAgentId()))
-                .globalBeliefTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypes(
+                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
                     FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_GROUND
+                        .getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_GROUND
+                        .getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .beliefTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFacts())
                 .beliefSetTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSets())
                 .build())
@@ -988,14 +850,18 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) ->
                     Decider
                         .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR, dataForDecision,
-                            FeatureContainerHeaders.HOLD_AIR, memory.getCurrentClock(), memory.getAgentId()))
-                .globalBeliefTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefs())
+                            FeatureContainerHeaders.HOLD_AIR, memory.getCurrentClock(),
+                            memory.getAgentId()))
+                .globalBeliefTypes(
+                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
                     FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_AIR
+                        .getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_AIR
+                        .getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .beliefTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFacts())
                 .beliefSetTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSets())
                 .build())
@@ -1004,13 +870,16 @@ public class BaseLocationAgentType {
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
                         dataForDecision, FeatureContainerHeaders.HOLD_AIR, memory.getCurrentClock(),
                         memory.getAgentId()))
-                .globalBeliefTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypes(
+                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
                     FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_AIR
+                        .getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_AIR
+                        .getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .beliefTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFacts())
                 .beliefSetTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSets())
                 .build())
@@ -1053,6 +922,95 @@ public class BaseLocationAgentType {
               DesiresKeys.BUILD_CREEP_COLONY)
               .collect(Collectors.toSet()))
       .build();
+
+  /**
+   * Template to create desire initiated by learnt decision.
+   * Initialize abstract build plan top - make reservation + check conditions (for building).
+   * It is unlocked only when building is built
+   */
+  private static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
+      FactWithOptionalValueSet<T> completedCount, FactKey<Integer> factCountToTrackPreviousCount,
+      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
+      FeatureContainerHeader featureContainerHeader,
+      Stream<DesireKey> desireKeysWithSharedIntentionStream,
+      Stream<DesireKey> desireKeysWithAbstractIntentionStream,
+      SimpleDecisionStrategy forCommitment) {
+    return ConfigurationWithAbstractPlan.builder()
+        .reactionOnChangeStrategy((memory, desireParameters) -> {
+              BotFacade.RESOURCE_MANAGER
+                  .makeReservation(unitTypeWrapper, memory.getAgentId());
+              memory.updateFact(factCountToTrackPreviousCount,
+                  (int) memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(Stream.empty())
+                      .map(AUnit::getType)
+                      .filter(typeWrapper -> typeWrapper.equals(unitTypeWrapper))
+                      .count());
+            }
+        )
+        .reactionOnChangeStrategyInIntention(
+            (memory, desireParameters) -> {
+              BotFacade.RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId());
+              memory.eraseFactValueForGivenKey(factCountToTrackPreviousCount);
+            })
+        .decisionInDesire(CommitmentDeciderInitializer.builder()
+            .decisionStrategy(
+                (dataForDecision, memory) ->
+                    !BotFacade.RESOURCE_MANAGER
+                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                        && !dataForDecision.madeDecisionToAny()
+                        && !BuildLockerService.getInstance()
+                        .isLocked(unitTypeWrapper)
+                        //is base
+                        && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
+                        //we have base completed
+                        && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                        //there is/will be no creep colony available
+                        && forCommitment
+                        .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
+                        && Decider
+                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
+                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
+            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
+            .globalBeliefTypesByAgentType(
+                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
+            .globalBeliefSetTypesByAgentType(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .beliefTypes(featureContainerHeader.getConvertersForFacts())
+            .beliefSetTypes(
+                Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
+                    Stream.of(BASE_IS_COMPLETED, completedCount))
+                    .collect(Collectors.toSet()))
+            .desiresToConsider(Collections.singleton(desireKey))
+            .build())
+        .decisionInIntention(CommitmentDeciderInitializer.builder()
+            .decisionStrategy(
+                (dataForDecision, memory) ->
+                    (!Decider
+                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
+                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
+                        && !BotFacade.RESOURCE_MANAGER
+                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
+                        || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                        || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
+                        || memory.returnFactValueForGivenKey(factCountToTrackPreviousCount)
+                        .orElse(0) != dataForDecision.getFeatureValueBeliefSets(completedCount))
+            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
+            .globalBeliefTypesByAgentType(
+                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
+            .globalBeliefSetTypesByAgentType(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .beliefTypes(featureContainerHeader.getConvertersForFacts())
+            .beliefSetTypes(
+                Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
+                    Stream.of(BASE_IS_COMPLETED, completedCount))
+                    .collect(Collectors.toSet()))
+            .build())
+        .desiresWithAbstractIntention(
+            desireKeysWithAbstractIntentionStream.collect(Collectors.toSet()))
+        .desiresForOthers(desireKeysWithSharedIntentionStream.collect(Collectors.toSet()))
+        .build();
+  }
 
   /**
    * Template to create configuration of force estimation reasoning
@@ -1110,6 +1068,11 @@ public class BaseLocationAgentType {
             .decisionStrategy((dataForDecision, memory) -> true)
             .build())
         .build();
+  }
+
+  private interface SimpleDecisionStrategy {
+
+    boolean isTrue(double value);
   }
 
 }

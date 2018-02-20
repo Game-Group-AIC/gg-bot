@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public class CreepColonyAgentType {
 
   public static final AgentTypeUnit CREEP_COLONY = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.CREEP_COLONY)
+      .agentType(AgentTypes.CREEP_COLONY)
       .initializationStrategy(type -> {
 
         type.addConfiguration(

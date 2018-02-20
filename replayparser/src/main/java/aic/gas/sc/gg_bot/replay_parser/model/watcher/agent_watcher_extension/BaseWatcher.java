@@ -8,57 +8,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_SPORE_CO
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_SUNKEN_COLONY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.HOLD_AIR;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.HOLD_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.AIR_DISTANCE_TO_OUR_CLOSEST_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_STATIC_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GEYSER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GROUND_DISTANCE_TO_OUR_CLOSEST_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HOLD_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_START_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_AIR_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_STATIC_GROUND_FORCE_STATUS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.RATIO_GLOBAL_GROUND_VS_ANTI_GROUND_ON_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.STATIC_DEFENSE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.DEFENSE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper.MAX_DISTANCE;
 
@@ -67,12 +17,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AWeaponTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
@@ -84,12 +29,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.BaseWatcherType;
 import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import bwapi.Game;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -235,9 +175,9 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
               //eco concerns
               Set<AgentWatcher<?>> workersAroundBase = ms.getStreamOfWatchers()
                   .filter(agentWatcher ->
-                      agentWatcher.getAgentWatcherType().getName().equals(DRONE.getName())
-                          || agentWatcher.getAgentWatcherType().getName().equals(EGG.getName())
-                          || agentWatcher.getAgentWatcherType().getName().equals(LARVA.getName())
+                      agentWatcher.getAgentWatcherType().getName().equals(DRONE.name())
+                          || agentWatcher.getAgentWatcherType().getName().equals(EGG.name())
+                          || agentWatcher.getAgentWatcherType().getName().equals(LARVA.name())
                   )
                   .filter(agentWatcher ->
                       agentWatcher.getBeliefs().returnFactValueForGivenKey(REPRESENTS_UNIT).get()
@@ -317,7 +257,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
               //distances
               bl.updateFact(GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
                   .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                      .equals(AgentTypes.BASE_LOCATION.getName()))
+                      .equals(AgentTypes.BASE_LOCATION.name()))
                   .filter(agentWatcher -> agentWatcher.getBeliefs()
                       .returnFactValueForGivenKey(IS_ENEMY_BASE)
                       .orElse(false))
@@ -331,7 +271,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                   .orElse(MAX_DISTANCE));
               bl.updateFact(AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
                   .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                      .equals(AgentTypes.BASE_LOCATION.getName()))
+                      .equals(AgentTypes.BASE_LOCATION.name()))
                   .filter(
                       agentWatcher -> agentWatcher.getBeliefs()
                           .returnFactValueForGivenKey(IS_ENEMY_BASE)
@@ -346,7 +286,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                   .orElse(MAX_DISTANCE));
               bl.updateFact(GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
                   .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                      .equals(AgentTypes.BASE_LOCATION.getName()))
+                      .equals(AgentTypes.BASE_LOCATION.name()))
                   .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
                       IS_OUR_BASE)
                       .orElse(false))
@@ -360,7 +300,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                   .orElse(MAX_DISTANCE));
               bl.updateFact(AIR_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
                   .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-                      .equals(AgentTypes.BASE_LOCATION.getName()))
+                      .equals(AgentTypes.BASE_LOCATION.name()))
                   .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
                       IS_OUR_BASE)
                       .orElse(false))
@@ -471,7 +411,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
             })
             .baseEnvironmentObservation(
                 (aBaseLocation, beliefs) -> makeObservation(aBaseLocation, beliefs, game))
-            .agentTypeID(AgentTypes.BASE_LOCATION)
+            .agentType(AgentTypes.BASE_LOCATION)
             .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
 
                 //TODO handle relly points

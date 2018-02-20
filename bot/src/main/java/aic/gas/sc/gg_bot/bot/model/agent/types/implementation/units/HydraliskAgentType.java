@@ -11,7 +11,7 @@ import java.util.Collections;
 public class HydraliskAgentType {
 
   public static final AgentTypeUnit HYDRALISK = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.HYDRALISK)
+      .agentType(AgentTypes.HYDRALISK)
       .initializationStrategy(type -> {
         initAttackPlan(type, DesiresKeys.HOLD_GROUND, false);
         type.addConfiguration(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION,

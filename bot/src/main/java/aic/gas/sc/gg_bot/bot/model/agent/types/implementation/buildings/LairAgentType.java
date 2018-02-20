@@ -10,7 +10,7 @@ import java.util.Collections;
 public class LairAgentType {
 
   public static final AgentTypeUnit LAIR = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.LAIR)
+      .agentType(AgentTypes.LAIR)
       .initializationStrategy(
           type -> type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
               AgentTypeUnit.beliefsAboutMorphing))

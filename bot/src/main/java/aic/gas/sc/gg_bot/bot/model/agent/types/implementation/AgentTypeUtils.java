@@ -1,11 +1,11 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.bot.model.Decider;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
@@ -31,7 +31,7 @@ public class AgentTypeUtils {
   public static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
       FactWithSetOfOptionalValuesForAgentType<T> currentCount, DesireKey desireKey,
       AUnitTypeWrapper unitTypeWrapper, FeatureContainerHeader featureContainerHeader,
-      Stream<DesireKey> desireKeysWithAbstractIntentionStream, AgentTypeID agentTypeID) {
+      Stream<DesireKey> desireKeysWithAbstractIntentionStream, AgentTypes agentType) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
@@ -42,7 +42,7 @@ public class AgentTypeUtils {
                         && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
                         //learnt decision
-                        && Decider.getDecision(agentTypeID, desireKey.getId(),
+                        && Decider.getDecision(agentType, desireKey.getId(),
                         dataForDecision, featureContainerHeader, memory.getCurrentClock(),
                         memory.getAgentId()))
             .globalBeliefTypesByAgentType(Stream.concat(
@@ -57,7 +57,7 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    (!Decider.getDecision(agentTypeID, desireKey.getId(),
+                    (!Decider.getDecision(agentType, desireKey.getId(),
                         dataForDecision, featureContainerHeader, memory.getCurrentClock(),
                         memory.getAgentId())
                         && !BotFacade.RESOURCE_MANAGER
@@ -89,7 +89,7 @@ public class AgentTypeUtils {
    * Initialize abstract training plan top
    */
   public static ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToTrainFromTemplate(
-      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper, AgentTypeID agentTypeID,
+      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper, AgentTypes agentType,
       FeatureContainerHeader featureContainerHeader) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
@@ -100,7 +100,7 @@ public class AgentTypeUtils {
                         && !dataForDecision.madeDecisionToAny() &&
                         !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //learnt decision
-                        && Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
+                        && Decider.getDecision(agentType, desireKey.getId(), dataForDecision,
                         featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
             .globalBeliefTypesByAgentType(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
@@ -112,7 +112,7 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    (!Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
+                    (!Decider.getDecision(agentType, desireKey.getId(), dataForDecision,
                         featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
                         && !BotFacade.RESOURCE_MANAGER
                         .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))

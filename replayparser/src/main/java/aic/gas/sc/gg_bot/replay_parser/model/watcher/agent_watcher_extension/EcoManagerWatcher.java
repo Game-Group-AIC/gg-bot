@@ -34,7 +34,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
 
   public EcoManagerWatcher() {
     super(EcoManagerWatcherType.builder()
-        .agentTypeID(AgentTypes.ECO_MANAGER)
+        .agentType(AgentTypes.ECO_MANAGER)
         .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
 
             //BUILD_EXTRACTOR
@@ -80,7 +80,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
       //exclude new hatcheries in old bases
       Set<ABaseLocationWrapper> bases = mediatorService.getStreamOfWatchers()
           .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
-              .equals(BASE_LOCATION.getName()))
+              .equals(BASE_LOCATION.name()))
           .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(IS_OUR_BASE)
               .orElse(false))
           .map(agentWatcher -> agentWatcher.getBeliefs()

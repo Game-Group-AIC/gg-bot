@@ -10,7 +10,7 @@ import java.util.Collections;
 public class SporeColonyAgentType {
 
   public static final AgentTypeUnit SPORE_COLONY = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.SPORE_COLONY)
+      .agentType(AgentTypes.SPORE_COLONY)
       .initializationStrategy(
           type -> type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
               AgentTypeUnit.beliefsAboutMorphing))

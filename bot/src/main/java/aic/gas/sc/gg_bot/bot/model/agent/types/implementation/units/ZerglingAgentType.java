@@ -10,7 +10,7 @@ import java.util.Collections;
 public class ZerglingAgentType {
 
   public static final AgentTypeUnit ZERGLING = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.ZERGLING)
+      .agentType(AgentTypes.ZERGLING)
       .initializationStrategy(type -> {
         initAttackPlan(type, DesiresKeys.HOLD_GROUND, false);
         type.addConfiguration(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION,

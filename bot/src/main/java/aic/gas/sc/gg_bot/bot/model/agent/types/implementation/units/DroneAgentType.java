@@ -1,49 +1,10 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.units;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_IDLE_DRONES;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_MINERALS_ON_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_CARRYING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_CARRYING_MINERAL;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_MINING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.IS_MINING_MINERAL;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_SCOUT_BY_WORKER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.HAS_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL_TO_MINE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINING_IN_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINING_MINERAL;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_FOR_CREEP_COLONY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_FOR_EVOLUTION_CHAMBER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_FOR_EXPANSION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_FOR_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_FOR_HYDRALISK_DEN;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_FOR_POOL;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_FOR_SPIRE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_TO_GO;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_TO_REACH;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GAS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.*;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATilePosition;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeUnit;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
@@ -59,14 +20,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import bwapi.Order;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
@@ -82,7 +36,7 @@ public class DroneAgentType {
 
   //worker
   public static final AgentTypeUnit DRONE = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.DRONE)
+      .agentType(AgentTypes.DRONE)
       .usingTypesForFacts(
           new HashSet<>(Arrays.asList(MINING_MINERAL, MINERAL_TO_MINE, IS_MORPHING_TO,
               IS_GATHERING_MINERALS, IS_GATHERING_GAS, BASE_TO_SCOUT_BY_WORKER, PLACE_TO_GO,
@@ -126,7 +80,7 @@ public class DroneAgentType {
                     (dataForDecision, memory) -> dataForDecision.madeDecisionToAny()
                         || dataForDecision.getNumberOfCommittedAgents() > 3
                         //or no body is mining minerals even though there are some
-                        || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        || memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                         .filter(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_BASE_LOCATION).get()
                             .equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
@@ -232,7 +186,7 @@ public class DroneAgentType {
                             .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE)
                         //nobody is mining gas at same location and at least somebody is mining minerals
                         || (dataForDecision.getNumberOfCommittedAgents() > 1 && memory
-                        .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                        .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                         .filter(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_BASE_LOCATION)
                             .get().equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
@@ -420,7 +374,7 @@ public class DroneAgentType {
 
                 //find base where can help
                 Optional<ABaseLocationWrapper> basesToGo = memory.getReadOnlyMemoriesForAgentType(
-                    AgentTypes.BASE_LOCATION)
+                    AgentTypes.BASE_LOCATION.getId())
                     //is base
                     .filter(
                         readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
@@ -554,7 +508,7 @@ public class DroneAgentType {
 
                 //select the closest unvisited main base
                 Optional<ABaseLocationWrapper> closestUnvisitedMainBase = memory
-                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+                    .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
                     .filter(readOnlyMemory -> !readOnlyMemory
                         .returnFactValueForGivenKey(WAS_VISITED)
                         .orElse(false))
@@ -736,7 +690,7 @@ public class DroneAgentType {
                 Optional<APosition> aPlaceToGo = memory.returnFactValueForGivenKey(PLACE_TO_GO);
                 if (!aPlaceToGo.isPresent() || me.getPosition().distanceTo(aPlaceToGo.get()) < 2) {
                   Optional<ReadOnlyMemory> memoryOptional = memory.getReadOnlyMemoriesForAgentType(
-                      AgentTypes.BASE_LOCATION)
+                      AgentTypes.BASE_LOCATION.getId())
                       .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(
                           IS_BASE_LOCATION).get().equals(
                           me.getNearestBaseLocation().orElse(null)))

@@ -10,7 +10,7 @@ import java.util.Collections;
 public class HydraliskDenAgentType {
 
   public static final AgentTypeUnit HYDRALISK_DEN = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.HYDRALISK_DEN)
+      .agentType(AgentTypes.HYDRALISK_DEN)
       .initializationStrategy(
           type -> type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
               AgentTypeUnit.beliefsAboutMorphing))

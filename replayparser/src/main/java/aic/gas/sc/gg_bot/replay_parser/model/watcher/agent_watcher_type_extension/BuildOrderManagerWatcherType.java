@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType;
 import java.util.HashSet;
@@ -14,10 +14,10 @@ import lombok.Builder;
 public class BuildOrderManagerWatcherType extends AgentWatcherType {
 
   @Builder
-  private BuildOrderManagerWatcherType(AgentTypeID agentTypeID, Set<FactKey<?>> factKeys,
+  private BuildOrderManagerWatcherType(AgentTypes agentType, Set<FactKey<?>> factKeys,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers) {
-    super(agentTypeID, factKeys, factSetsKeys, planWatchers, null);
+    super(agentType, factKeys, factSetsKeys, planWatchers, null);
   }
 
   /**

@@ -10,7 +10,7 @@ import java.util.Collections;
 public class EggAgentType {
 
   public static final AgentTypeUnit EGG = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.EGG)
+      .agentType(AgentTypes.EGG)
       .usingTypesForFacts(Collections.singleton(IS_MORPHING_TO))
       .initializationStrategy(type -> {
         //reason about morphing

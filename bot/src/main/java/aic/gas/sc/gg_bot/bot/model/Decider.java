@@ -1,11 +1,11 @@
 package aic.gas.sc.gg_bot.bot.model;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.service.IDecisionLoadingService;
 import aic.gas.sc.gg_bot.bot.service.implementation.DecisionLoadingService;
 import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,14 +21,14 @@ public class Decider {
   /**
    * Get decision
    */
-  public static boolean getDecision(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
+  public static boolean getDecision(AgentTypes agentType, DesireKeyID desireKeyID,
       DataForDecision dataForDecision, FeatureContainerHeader featureContainerHeader, int frame,
       int agentId) {
     MDPForDecisionWithPolicy policy = DECISION_LOADING_SERVICE
-        .getDecisionPoint(agentTypeID, desireKeyID);
+        .getDecisionPoint(agentType.getId(), desireKeyID);
     if (policy == null) {
       log.error(
-          "No policy loaded: " + desireKeyID.getName() + ", for agent " + agentTypeID.getName()
+          "No policy loaded: " + desireKeyID.getName() + ", for agent " + agentType.name()
               + " with ID: " + agentId);
       return false;
     }

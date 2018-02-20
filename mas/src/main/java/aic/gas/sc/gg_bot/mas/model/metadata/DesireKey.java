@@ -32,8 +32,13 @@ public class DesireKey extends DesireKeyID implements FactContainerInterface {
   private final DesireKeyID id;
 
   @Builder
-  private DesireKey(DesireKeyID id, Set<Fact<?>> staticFactValues, Set<FactSet<?>> staticFactSets,
-      Set<FactKey<?>> parametersTypesForFacts, Set<FactKey<?>> parametersTypesForFactSets) {
+  private DesireKey(
+      DesireKeyID id,
+      Set<Fact<?>> staticFactValues,
+      Set<FactSet<?>> staticFactSets,
+      Set<FactKey<?>> parametersTypesForFacts,
+      Set<FactKey<?>> parametersTypesForFactSets) {
+
     super(id.getName(), id.getID());
     this.id = id;
     staticFactValues.forEach(fact -> factParameterMap.put(fact.getType(), fact));

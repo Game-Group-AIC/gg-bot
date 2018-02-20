@@ -1,13 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GEYSER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_START_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
@@ -59,7 +52,7 @@ public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
       Set<FactKey<?>> usingTypesForFacts, Set<FactKey<?>> usingTypesForFactSets,
       AgentType.ConfigurationInitializationStrategy initializationStrategy,
       int skipTurnsToMakeObservation) {
-    super(AgentTypes.BASE_LOCATION, desiresForOthers, desiresWithAbstractIntention,
+    super(AgentTypes.BASE_LOCATION.getId(), desiresForOthers, desiresWithAbstractIntention,
         desiresWithIntentionToAct, desiresWithIntentionToReason,
 
         //add facts related to agent

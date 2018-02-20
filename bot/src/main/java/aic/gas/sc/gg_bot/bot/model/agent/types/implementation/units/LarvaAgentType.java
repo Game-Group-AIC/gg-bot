@@ -12,14 +12,13 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LarvaAgentType {
 
   public static final AgentTypeUnit LARVA = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.LARVA)
+      .agentType(AgentTypes.LARVA)
       .usingTypesForFacts(Collections.singleton(IS_MORPHING_TO))
       .initializationStrategy(type -> {
 

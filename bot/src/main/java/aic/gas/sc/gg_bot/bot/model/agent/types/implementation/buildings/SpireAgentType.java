@@ -10,7 +10,7 @@ import java.util.Collections;
 public class SpireAgentType {
 
   public static final AgentTypeUnit SPIRE = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.SPIRE)
+      .agentType(AgentTypes.SPIRE)
       .initializationStrategy(
           type -> type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
               AgentTypeUnit.beliefsAboutMorphing))

@@ -10,7 +10,7 @@ import java.util.Collections;
 public class ExtractorAgentType {
 
   public static final AgentTypeUnit EXTRACTOR = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.EXTRACTOR)
+      .agentType(AgentTypes.EXTRACTOR)
       .initializationStrategy(
           type -> type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
               AgentTypeUnit.beliefsAboutMorphing))

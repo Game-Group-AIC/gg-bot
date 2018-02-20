@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
@@ -20,10 +21,10 @@ public class AgentWatcherType extends AgentTypeID {
   private final List<PlanWatcherInitializationStrategy> planWatchers;
   private final Optional<Reasoning> reasoning;
 
-  protected AgentWatcherType(AgentTypeID agentTypeID, Set<FactKey<?>> factKeys,
+  protected AgentWatcherType(AgentTypes agentType, Set<FactKey<?>> factKeys,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers, Reasoning reasoning) {
-    super(agentTypeID.getName(), agentTypeID.getID());
+    super(agentType.getId().getName(), agentType.getId().getID());
     this.factKeys = factKeys;
     this.factSetsKeys = factSetsKeys;
     this.planWatchers = planWatchers;

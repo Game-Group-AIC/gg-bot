@@ -10,7 +10,7 @@ import java.util.Collections;
 public class SunkenColonyAgentType {
 
   public static final AgentTypeUnit SUNKEN_COLONY = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.SUNKEN_COLONY)
+      .agentType(AgentTypes.SUNKEN_COLONY)
       .initializationStrategy(
           type -> type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
               AgentTypeUnit.beliefsAboutMorphing))

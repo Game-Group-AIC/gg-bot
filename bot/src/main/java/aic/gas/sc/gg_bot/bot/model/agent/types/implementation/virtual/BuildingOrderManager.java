@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BuildingOrderManager {
 
   public static final AgentType BUILDING_ORDER_MANAGER = AgentType.builder()
-      .agentTypeID(AgentTypes.BUILDING_ORDER_MANAGER)
+      .agentTypeID(AgentTypes.BUILDING_ORDER_MANAGER.getId())
       .usingTypesForFacts(Stream.of(BASE_TO_MOVE, LOCATION)
           .collect(Collectors.toSet()))
       .initializationStrategy(type -> {
@@ -256,7 +256,7 @@ public class BuildingOrderManager {
     //find base to build building
     private static final ReactionOnChangeStrategy FIND_BASE_FOR_BUILDING = (memory, desireParameters) -> {
       List<ABaseLocationWrapper> ourBases = memory
-          .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
+          .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
           .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE).get())
           .filter(readOnlyMemory -> readOnlyMemory.returnFactSetValueForGivenKey(HAS_BASE).get()
               .anyMatch(aUnitOfPlayer -> !aUnitOfPlayer.isMorphing() && !aUnitOfPlayer

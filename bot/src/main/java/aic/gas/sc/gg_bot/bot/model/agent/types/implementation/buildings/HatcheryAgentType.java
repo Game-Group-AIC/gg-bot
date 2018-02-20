@@ -16,7 +16,7 @@ import java.util.Collections;
 public class HatcheryAgentType {
 
   public static final AgentTypeUnit HATCHERY = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.HATCHERY)
+      .agentType(AgentTypes.HATCHERY)
       .initializationStrategy(type -> {
         type.addConfiguration(
             DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION, AgentTypeUnit.beliefsAboutMorphing);

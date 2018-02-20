@@ -18,7 +18,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
 
   public BuildOrderManagerWatcher() {
     super(BuildOrderManagerWatcherType.builder()
-        .agentTypeID(AgentTypes.BUILDING_ORDER_MANAGER)
+        .agentType(AgentTypes.BUILDING_ORDER_MANAGER)
         .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
 
             //ENABLE_GROUND_MELEE

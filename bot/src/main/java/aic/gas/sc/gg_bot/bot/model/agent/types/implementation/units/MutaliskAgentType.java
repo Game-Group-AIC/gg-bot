@@ -10,7 +10,7 @@ import java.util.Collections;
 public class MutaliskAgentType {
 
   public static final AgentTypeUnit MUTALISK = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.MUTALISK)
+      .agentType(AgentTypes.MUTALISK)
       .initializationStrategy(type -> {
         initAttackPlan(type, DesiresKeys.HOLD_AIR, true);
         type.addConfiguration(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION,

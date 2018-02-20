@@ -1,18 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_BUILDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.OWN_GROUND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.PLACE_TO_REACH;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
@@ -25,7 +13,6 @@ import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
@@ -37,12 +24,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import bwapi.Game;
 import bwapi.Position;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
@@ -152,13 +134,14 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
    * Define agent type. Together with initial desires
    */
   @Builder
-  private AgentTypeUnit(AgentTypeID agentTypeID, Set<DesireKey> desiresForOthers,
+  private AgentTypeUnit(AgentTypes agentType, Set<DesireKey> desiresForOthers,
       Set<DesireKey> desiresWithAbstractIntention,
       Set<DesireKey> desiresWithIntentionToAct, Set<DesireKey> desiresWithIntentionToReason,
       Set<FactKey<?>> usingTypesForFacts, Set<FactKey<?>> usingTypesForFactSets,
       AgentType.ConfigurationInitializationStrategy initializationStrategy,
       int skipTurnsToMakeObservation) {
-    super(agentTypeID, desiresForOthers, desiresWithAbstractIntention, desiresWithIntentionToAct,
+    super(agentType.getId(), desiresForOthers, desiresWithAbstractIntention,
+        desiresWithIntentionToAct,
         desiresWithIntentionToReason,
 
         //add facts related to agent - IS_UNIT, REPRESENTS_UNIT
@@ -303,7 +286,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
               //attack units on position
               Optional<ReadOnlyMemory> base = memory.getReadOnlyMemoriesForAgentType(
-                  AgentTypes.BASE_LOCATION)
+                  AgentTypes.BASE_LOCATION.getId())
                   .min(Comparator.comparingDouble(value -> value.returnFactValueForGivenKey(
                       IS_BASE_LOCATION).get().distanceTo(unitOfPlayer.getPosition())));
               if (base.isPresent()) {

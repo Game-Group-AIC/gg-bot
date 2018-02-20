@@ -23,20 +23,20 @@ public class DecisionConfiguration {
   public static final Map<AgentTypeID, Set<DesireKeyID>> decisionsToLoad = new HashMap<>();
 
   static {
-    decisionsToLoad.put(AgentTypes.BASE_LOCATION,
+    decisionsToLoad.put(AgentTypes.BASE_LOCATION.getId(),
         Stream.of(DesireKeys.BUILD_CREEP_COLONY, DesireKeys.BUILD_SPORE_COLONY,
             DesireKeys.BUILD_SUNKEN_COLONY, DesireKeys.HOLD_AIR, DesireKeys.HOLD_GROUND)
             .collect(Collectors.toSet()));
-    decisionsToLoad.put(AgentTypes.BUILDING_ORDER_MANAGER,
+    decisionsToLoad.put(AgentTypes.BUILDING_ORDER_MANAGER.getId(),
         Stream.of(DesireKeys.ENABLE_AIR, DesireKeys.ENABLE_GROUND_MELEE,
             DesireKeys.ENABLE_GROUND_RANGED, DesireKeys.ENABLE_STATIC_ANTI_AIR,
             DesireKeys.UPGRADE_TO_LAIR)
             .collect(Collectors.toSet()));
-    decisionsToLoad.put(AgentTypes.ECO_MANAGER,
+    decisionsToLoad.put(AgentTypes.ECO_MANAGER.getId(),
         Stream.of(DesireKeys.BUILD_EXTRACTOR, DesireKeys.BUILD_WORKER, DesireKeys.EXPAND,
             DesireKeys.INCREASE_CAPACITY)
             .collect(Collectors.toSet()));
-    decisionsToLoad.put(AgentTypes.UNIT_ORDER_MANAGER, Stream.of(DesireKeys.BOOST_AIR,
+    decisionsToLoad.put(AgentTypes.UNIT_ORDER_MANAGER.getId(), Stream.of(DesireKeys.BOOST_AIR,
         DesireKeys.BOOST_GROUND_MELEE, DesireKeys.BOOST_GROUND_RANGED)
         .collect(Collectors.toSet()));
   }

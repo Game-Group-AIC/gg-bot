@@ -2,14 +2,7 @@ package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CURRENT_POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.MAX_POPULATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.EXTRACTOR_TYPE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.HATCHERY_TYPE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.OVERLORD_TYPE;
@@ -45,41 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EcoManagerAgentType {
 
-  /**
-   * Finds base without extractor given the beliefs
-   */
-  private static Optional<ABaseLocationWrapper> getOurBaseWithoutExtractor(Memory<?> memory) {
-
-    //bases with extractor
-    Set<ABaseLocationWrapper> extractorsBases = memory
-        .getReadOnlyMemoriesForAgentType(AgentTypes.EXTRACTOR)
-        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(REPRESENTS_UNIT).get())
-        .map(AUnit::getNearestBaseLocation)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.toSet());
-
-    return memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
-        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE).get())
-        .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(IS_MINERAL_ONLY).get())
-        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE_LOCATION).get())
-        .filter(aBaseLocationWrapper -> !extractorsBases.contains(aBaseLocationWrapper))
-        .findAny();
-  }
-
-  public static final ConfigurationWithSharedDesire BUILD_EXTRACTOR_SHARED = createConfigurationWithSharedDesireToBuildFromTemplate(
-      MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, (memory, desireParameters) -> {
-        Optional<ABaseLocationWrapper> baseWithoutExtractor = getOurBaseWithoutExtractor(
-            memory);
-        if (baseWithoutExtractor.isPresent()) {
-          memory.updateFact(BASE_TO_MOVE, baseWithoutExtractor.get());
-        } else {
-          memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
-        }
-      }, (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
-
   public static final AgentType ECO_MANAGER = AgentType.builder()
-      .agentTypeID(AgentTypes.ECO_MANAGER)
+      .agentTypeID(AgentTypes.ECO_MANAGER.getId())
       .usingTypesForFacts(Stream.of(BASE_TO_MOVE, LOCATION)
           .collect(Collectors.toSet()))
       .initializationStrategy((AgentType type) -> {
@@ -139,7 +99,7 @@ public class EcoManagerAgentType {
 
               //find our bases
               Stream<ABaseLocationWrapper> ourBases = memory.getReadOnlyMemoriesForAgentType(
-                  AgentTypes.BASE_LOCATION)
+                  AgentTypes.BASE_LOCATION.getId())
                   .filter(
                       readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
                           .get())
@@ -163,7 +123,7 @@ public class EcoManagerAgentType {
 
               //find free closest base to expand
               Optional<ABaseLocationWrapper> basesToExpand = memory.getReadOnlyMemoriesForAgentType(
-                  AgentTypes.BASE_LOCATION)
+                  AgentTypes.BASE_LOCATION.getId())
                   .filter(readOnlyMemory ->
                       !readOnlyMemory.returnFactValueForGivenKey(IS_ENEMY_BASE).get()
                           && !readOnlyMemory.returnFactValueForGivenKey(IS_ISLAND).get())
@@ -295,4 +255,37 @@ public class EcoManagerAgentType {
           Stream.of(BUILD_WORKER, EXPAND, BUILD_EXTRACTOR, INCREASE_CAPACITY)
               .collect(Collectors.toSet()))
       .build();
+
+  public static final ConfigurationWithSharedDesire BUILD_EXTRACTOR_SHARED = createConfigurationWithSharedDesireToBuildFromTemplate(
+      MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, (memory, desireParameters) -> {
+        Optional<ABaseLocationWrapper> baseWithoutExtractor = getOurBaseWithoutExtractor(
+            memory);
+        if (baseWithoutExtractor.isPresent()) {
+          memory.updateFact(BASE_TO_MOVE, baseWithoutExtractor.get());
+        } else {
+          memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
+        }
+      }, (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+
+  /**
+   * Finds base without extractor given the beliefs
+   */
+  private static Optional<ABaseLocationWrapper> getOurBaseWithoutExtractor(Memory<?> memory) {
+
+    //bases with extractor
+    Set<ABaseLocationWrapper> extractorsBases = memory
+        .getReadOnlyMemoriesForAgentType(AgentTypes.EXTRACTOR.getId())
+        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(REPRESENTS_UNIT).get())
+        .map(AUnit::getNearestBaseLocation)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(Collectors.toSet());
+
+    return memory.getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
+        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE).get())
+        .filter(readOnlyMemory -> !readOnlyMemory.returnFactValueForGivenKey(IS_MINERAL_ONLY).get())
+        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_BASE_LOCATION).get())
+        .filter(aBaseLocationWrapper -> !extractorsBases.contains(aBaseLocationWrapper))
+        .findAny();
+  }
 }

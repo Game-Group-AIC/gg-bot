@@ -10,7 +10,7 @@ import java.util.Collections;
 public class SpawningPoolAgentType {
 
   public static final AgentTypeUnit SPAWNING_POOL = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.SPAWNING_POOL)
+      .agentType(AgentTypes.SPAWNING_POOL)
       .initializationStrategy(
           type -> type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
               AgentTypeUnit.beliefsAboutMorphing))

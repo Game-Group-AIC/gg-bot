@@ -10,7 +10,7 @@ import java.util.Collections;
 public class EvolutionChamberAgentType {
 
   public static final AgentTypeUnit EVOLUTION_CHAMBER = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.EVOLUTION_CHAMBER)
+      .agentType(AgentTypes.EVOLUTION_CHAMBER)
       .initializationStrategy(
           type -> type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
               AgentTypeUnit.beliefsAboutMorphing))

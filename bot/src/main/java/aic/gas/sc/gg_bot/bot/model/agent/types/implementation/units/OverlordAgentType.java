@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 public class OverlordAgentType {
 
   public static final AgentTypeUnit OVERLORD = AgentTypeUnit.builder()
-      .agentTypeID(AgentTypes.OVERLORD)
+      .agentType(AgentTypes.OVERLORD)
       .usingTypesForFacts(Stream.of(IS_MORPHING_TO, BASE_TO_MOVE)
           .collect(Collectors.toSet()))
       .initializationStrategy(type -> {

@@ -268,7 +268,7 @@ public class FeatureContainerHeaders {
     ecomDesires.put(DesireKeys.INCREASE_CAPACITY, FeatureContainerHeaders.INCREASE_CAPACITY);
     ecomDesires.put(DesireKeys.BUILD_WORKER, FeatureContainerHeaders.BUILD_WORKER);
     ecomDesires.put(DesireKeys.EXPAND, FeatureContainerHeaders.EXPAND);
-    ASSIGNMENT.put(AgentTypes.ECO_MANAGER, ecomDesires);
+    ASSIGNMENT.put(AgentTypes.ECO_MANAGER.getId(), ecomDesires);
 
     //Build order manager
     Map<DesireKeyID, FeatureContainerHeader> bmoDesires = new HashMap<>();
@@ -277,14 +277,14 @@ public class FeatureContainerHeaders {
     bmoDesires.put(DesireKeys.ENABLE_AIR, FeatureContainerHeaders.ENABLE_AIR);
     bmoDesires.put(DesireKeys.ENABLE_GROUND_RANGED, FeatureContainerHeaders.ENABLE_GROUND_RANGED);
     bmoDesires.put(DesireKeys.ENABLE_STATIC_ANTI_AIR, FeatureContainerHeaders.ENABLE_STATIC_ANTI_AIR);
-    ASSIGNMENT.put(AgentTypes.BUILDING_ORDER_MANAGER, bmoDesires);
+    ASSIGNMENT.put(AgentTypes.BUILDING_ORDER_MANAGER.getId(), bmoDesires);
 
     //Unit order manager
     Map<DesireKeyID, FeatureContainerHeader> umoDesires = new HashMap<>();
     umoDesires.put(DesireKeys.BOOST_AIR, FeatureContainerHeaders.BOOST_AIR);
     umoDesires.put(DesireKeys.BOOST_GROUND_MELEE, FeatureContainerHeaders.BOOST_GROUND_MELEE);
     umoDesires.put(DesireKeys.BOOST_GROUND_RANGED, FeatureContainerHeaders.BOOST_GROUND_RANGED);
-    ASSIGNMENT.put(AgentTypes.UNIT_ORDER_MANAGER, umoDesires);
+    ASSIGNMENT.put(AgentTypes.UNIT_ORDER_MANAGER.getId(), umoDesires);
 
     //BASE
     Map<DesireKeyID, FeatureContainerHeader> baseDesires = new HashMap<>();
@@ -293,7 +293,7 @@ public class FeatureContainerHeaders {
     baseDesires.put(DesireKeys.BUILD_CREEP_COLONY, FeatureContainerHeaders.DEFENSE);
     baseDesires.put(DesireKeys.BUILD_SUNKEN_COLONY, FeatureContainerHeaders.DEFENSE);
     baseDesires.put(DesireKeys.BUILD_SPORE_COLONY, FeatureContainerHeaders.DEFENSE);
-    ASSIGNMENT.put(AgentTypes.BASE_LOCATION, baseDesires);
+    ASSIGNMENT.put(AgentTypes.BASE_LOCATION.getId(), baseDesires);
   }
 
   public static Optional<FeatureContainerHeader> getHeader(AgentTypeID agentType,

@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class UnitOrderManager {
 
   public static final AgentType UNIT_ORDER_MANAGER = AgentType.builder()
-      .agentTypeID(AgentTypes.UNIT_ORDER_MANAGER)
+      .agentTypeID(AgentTypes.UNIT_ORDER_MANAGER.getId())
       .usingTypesForFacts(Collections.singleton(LOCATION))
       .initializationStrategy(type -> {
 

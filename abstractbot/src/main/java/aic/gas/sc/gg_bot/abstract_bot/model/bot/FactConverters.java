@@ -51,7 +51,7 @@ public class FactConverters {
             }
           })
           .findFirst()
-          .orElse(0.0), AgentTypes.PLAYER);
+          .orElse(0.0), AgentTypes.PLAYER.getId());
 
   //converters for base
   public static final FactWithSetOfOptionalValuesForAgentType<Double> AVERAGE_COUNT_OF_WORKERS_PER_BASE = new FactWithSetOfOptionalValuesForAgentType<>(
@@ -59,16 +59,16 @@ public class FactConverters {
           "AVERAGE_COUNT_OF_WORKERS_PER_BASE"), optionalStream ->
       optionalStream.filter(Optional::isPresent)
           .mapToDouble(Optional::get)
-          .sum(), AgentTypes.PLAYER);
+          .sum(), AgentTypes.PLAYER.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Double> AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(3, FactKeys.AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
           "AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE"),
       optionalStream -> optionalStream.filter(Optional::isPresent)
           .mapToDouble(Optional::get)
-          .sum(), AgentTypes.PLAYER);
+          .sum(), AgentTypes.PLAYER.getId());
   public static final FactWithOptionalValueSetsForAgentType<AUnitOfPlayer> COUNT_OF_EXTRACTORS = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(5, FactKeys.HAS_EXTRACTOR, "COUNT_OF_EXTRACTORS"),
-      AgentTypes.BASE_LOCATION,
+      AgentTypes.BASE_LOCATION.getId(),
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -89,7 +89,7 @@ public class FactConverters {
           "COUNT_OF_BASES_WITHOUT_EXTRACTORS"),
       optionalStream -> Math.min(optionalStream.filter(Optional::isPresent)
           .mapToInt(Optional::get)
-          .sum(), 3), AgentTypes.PLAYER);
+          .sum(), 3), AgentTypes.PLAYER.getId());
 
   //converters for player's - aggregated data
   public static final FactWithSetOfOptionalValuesForAgentType<Boolean> COUNT_OF_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
@@ -97,21 +97,22 @@ public class FactConverters {
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
           .filter(Optional::get)
-          .count(), AgentTypes.BASE_LOCATION);
+          .count(), AgentTypes.BASE_LOCATION.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Boolean> HAS_AT_LEAST_TWO_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(32, FactKeys.IS_OUR_BASE, "HAS_AT_LEAST_TWO_BASES"),
       optionalStream -> optionalStream
           .filter(Optional::isPresent)
           .filter(Optional::get)
-          .count() >= 2 ? 1.0 : 0.0, AgentTypes.BASE_LOCATION);
+          .count() >= 2 ? 1.0 : 0.0, AgentTypes.BASE_LOCATION.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Boolean> COUNT_OF_ENEMY_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(33, FactKeys.IS_ENEMY_BASE, "COUNT_OF_ENEMY_BASES"),
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
           .filter(Optional::get)
-          .count(), AgentTypes.BASE_LOCATION);
+          .count(), AgentTypes.BASE_LOCATION.getId());
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> SUM_OF_ENEMY_AIR_DMG = new FactWithOptionalValueSetsForAgentType<>(
-      new FactConverterID<>(34, ENEMY_AIR_FORCE_STATUS, "SUM_OF_ENEMY_AIR_DMG"), AgentTypes.PLAYER,
+      new FactConverterID<>(34, ENEMY_AIR_FORCE_STATUS, "SUM_OF_ENEMY_AIR_DMG"),
+      AgentTypes.PLAYER.getId(),
       optionalStream -> optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -123,7 +124,7 @@ public class FactConverters {
           .sum());
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> SUM_OF_ENEMY_STATIC_AIR_DMG = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(35, FactKeys.ENEMY_STATIC_AIR_FORCE_STATUS,
-          "SUM_OF_ENEMY_STATIC_AIR_DMG"), AgentTypes.PLAYER,
+          "SUM_OF_ENEMY_STATIC_AIR_DMG"), AgentTypes.PLAYER.getId(),
       optionalStream -> optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -135,7 +136,7 @@ public class FactConverters {
           .sum());
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> CAN_ENEMY_PRODUCE_MILITARY_UNITS = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(36, FactKeys.ENEMY_BUILDING_STATUS, "CAN_ENEMY_PRODUCE_MILITARY_UNITS"),
-      AgentTypes.PLAYER,
+      AgentTypes.PLAYER.getId(),
       optionalStream -> {
         boolean canProduceMilitaryUnits = optionalStream
             .filter(Optional::isPresent)
@@ -150,17 +151,17 @@ public class FactConverters {
       new FactConverterID<>(38, FactKeys.POPULATION, "CURRENT_POPULATION"),
       optionalStream -> optionalStream.filter(Optional::isPresent)
           .mapToDouble(Optional::get)
-          .sum(), AgentTypes.PLAYER);
+          .sum(), AgentTypes.PLAYER.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Double> MAX_POPULATION = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(39, FactKeys.POPULATION_LIMIT, "MAX_POPULATION"),
       optionalStream -> optionalStream.filter(Optional::isPresent)
           .mapToDouble(Optional::get)
-          .sum(), AgentTypes.PLAYER);
+          .sum(), AgentTypes.PLAYER.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Double> COUNT_OF_MINERALS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(40, FactKeys.AVAILABLE_MINERALS, "COUNT_OF_MINERALS"),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
           .mapToDouble(Optional::get)
-          .sum(), AgentTypes.PLAYER);
+          .sum(), AgentTypes.PLAYER.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Double> FREE_SUPPLY = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(41, FactKeys.FREE_SUPPLY, "FREE_SUPPLY"),
       optionalStream -> {
@@ -168,7 +169,7 @@ public class FactConverters {
             .mapToDouble(Optional::get)
             .sum();
         return count > 7 ? 7 : count;
-      }, AgentTypes.PLAYER);
+      }, AgentTypes.PLAYER.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Double> FORCE_SUPPLY_RATIO = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(42, FactKeys.FORCE_SUPPLY_RATIO, "FORCE_SUPPLY_RATIO"),
       optionalStream -> {
@@ -177,7 +178,7 @@ public class FactConverters {
             .sum();
         //cap to interval 0.5 - 2.0
         return Math.max(Math.min(sum, 2.0), 0.5);
-      }, AgentTypes.PLAYER);
+      }, AgentTypes.PLAYER.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Double> DIFFERENCE_IN_BASES = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(43, FactKeys.DIFFERENCE_IN_BASES, "DIFFERENCE_IN_BASES"),
       optionalStream -> {
@@ -186,10 +187,10 @@ public class FactConverters {
             .sum();
         //cap to interval 0.5 - 2.0
         return Math.max(Math.min(sum, 3.0), -3.0);
-      }, AgentTypes.PLAYER);
+      }, AgentTypes.PLAYER.getId());
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> ENEMY_RANGED_VS_MELEE_DAMAGE = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(44, ENEMY_GROUND_FORCE_STATUS, "ENEMY_RANGED_VS_MELEE_DAMAGE"),
-      AgentTypes.PLAYER,
+      AgentTypes.PLAYER.getId(),
       optionalStream -> {
         double sum = optionalStream.filter(Optional::isPresent)
             .mapToDouble(Utils::computeRangedVsMeleeDamageRatio)
@@ -200,7 +201,7 @@ public class FactConverters {
   );
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> OUR_RANGED_VS_MELEE_DAMAGE = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(45, FactKeys.OWN_GROUND_FORCE_STATUS, "OUR_RANGED_VS_MELEE_DAMAGE"),
-      AgentTypes.PLAYER,
+      AgentTypes.PLAYER.getId(),
       optionalStream -> {
         double sum = optionalStream.filter(Optional::isPresent)
             .mapToDouble(Utils::computeRangedVsMeleeDamageRatio)
@@ -210,7 +211,8 @@ public class FactConverters {
       }
   );
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> SUM_OF_ENEMY_AIR_HP = new FactWithOptionalValueSetsForAgentType<>(
-      new FactConverterID<>(46, ENEMY_AIR_FORCE_STATUS, "SUM_OF_ENEMY_AIR_HP"), AgentTypes.PLAYER,
+      new FactConverterID<>(46, ENEMY_AIR_FORCE_STATUS, "SUM_OF_ENEMY_AIR_HP"),
+      AgentTypes.PLAYER.getId(),
       optionalStream -> optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -220,7 +222,7 @@ public class FactConverters {
           .sum());
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> HAS_AT_LEAST_10_ARMY_SUPPLY = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(47, FactKeys.OWN_FORCE_STATUS, "HAS_AT_LEAST_10_ARMY_SUPPLY"),
-      AgentTypes.PLAYER,
+      AgentTypes.PLAYER.getId(),
       optionalStream -> {
         return optionalStream
             .filter(Optional::isPresent)
@@ -231,7 +233,7 @@ public class FactConverters {
       });
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> SUM_OF_ENEMY_STATIC_GROUND_DMG = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(48, ENEMY_STATIC_GROUND_FORCE_STATUS, "SUM_OF_ENEMY_STATIC_GROUND_DMG"),
-      AgentTypes.PLAYER,
+      AgentTypes.PLAYER.getId(),
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -241,7 +243,7 @@ public class FactConverters {
           .sum());
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> SUM_OF_ENEMY_AIR_UNITS = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(49, ENEMY_AIR_FORCE_STATUS, "SUM_OF_ENEMY_AIR_UNITS"),
-      AgentTypes.PLAYER,
+      AgentTypes.PLAYER.getId(),
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -254,7 +256,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(aDouble -> aDouble < 60)
-          .count(), AgentTypes.BASE_LOCATION);
+          .count(), AgentTypes.BASE_LOCATION.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<Double> ENEMY_BASES_UNPROTECTED_AGAINST_GROUND = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(51, FactKeys.DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE,
           "ENEMY_BASES_UNPROTECTED_AGAINST_GROUND"),
@@ -262,10 +264,10 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(aDouble -> aDouble < 60)
-          .count(), AgentTypes.BASE_LOCATION);
+          .count(), AgentTypes.BASE_LOCATION.getId());
   public static final FactWithOptionalValueSetsForAgentType<UnitTypeStatus> SUM_OF_ENEMY_GROUND_DMG = new FactWithOptionalValueSetsForAgentType<>(
       new FactConverterID<>(52, ENEMY_GROUND_FORCE_STATUS, "SUM_OF_ENEMY_GROUND_DMG"),
-      AgentTypes.PLAYER,
+      AgentTypes.PLAYER.getId(),
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -354,29 +356,29 @@ public class FactConverters {
       new FactConverterID<>(402, FactKeys.REPRESENTS_UNIT, "COUNT_OF_POOLS"),
       optionalStream -> (double) optionalStream
           .filter(Optional::isPresent)
-          .count(), AgentTypes.SPAWNING_POOL);
+          .count(), AgentTypes.SPAWNING_POOL.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> IS_POOL_BUILT = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(407, FactKeys.REPRESENTS_UNIT, "IS_POOL_BUILT"),
       optionalStream -> optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
-          .count() > 0 ? 1.0 : 0.0, AgentTypes.SPAWNING_POOL);
+          .count() > 0 ? 1.0 : 0.0, AgentTypes.SPAWNING_POOL.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_LAIRS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(410, FactKeys.REPRESENTS_UNIT, "COUNT_OF_LAIRS"),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .count(), AgentTypes.LAIR);
+          .count(), AgentTypes.LAIR.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_SPIRES = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(412, FactKeys.REPRESENTS_UNIT, "COUNT_OF_SPIRES"),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .count(), AgentTypes.SPIRE);
+          .count(), AgentTypes.SPIRE.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HYDRALISK_DENS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(414, FactKeys.REPRESENTS_UNIT, "COUNT_OF_HYDRALISK_DENS"),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .count(), AgentTypes.HYDRALISK_DEN);
+          .count(), AgentTypes.HYDRALISK_DEN.getId());
   public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_EVOLUTION_CHAMBERS = new FactWithSetOfOptionalValuesForAgentType<>(
       new FactConverterID<>(416, FactKeys.REPRESENTS_UNIT, "COUNT_OF_EVOLUTION_CHAMBERS"),
       optionalStream -> (double) optionalStream.filter(Optional::isPresent)
-          .count(), AgentTypes.EVOLUTION_CHAMBER);
+          .count(), AgentTypes.EVOLUTION_CHAMBER.getId());
 
   //"is unit morphing - command was issued"
   public static final FactWithOptionalValue<AUnitOfPlayer> IS_MORPHING = new FactWithOptionalValue<>(
@@ -416,7 +418,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(AUnit::isIdle)
-          .count(), AgentTypes.DRONE);
+          .count(), AgentTypes.DRONE.getId());
 
   //morphing to - count has cap 2
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_EXTRACTORS = new FactWithSetOfOptionalValues<>(
