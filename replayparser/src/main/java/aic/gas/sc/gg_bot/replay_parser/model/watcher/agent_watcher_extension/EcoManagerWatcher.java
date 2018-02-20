@@ -1,20 +1,14 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension;
 
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes.BASE_LOCATION;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BUILD_WORKER;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.EXPAND;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.INCREASE_CAPACITY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BUILDING_EXTRACTOR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.EXPANDING;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.INCREASING_CAPACITY;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.TRAINING_WORKER;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
@@ -45,22 +39,24 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
 
             //BUILD_EXTRACTOR
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(
-                () -> new FeatureContainer(BUILDING_EXTRACTOR), BUILD_EXTRACTOR,
-                AUnitTypeWrapper.EXTRACTOR_TYPE),
+                () -> new FeatureContainer(FeatureContainerHeaders.BUILD_EXTRACTOR),
+                DesireKeys.BUILD_EXTRACTOR,
+                AUnitTypeWrapper.EXTRACTOR_TYPE
+            ),
 
-            //TRAINING_WORKER
+            //BUILD_WORKER
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(
-                () -> new FeatureContainer(TRAINING_WORKER), BUILD_WORKER,
+                () -> new FeatureContainer(FeatureContainerHeaders.BUILD_WORKER), DesireKeys.BUILD_WORKER,
                 AUnitTypeWrapper.DRONE_TYPE),
 
             //TODO does not take new hatcheries in our base in to account
-            //EXPANDING
+            //EXPAND
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(
-                () -> new FeatureContainer(EXPANDING), EXPAND, AUnitTypeWrapper.HATCHERY_TYPE),
+                () -> new FeatureContainer(FeatureContainerHeaders.EXPAND), DesireKeys.EXPAND, AUnitTypeWrapper.HATCHERY_TYPE),
 
             //INCREASE_CAPACITY
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(
-                () -> new FeatureContainer(INCREASING_CAPACITY), INCREASE_CAPACITY,
+                () -> new FeatureContainer(FeatureContainerHeaders.INCREASE_CAPACITY), DesireKeys.INCREASE_CAPACITY,
                 AUnitTypeWrapper.OVERLORD_TYPE)
         }))
         .build()

@@ -1,5 +1,7 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
+import static bwapi.Flag.Enum.UserInput;
+
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
@@ -82,10 +84,14 @@ public class BotFacade extends DefaultBWListener {
 
 //  private String orders = "";
 
-  public BotFacade(long maxFrameExecutionTime, boolean annotateMap, boolean drawDebug,
+  public BotFacade(
+      long maxFrameExecutionTime,
+      boolean annotateMap,
+      boolean drawDebug,
       boolean issueCommandFromGUI) {
+
     this.issueCommandFromGUI = issueCommandFromGUI;
-    long start = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
 
     this.maxFrameExecutionTime = maxFrameExecutionTime;
     this.annotateMap = annotateMap;
@@ -99,7 +105,7 @@ public class BotFacade extends DefaultBWListener {
     locationInitializer = new LocationInitializer();
     agentUnitFactory = new AgentUnitHandler();
 
-    log.info("Facade ready. It took " + (System.currentTimeMillis() - start));
+    log.info("Facade ready. It took " + (System.currentTimeMillis() - startTime));
   }
 
   @Override
@@ -175,7 +181,7 @@ public class BotFacade extends DefaultBWListener {
       REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);
 
       if (issueCommandFromGUI) {
-        game.enableFlag(1);
+        game.enableFlag(UserInput.getValue());
       }
 
       log.info("System ready. It took " + (System.currentTimeMillis() - start));
@@ -190,8 +196,7 @@ public class BotFacade extends DefaultBWListener {
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = agentUnitFactory
             .createAgentForUnit(unit, this, game.getFrameCount());
-//        log.info("Creating " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
-//            .orElse("null"));
+        log.debug("Creating " + agent.map(agentUnit -> agentUnit.getAgentType().getName()).orElse("null"));
         agent.ifPresent(agentObservingGame -> {
           agentsWithGameRepresentation.put(unit.getID(), agentObservingGame);
           masFacade.addAgentToSystem(agentObservingGame);

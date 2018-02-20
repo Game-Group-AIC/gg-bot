@@ -60,13 +60,12 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GA
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.DEFENSE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.HOLDING_BY_AIR_UNITS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.HOLDING_BY_GROUND_UNITS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper.MAX_DISTANCE;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
@@ -478,7 +477,8 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                 //TODO handle relly points
 
                 //HOLD_GROUND
-                () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_GROUND_UNITS),
+                () -> new PlanWatcher(() -> new FeatureContainer(
+                    FeatureContainerHeaders.HOLD_GROUND),
                     HOLD_GROUND) {
 
                   @Override
@@ -521,7 +521,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                 },
 
                 //HOLD_AIR
-                () -> new PlanWatcher(() -> new FeatureContainer(HOLDING_BY_AIR_UNITS), HOLD_AIR) {
+                () -> new PlanWatcher(() -> new FeatureContainer(FeatureContainerHeaders.HOLD_AIR), HOLD_AIR) {
 
                   @Override
                   protected boolean isAgentCommitted(IWatcherMediatorService mediatorService,

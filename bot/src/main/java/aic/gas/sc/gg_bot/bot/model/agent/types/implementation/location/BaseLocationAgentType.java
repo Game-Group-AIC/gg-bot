@@ -57,8 +57,6 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_GA
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_MINING_MINERALS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WORKER_ON_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.DEFENSE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.HOLDING_BY_AIR_UNITS;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.HOLDING_BY_GROUND_UNITS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper.MAX_DISTANCE;
 import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.AgentTypeUtils.createConfigurationWithSharedDesireToBuildFromTemplate;
 
@@ -67,6 +65,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
@@ -952,32 +951,32 @@ public class BaseLocationAgentType {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                        dataForDecision, HOLDING_BY_GROUND_UNITS, memory.getCurrentClock(),
+                        dataForDecision, FeatureContainerHeaders.HOLD_GROUND, memory.getCurrentClock(),
                         memory.getAgentId()))
-                .globalBeliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
-                    HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefs())
+                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFacts())
-                .beliefSetTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactSets())
+                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .beliefTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFacts())
+                .beliefSetTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSets())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> !Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
-                        dataForDecision, HOLDING_BY_GROUND_UNITS, memory.getCurrentClock(),
+                        dataForDecision, FeatureContainerHeaders.HOLD_GROUND, memory.getCurrentClock(),
                         memory.getAgentId()))
-                .globalBeliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
-                    HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefs())
+                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFacts())
-                .beliefSetTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactSets())
+                    FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .beliefTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFacts())
+                .beliefSetTypes(FeatureContainerHeaders.HOLD_GROUND.getConvertersForFactSets())
                 .build())
             .build();
         type.addConfiguration(DesiresKeys.HOLD_GROUND, holdGround);
@@ -989,31 +988,31 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) ->
                     Decider
                         .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR, dataForDecision,
-                            HOLDING_BY_AIR_UNITS, memory.getCurrentClock(), memory.getAgentId()))
-                .globalBeliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefs())
+                            FeatureContainerHeaders.HOLD_AIR, memory.getCurrentClock(), memory.getAgentId()))
+                .globalBeliefTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
-                    HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefs())
+                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFacts())
-                .beliefSetTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactSets())
+                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .beliefTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFacts())
+                .beliefSetTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSets())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> !Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
-                        dataForDecision, HOLDING_BY_AIR_UNITS, memory.getCurrentClock(),
+                        dataForDecision, FeatureContainerHeaders.HOLD_AIR, memory.getCurrentClock(),
                         memory.getAgentId()))
-                .globalBeliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
-                    HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefs())
+                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSetsForGlobalBeliefs())
                 .globalBeliefTypesByAgentType(
-                    HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefsByAgentType())
+                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
-                    HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .beliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFacts())
-                .beliefSetTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactSets())
+                    FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .beliefTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFacts())
+                .beliefSetTypes(FeatureContainerHeaders.HOLD_AIR.getConvertersForFactSets())
                 .build())
             .build();
         type.addConfiguration(DesiresKeys.HOLD_AIR, holdAir);

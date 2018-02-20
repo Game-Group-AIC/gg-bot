@@ -1,14 +1,10 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension;
 
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BOOST_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BOOST_GROUND_MELEE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys.BOOST_GROUND_RANGED;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BOOSTING_AIR;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BOOSTING_GROUND_MELEE;
-import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders.BOOSTING_GROUND_RANGED;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
@@ -35,31 +31,42 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
         .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
 
             //BOOST_AIR
-            () -> new UnitPlanWatcher(() -> new FeatureContainer(BOOSTING_AIR), BOOST_AIR,
+            () -> new UnitPlanWatcher(
+                () -> new FeatureContainer(FeatureContainerHeaders.BOOST_AIR),
+                DesireKeys.BOOST_AIR,
                 unitTypeWrapper -> unitTypeWrapper != null
                     && !unitTypeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE)
                     && unitTypeWrapper.isFlyer()),
 
             //BOOST_GROUND_MELEE
-            () -> new UnitPlanWatcher(() -> new FeatureContainer(BOOSTING_GROUND_MELEE),
-                BOOST_GROUND_MELEE, unitTypeWrapper -> unitTypeWrapper != null && unitTypeWrapper
-                .equals(AUnitTypeWrapper.ZERGLING_TYPE)),
+            () -> new UnitPlanWatcher(
+                () -> new FeatureContainer(FeatureContainerHeaders.BOOST_GROUND_MELEE),
+                DesireKeys.BOOST_GROUND_MELEE,
+                unitTypeWrapper -> unitTypeWrapper != null && unitTypeWrapper
+                    .equals(AUnitTypeWrapper.ZERGLING_TYPE)),
 
             //BOOST_GROUND_RANGED
-            () -> new UnitPlanWatcher(() -> new FeatureContainer(BOOSTING_GROUND_RANGED),
-                BOOST_GROUND_RANGED, unitTypeWrapper -> unitTypeWrapper != null
-                && !unitTypeWrapper.isFlyer() && !unitTypeWrapper.isNotActuallyUnit()
-                && !unitTypeWrapper.isWorker()
-                && !unitTypeWrapper.equals(AUnitTypeWrapper.ZERGLING_TYPE))
+            () -> new UnitPlanWatcher(
+                () -> new FeatureContainer(FeatureContainerHeaders.BOOST_GROUND_RANGED),
+                DesireKeys.BOOST_GROUND_RANGED,
+                unitTypeWrapper -> unitTypeWrapper != null
+                    && !unitTypeWrapper.isFlyer() && !unitTypeWrapper.isNotActuallyUnit()
+                    && !unitTypeWrapper.isWorker()
+                    && !unitTypeWrapper.equals(AUnitTypeWrapper.ZERGLING_TYPE))
         }))
         .build()
     );
   }
 
+  private interface DecideUnitTypeSatisfactionStrategy {
+
+    boolean satisfiesType(AUnitTypeWrapper unitTypeWrapper);
+  }
+
   private static class UnitPlanWatcher extends PlanWatcher {
 
-    private Set<Integer> committedAgents = new HashSet<>();
     private final DecideUnitTypeSatisfactionStrategy decideUnitTypeSatisfactionStrategy;
+    private Set<Integer> committedAgents = new HashSet<>();
 
     UnitPlanWatcher(FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
         DesireKeyID desireKey,
@@ -90,11 +97,6 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
     protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
       return Stream.empty();
     }
-  }
-
-  private interface DecideUnitTypeSatisfactionStrategy {
-
-    boolean satisfiesType(AUnitTypeWrapper unitTypeWrapper);
   }
 
 }
