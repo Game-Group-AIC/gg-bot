@@ -18,7 +18,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
@@ -525,13 +524,60 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
     this.updateChecksStrategy = updateChecksStrategy;
   }
 
+  @Override
+  public Stream<Map.Entry<DesireKeys, List<Trajectory>>> getTrajectories() {
+    Map<DesireKeys, List<Trajectory>> map = plansToWatch.stream()
+        .collect(Collectors.groupingBy(PlanWatcher::getDesireKey,
+            Collectors.mapping(PlanWatcher::getTrajectory, Collectors.toList())));
+
+    //filter trajectories
+    map.forEach((desireKeyID, trajectories) -> {
+
+      //building colony outside of base
+      if (desireKeyID.equals(DesireKeys.BUILD_CREEP_COLONY) || desireKeyID
+          .equals(DesireKeys.BUILD_SPORE_COLONY)
+          || desireKeyID.equals(DesireKeys.BUILD_SUNKEN_COLONY)) {
+        if (!updateChecksStrategy.isWasEverOurBase()) {
+          trajectories.clear();
+        }
+      }
+
+      //holding position outside of our or enemy base
+      if (desireKeyID.equals(DesireKeys.HOLD_AIR) || desireKeyID.equals(DesireKeys.HOLD_GROUND)) {
+        if (!updateChecksStrategy.isWasEverOurBase() && !updateChecksStrategy
+            .isWasEverEnemyBase()) {
+          trajectories.clear();
+        }
+      }
+
+    });
+
+    return map.entrySet().stream();
+  }
+
+  /**
+   * Method to make observation
+   */
+  private static void makeObservation(ABaseLocationWrapper location, Beliefs beliefs, Game game) {
+
+    //resources
+    Set<AUnit> minerals = location.getWrappedPosition().getMinerals().stream()
+        .map(unit -> UnitWrapperFactory.wrapResourceUnits(unit, game.getFrameCount(), false))
+        .collect(Collectors.toSet());
+    beliefs.updateFactSetByFacts(MINERAL, minerals);
+    Set<AUnit> geysers = location.getWrappedPosition().getGeysers().stream()
+        .map(unit -> UnitWrapperFactory.wrapResourceUnits(unit, game.getFrameCount(), false))
+        .collect(Collectors.toSet());
+    beliefs.updateFactSetByFacts(GEYSER, geysers);
+  }
+
   private static class ColonyPlanWatcher extends PlanWatcher {
 
     private Set<Integer> committedAgents = new HashSet<>();
     private final AUnitTypeWrapper typeToWatchFor;
 
     ColonyPlanWatcher(FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
-        DesireKeyID desireKey, AUnitTypeWrapper typeToWatchFor) {
+        DesireKeys desireKey, AUnitTypeWrapper typeToWatchFor) {
       super(featureContainerInitializationStrategy, desireKey);
       this.typeToWatchFor = typeToWatchFor;
     }
@@ -569,53 +615,6 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
     protected Stream<AgentWatcher<?>> streamOfAgentsToNotifyAboutCommitment() {
       return Stream.empty();
     }
-  }
-
-  /**
-   * Method to make observation
-   */
-  private static void makeObservation(ABaseLocationWrapper location, Beliefs beliefs, Game game) {
-
-    //resources
-    Set<AUnit> minerals = location.getWrappedPosition().getMinerals().stream()
-        .map(unit -> UnitWrapperFactory.wrapResourceUnits(unit, game.getFrameCount(), false))
-        .collect(Collectors.toSet());
-    beliefs.updateFactSetByFacts(MINERAL, minerals);
-    Set<AUnit> geysers = location.getWrappedPosition().getGeysers().stream()
-        .map(unit -> UnitWrapperFactory.wrapResourceUnits(unit, game.getFrameCount(), false))
-        .collect(Collectors.toSet());
-    beliefs.updateFactSetByFacts(GEYSER, geysers);
-  }
-
-  @Override
-  public Stream<Map.Entry<DesireKeyID, List<Trajectory>>> getTrajectories() {
-    Map<DesireKeyID, List<Trajectory>> map = plansToWatch.stream()
-        .collect(Collectors.groupingBy(PlanWatcher::getDesireKey,
-            Collectors.mapping(PlanWatcher::getTrajectory, Collectors.toList())));
-
-    //filter trajectories
-    map.forEach((desireKeyID, trajectories) -> {
-
-      //building colony outside of base
-      if (desireKeyID.equals(DesireKeys.BUILD_CREEP_COLONY) || desireKeyID
-          .equals(DesireKeys.BUILD_SPORE_COLONY)
-          || desireKeyID.equals(DesireKeys.BUILD_SUNKEN_COLONY)) {
-        if (!updateChecksStrategy.isWasEverOurBase()) {
-          trajectories.clear();
-        }
-      }
-
-      //holding position outside of our or enemy base
-      if (desireKeyID.equals(DesireKeys.HOLD_AIR) || desireKeyID.equals(DesireKeys.HOLD_GROUND)) {
-        if (!updateChecksStrategy.isWasEverOurBase() && !updateChecksStrategy
-            .isWasEverEnemyBase()) {
-          trajectories.clear();
-        }
-      }
-
-    });
-
-    return map.entrySet().stream();
   }
 
   public void makeObservation() {

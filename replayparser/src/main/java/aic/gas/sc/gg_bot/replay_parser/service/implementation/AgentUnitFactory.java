@@ -172,16 +172,6 @@ public class AgentUnitFactory implements IAgentUnitHandler {
             new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_TARGET_LOCATION))
         .build());
 
-    // todo: what's dummy??
-//    AgentTypeID dummy = new AgentTypeID("DUMMY", 10000);
-//    AUnitTypeWrapper.OTHER_UNIT_TYPES.forEach(
-//        typeWrapper -> agentConfigurationForUnitType.put(typeWrapper, UnitWatcherType.builder()
-//            .agentType(dummy)
-//            .factKeys(new HashSet<>(Collections.singleton(HOLD_LOCATION)))
-//            .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(
-//                UNIT_TARGET_LOCATION))
-//            .build()));
-
     //"barracks"
     agentConfigurationForUnitType.put(EGG_TYPE, UnitWatcherType.builder()
         .agentType(EGG)

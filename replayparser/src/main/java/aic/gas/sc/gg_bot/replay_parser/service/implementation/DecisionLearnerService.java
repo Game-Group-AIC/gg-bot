@@ -1,5 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
@@ -9,8 +11,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureNormalizer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.VectorNormalizer;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import aic.gas.sc.gg_bot.replay_parser.configuration.DecisionLearningConfiguration;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.BatchIterator;
@@ -20,12 +20,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionState;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.State;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.TrajectoryWrapper;
-import aic.gas.sc.gg_bot.replay_parser.service.IDecisionLearnerService;
-import aic.gas.sc.gg_bot.replay_parser.service.IFeatureNormalizerService;
-import aic.gas.sc.gg_bot.replay_parser.service.IPairFindingService;
-import aic.gas.sc.gg_bot.replay_parser.service.IPolicyLearningService;
-import aic.gas.sc.gg_bot.replay_parser.service.IStateClusteringService;
-import aic.gas.sc.gg_bot.replay_parser.service.IStorageService;
+import aic.gas.sc.gg_bot.replay_parser.service.*;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.mdp.core.action.SimpleAction;
@@ -33,13 +28,8 @@ import burlap.mdp.singleagent.SADomain;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -88,13 +78,14 @@ public class DecisionLearnerService implements IDecisionLearnerService {
 
   @Override
   public void learnDecisionMakers(int parallelismLevel) {
-    List<Tuple> toLearn = MAP_SIZES.stream().flatMap(mapSize -> RACES.stream().flatMap(
-        race -> storageService.getParsedAgentTypesWithDesiresTypesContainedInStorage(mapSize, race)
+    List<Tuple> toLearn = MAP_SIZES.stream().flatMap(mapSize -> RACES.stream()
+        .flatMap(race -> storageService
+            .getParsedAgentTypesWithDesiresTypesContainedInStorage(mapSize, race)
             .entrySet().stream().flatMap(entry -> entry.getValue().stream()
-                .map(desireKeyID -> new Tuple(mapSize, race, entry.getKey(), desireKeyID)))))
+                .map(desireKey -> new Tuple(mapSize, race, entry.getKey(), desireKey)))))
         .filter(tuple -> {
           String path = storageService
-              .getLearntDecisionPath(tuple.agentTypeID, tuple.desireKeyID, tuple.mapSize,
+              .getLearntDecisionPath(tuple.agentType, tuple.desireKey, tuple.mapSize,
                   tuple.race);
           return !new File(path).exists();
         })
@@ -129,24 +120,6 @@ public class DecisionLearnerService implements IDecisionLearnerService {
     return new MDPForDecisionWithPolicy(statesWithPolicy, normalizers);
   }
 
-  @AllArgsConstructor
-  @Getter
-  private static class Tuple {
-
-    private final MapSizeEnums mapSize;
-    private final ARace race;
-    private final AgentTypeID agentTypeID;
-    private final DesireKeyID desireKeyID;
-  }
-
-  @AllArgsConstructor
-  @Getter
-  private static class StateTransitionPair {
-
-    private DecisionState decisionState;
-    private NextActionEnumerations nextActionEnumeration;
-  }
-
   private Stream<List<StateTransitionPair>> buildTransitionsPairsFromTrajectories(
       Stream<Trajectory> trajectoryStream, List<FeatureNormalizer> normalizers,
       List<DecisionState> decisionStates) {
@@ -160,6 +133,24 @@ public class DecisionLearnerService implements IDecisionLearnerService {
             .collect(Collectors.toList()));
   }
 
+  @AllArgsConstructor
+  @Getter
+  private static class Tuple {
+
+    private final MapSizeEnums mapSize;
+    private final ARace race;
+    private final AgentTypes agentType;
+    private final DesireKeys desireKey;
+  }
+
+  @AllArgsConstructor
+  @Getter
+  private static class StateTransitionPair {
+
+    private DecisionState decisionState;
+    private NextActionEnumerations nextActionEnumeration;
+  }
+
   /**
    * Do clustering and prepare data set for policy learning. Learn policy
    */
@@ -171,7 +162,7 @@ public class DecisionLearnerService implements IDecisionLearnerService {
     @Override
     public void run() {
       String path = storageService
-          .getLearntDecisionPath(tuple.agentTypeID, tuple.desireKeyID, tuple.mapSize,
+          .getLearntDecisionPath(tuple.agentType, tuple.desireKey, tuple.mapSize,
               tuple.race);
 
       if (new File(path).exists()) {
@@ -192,23 +183,22 @@ public class DecisionLearnerService implements IDecisionLearnerService {
       log.info("Starting computation for " + path);
 
       Configuration configuration = DecisionLearningConfiguration
-          .getConfiguration(tuple.agentTypeID, tuple.desireKeyID);
+          .getConfiguration(tuple.agentType, tuple.desireKey);
 
       List<TrajectoryWrapper> trajectoriesWrapped = storageService
-          .getRandomListOfTrajectories(tuple.agentTypeID, tuple.desireKeyID, tuple.getMapSize(),
-              tuple.getRace(), -1);
+          .getRandomListOfTrajectories(tuple.agentType, tuple.desireKey, tuple.mapSize,
+              tuple.race, -1);
 
       //load headers
       Optional<FeatureContainerHeader> header = FeatureContainerHeaders
-          .getHeader(tuple.agentTypeID, tuple.desireKeyID);
+          .getHeader(tuple.agentType, tuple.desireKey);
       String[] headers;
       if (header.isPresent()) {
         headers = header.get().getHeaders();
       } else {
 
         log.error(
-            "Could not find header for " + tuple.agentTypeID.getName() + ", " + tuple.desireKeyID
-                .getName());
+            "Could not find header for " + tuple.agentType.name() + ", " + tuple.desireKey.name());
 
         //get number of features for state
         int numberOfFeatures = trajectoriesWrapped.get(0).getTrajectory().getNumberOfFeatures();
@@ -225,8 +215,8 @@ public class DecisionLearnerService implements IDecisionLearnerService {
           .collect(Collectors.toList());
 
       log.info("Number of trajectories: " + trajectoriesWrapped.size()
-          + " with cardinality of features: " + headers.length + " for " + tuple.desireKeyID
-          .getName() + " of " + tuple.agentTypeID.getName() + " on " + tuple.mapSize + " with "
+          + " with cardinality of features: " + headers.length + " for " + tuple.desireKey
+          .name() + " of " + tuple.agentType.name() + " on " + tuple.mapSize + " with "
           + tuple.race + ". Number of states: " + states.size() + ". With configuration "
           + configuration.toString());
 
@@ -249,8 +239,8 @@ public class DecisionLearnerService implements IDecisionLearnerService {
           .map(integer -> new DecisionState(classes.get(integer), integer))
           .collect(Collectors.toList());
 
-      log.info("Creating MDP... for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-          .getName() + " on " + tuple.mapSize + " with " + tuple.race);
+      log.info("Creating MDP... for " + tuple.desireKey + " of " + tuple.agentType
+          + " on " + tuple.mapSize + " with " + tuple.race);
 
       //build transitions pair lists
       List<List<StateTransitionPair>> transitionPairLists = buildTransitionsPairsFromTrajectories(
@@ -309,8 +299,8 @@ public class DecisionLearnerService implements IDecisionLearnerService {
           configuration);
       SADomain domain = decisionDomainGenerator.generateDomain();
 
-      log.info("Learning policy for " + tuple.desireKeyID.getName() + " of " + tuple.agentTypeID
-          .getName() + " on " + tuple.mapSize + " with " + tuple.race + ". Using examples: #"
+      log.info("Learning policy for " + tuple.desireKey + " of " + tuple.agentType
+          + " on " + tuple.mapSize + " with " + tuple.race + ". Using examples: #"
           + episodesToLearnFrom.size());
 
       //do IRL to recover reward function + do RL to learn policy then
@@ -335,16 +325,16 @@ public class DecisionLearnerService implements IDecisionLearnerService {
       if (Arrays.stream(NextActionEnumerations.values())
           .anyMatch(nextActionEnumerations -> !actions.contains(nextActionEnumerations))) {
         log.error("Missing action in " + tuple.mapSize.name() + ", " + tuple.race.name() + ", "
-            + tuple.agentTypeID
-            .getName() + ", " + tuple.desireKeyID.getName());
+            + tuple.agentType
+            + ", " + tuple.desireKey);
       }
 
       try {
-        storageService.storeLearntDecision(mdpForDecisionWithPolicy, tuple.getAgentTypeID(),
-            tuple.getDesireKeyID(), tuple.getMapSize(), tuple.getRace());
+        storageService.storeLearntDecision(mdpForDecisionWithPolicy, tuple.agentType,
+            tuple.desireKey, tuple.mapSize, tuple.race);
         log.info(
-            "Successfully learn decisions for " + tuple.getDesireKeyID().getName() + " of " + tuple
-                .getAgentTypeID().getName() + " on " + tuple.mapSize + " with " + tuple.race);
+            "Successfully learn decisions for " + tuple.desireKey + " of " + tuple
+                .getAgentType() + " on " + tuple.mapSize + " with " + tuple.race);
       } catch (Exception e) {
         e.printStackTrace();
         log.error(e.getLocalizedMessage());

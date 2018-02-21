@@ -1,12 +1,8 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import java.io.Serializable;
 
-/**
- * Enumeration of all IDs for agents' types as static classes
- */
-public enum AgentTypes implements Serializable {
+public enum AgentTypes {
   //ground units
   ZERGLING,
   EGG,
@@ -42,5 +38,12 @@ public enum AgentTypes implements Serializable {
 
   public AgentTypeID getId() {
     return new AgentTypeID(this.name(), this.ordinal());
+  }
+
+  public static final AgentTypes values[] = values();
+
+  @Override
+  public String toString() {
+    return name();
   }
 }

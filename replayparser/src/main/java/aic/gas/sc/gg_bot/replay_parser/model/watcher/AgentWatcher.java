@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.List;
@@ -43,10 +43,12 @@ public class AgentWatcher<T extends AgentWatcherType> {
   /**
    * Get stream of entries of list of trajectories for desire
    */
-  public Stream<Map.Entry<DesireKeyID, List<Trajectory>>> getTrajectories() {
+  public Stream<Map.Entry<DesireKeys, List<Trajectory>>> getTrajectories() {
     return plansToWatch.stream()
-        .collect(Collectors.groupingBy(PlanWatcher::getDesireKey,
-            Collectors.mapping(PlanWatcher::getTrajectory, Collectors.toList())))
+        .collect(Collectors.groupingBy(
+            PlanWatcher::getDesireKey,
+            Collectors.mapping(PlanWatcher::getTrajectory, Collectors.toList())
+        ))
         .entrySet().stream();
   }
 
@@ -54,9 +56,9 @@ public class AgentWatcher<T extends AgentWatcherType> {
    * Notify plan that commitment has been changed
    */
   void commitmentByOtherAgentToDesireOfThisAgentHasBeenChanged(boolean status,
-      DesireKeyID desireKeyID) {
+      DesireKeys desireKey) {
     Optional<PlanWatcher> planWatcherToNotify = plansToWatch.stream()
-        .filter(planWatcher -> planWatcher.getDesireKey().equals(desireKeyID))
+        .filter(planWatcher -> planWatcher.getDesireKey().equals(desireKey))
         .findAny();
     if (planWatcherToNotify.isPresent()) {
       if (status) {
@@ -65,8 +67,9 @@ public class AgentWatcher<T extends AgentWatcherType> {
         planWatcherToNotify.get().removeCommitment();
       }
     } else {
-      log.error("Notifying " + agentWatcherType.getName()
-          + " but this agent does not contain plan for desire " + desireKeyID.getName());
+      log.error(
+          "Notifying " + agentWatcherType + " but this agent does not contain plan for desire "
+              + desireKey.name());
     }
   }
 
@@ -85,7 +88,7 @@ public class AgentWatcher<T extends AgentWatcherType> {
   public void handleTrajectoriesOfPlans(IWatcherMediatorService mediatorService) {
     Set<Integer> committedIDs = plansToWatch.stream()
         .filter(PlanWatcher::isCommitted)
-        .map(planWatcher -> planWatcher.getDesireKey().getID())
+        .map(planWatcher -> planWatcher.getDesireKey().ordinal())
         .collect(Collectors.toSet());
     //start execution of jobs
     plansToWatch.forEach(planWatcher -> planWatcher

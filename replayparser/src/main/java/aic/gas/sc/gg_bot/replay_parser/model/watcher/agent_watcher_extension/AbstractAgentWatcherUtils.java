@@ -2,8 +2,8 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension;
 
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
@@ -22,7 +22,7 @@ public class AbstractAgentWatcherUtils {
 
     public AbstractPlanWatcher(
         FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
-        DesireKeyID desireKey, AUnitTypeWrapper typeToWatchFor) {
+        DesireKeys desireKey, AUnitTypeWrapper typeToWatchFor) {
       super(featureContainerInitializationStrategy, desireKey);
       this.typeToWatchFor = typeToWatchFor;
     }

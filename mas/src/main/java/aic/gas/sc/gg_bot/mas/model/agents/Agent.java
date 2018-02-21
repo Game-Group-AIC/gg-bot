@@ -169,10 +169,10 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
 
   public Map<DesireKeyID, Boolean> getTopCommitments() {
     return Stream.concat(beliefs.getParametersOfCommittedDesiresOnTopLevel().stream()
-            .map(desireParameter -> desireParameter.getDesireKey().getId())
+            .map(desireParameter -> desireParameter.getDesireKey().getDesireKeyId())
             .map(desireKeyID -> new Tuple(desireKeyID, true)),
         beliefs.getParametersOfDesiresOnTopLevel().stream()
-            .map(desireParameter -> desireParameter.getDesireKey().getId())
+            .map(desireParameter -> desireParameter.getDesireKey().getDesireKeyId())
             .map(desireKeyID -> new Tuple(desireKeyID, false)))
         .collect(Collectors
             .groupingBy(Tuple::getKey, Collectors.mapping(Tuple::isValue, Collectors.toList())))

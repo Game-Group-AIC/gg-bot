@@ -13,13 +13,13 @@ import lombok.Getter;
 @Getter
 public class FactWithSetOfOptionalValuesForAgentType<V> extends FactWithSetOfOptionalValues<V> {
 
-  private final AgentTypeID agentType;
+  private final AgentTypeID agentTypeID;
 
   public FactWithSetOfOptionalValuesForAgentType(FactConverterID<V> factConverterID,
       FeatureRawValueObtainingStrategy<Stream<Optional<V>>> strategyToObtainValue,
-      AgentTypeID agentType) {
+      AgentTypeID agentTypeID) {
     super(factConverterID, strategyToObtainValue);
-    this.agentType = agentType;
+    this.agentTypeID = agentTypeID;
   }
 
   @Override
@@ -36,13 +36,13 @@ public class FactWithSetOfOptionalValuesForAgentType<V> extends FactWithSetOfOpt
 
     FactWithSetOfOptionalValuesForAgentType<?> that = (FactWithSetOfOptionalValuesForAgentType<?>) o;
 
-    return agentType.equals(that.agentType);
+    return agentTypeID.equals(that.agentTypeID);
   }
 
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    result = 31 * result + agentType.hashCode();
+    result = 31 * result + agentTypeID.hashCode();
     return result;
   }
 }

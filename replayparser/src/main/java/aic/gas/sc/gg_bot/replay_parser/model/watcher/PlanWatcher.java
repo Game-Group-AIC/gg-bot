@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.State;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
@@ -19,14 +19,14 @@ public abstract class PlanWatcher {
   @Getter
   private final Trajectory trajectory;
   @Getter
-  private final DesireKeyID desireKey;
+  private final DesireKeys desireKey;
   private double[] currentState;
   @Getter
   private boolean isCommitted = false;
 
   protected PlanWatcher(
       FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
-      DesireKeyID desireKey) {
+      DesireKeys desireKey) {
     this.container = featureContainerInitializationStrategy.returnFeatureContainer();
     this.desireKey = desireKey;
     this.trajectory = new Trajectory(this.container.getNumberOfFeatures());

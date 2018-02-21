@@ -3,12 +3,7 @@ package aic.gas.sc.gg_bot.mas.model.metadata;
 import aic.gas.sc.gg_bot.mas.model.FeatureRawValueObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSets;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -368,7 +363,7 @@ public abstract class FactConverter<V, K> implements Converter {
 
     @Override
     public void hasUpdatedValueFromRegisterChanged(WorkingMemory register) {
-      hasValueChanged(register.getReadOnlyMemoriesForAgentType(converter.getAgentType()).filter(
+      hasValueChanged(register.getReadOnlyMemoriesForAgentType(converter.getAgentTypeID()).filter(
           readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(converter.getFactKey()))
           .map(
               readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(converter.getFactKey())));
@@ -563,7 +558,7 @@ public abstract class FactConverter<V, K> implements Converter {
           return 1;
         }
         return 0;
-      }, desireKey.getID());
+      }, desireKey.getId());
       this.desireKey = desireKey;
     }
 

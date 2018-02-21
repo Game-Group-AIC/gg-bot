@@ -3,24 +3,18 @@ package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 import static aic.gas.sc.gg_bot.abstract_bot.utils.Utils.getParsedAgentTypesContainedInStorage;
 import static aic.gas.sc.gg_bot.abstract_bot.utils.Utils.getParsedDesireTypesForAgentTypeContainedInStorage;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.TrajectoryWrapper;
 import aic.gas.sc.gg_bot.replay_parser.service.IStorageService;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,16 +70,16 @@ public class StorageService implements IStorageService {
 
 
   @Override
-  public void saveTrajectory(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
+  public void saveTrajectory(AgentTypes agentType, DesireKeys desireKey,
       List<Trajectory> trajectories) {
-    createDirectoryIfItDoesNotExist(agentTypeID.getName(),
+    createDirectoryIfItDoesNotExist(agentType.name(),
         parsingFolder + "/" + DecisionConfiguration.getMapSize().name() + "/"
             + DecisionConfiguration.getRace().name());
     String uuid = UUID.randomUUID().toString();
     String path =
         parsingFolder + "/" + DecisionConfiguration.getMapSize().name() + "/"
-            + DecisionConfiguration.getRace().name() + "/" + agentTypeID.getName() + "/"
-            + desireKeyID.getName() + "_" + uuid
+            + DecisionConfiguration.getRace().name() + "/" + agentType + "/"
+            + desireKey + "_" + uuid
             + ".db";
     ArrayList<Trajectory> savedTrajectories = new ArrayList<>(trajectories);
     try {
@@ -97,32 +91,32 @@ public class StorageService implements IStorageService {
   }
 
   @Override
-  public Map<AgentTypeID, Set<DesireKeyID>> getParsedAgentTypesWithDesiresTypesContainedInStorage(
+  public Map<AgentTypes, Set<DesireKeys>> getParsedAgentTypesWithDesiresTypesContainedInStorage(
       MapSizeEnums mapSize, ARace race) {
-    Map<AgentTypeID, Set<DesireKeyID>> humans = getParsedAgentTypesContainedInStorage(humanFolder,
+    Map<AgentTypes, Set<DesireKeys>> humans = getParsedAgentTypesContainedInStorage(humanFolder,
         mapSize, race).stream()
         .filter(DecisionConfiguration.decisionsToLoad::containsKey)
         .collect(Collectors.toMap(Function.identity(),
             t -> getParsedDesireTypesForAgentTypeContainedInStorage(t, humanFolder, mapSize, race)
                 .stream()
-                .filter(desireKeyID -> DecisionConfiguration.decisionsToLoad
-                    .getOrDefault(t, new HashSet<>()).contains(desireKeyID))
+                .filter(desireKey -> DecisionConfiguration.decisionsToLoad
+                    .getOrDefault(t, new HashSet<>()).contains(desireKey))
                 .collect(Collectors.toSet())
         ));
 
-    Map<AgentTypeID, Set<DesireKeyID>> others = getParsedAgentTypesContainedInStorage(otherFolder,
+    Map<AgentTypes, Set<DesireKeys>> others = getParsedAgentTypesContainedInStorage(otherFolder,
         mapSize, race).stream()
         .filter(DecisionConfiguration.decisionsToLoad::containsKey)
         .collect(Collectors.toMap(Function.identity(),
             t -> getParsedDesireTypesForAgentTypeContainedInStorage(t, otherFolder, mapSize, race)
                 .stream()
-                .filter(desireKeyID -> DecisionConfiguration.decisionsToLoad
-                    .getOrDefault(t, new HashSet<>()).contains(desireKeyID))
+                .filter(desireKey -> DecisionConfiguration.decisionsToLoad
+                    .getOrDefault(t, new HashSet<>()).contains(desireKey))
                 .collect(Collectors.toSet())
         ));
 
     // merge the two maps
-    for (AgentTypeID otherKey : others.keySet()) {
+    for (AgentTypes otherKey : others.keySet()) {
       if (humans.containsKey(otherKey)) {
         humans.get(otherKey).addAll(others.get(otherKey));
       } else {
@@ -134,10 +128,10 @@ public class StorageService implements IStorageService {
   }
 
   @Override
-  public List<TrajectoryWrapper> getRandomListOfTrajectories(AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race, int limit) {
+  public List<TrajectoryWrapper> getRandomListOfTrajectories(AgentTypes agentType,
+      DesireKeys desireKey, MapSizeEnums mapSize, ARace race, int limit) {
     List<File> files = new ArrayList<>(
-        getFilesForAgentTypeOfGivenDesire(agentTypeID, desireKeyID, mapSize, race));
+        getFilesForAgentTypeOfGivenDesire(agentType, desireKey, mapSize, race));
     Collections.shuffle(files);
 
     //unlimited
@@ -168,40 +162,40 @@ public class StorageService implements IStorageService {
   /**
    * Get files for AgentType Of given desire
    */
-  private Set<File> getFilesForAgentTypeOfGivenDesire(AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) {
+  private Set<File> getFilesForAgentTypeOfGivenDesire(AgentTypes agentType,
+      DesireKeys desireKey, MapSizeEnums mapSize, ARace race) {
 
     Set<File> humanFiles = SerializationUtil
         .getAllFilesInFolder(humanFolder + "/" + mapSize.name() + "/"
-            + "/" + race.name() + "/" + agentTypeID.getName(), "db");
+            + "/" + race.name() + "/" + agentType, "db");
     Set<File> otherFiles = SerializationUtil
         .getAllFilesInFolder(otherFolder + "/" + mapSize.name() + "/"
-            + "/" + race.name() + "/" + agentTypeID.getName(), "db");
+            + "/" + race.name() + "/" + agentType, "db");
     Set<File> allFiles = new HashSet<>();
     allFiles.addAll(humanFiles);
     allFiles.addAll(otherFiles);
 
     return allFiles
         .stream()
-        .filter(file -> file.getName().contains(desireKeyID.getName()))
+        .filter(file -> file.getName().contains(desireKey.name()))
         .collect(Collectors.toSet());
   }
 
 
   @Override
-  public void storeLearntDecision(MDPForDecisionWithPolicy structure, AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) throws Exception {
-    createDirectoryIfItDoesNotExist(agentTypeID.getName(), outputFolder + "/" + mapSize.name() + "/"
+  public void storeLearntDecision(MDPForDecisionWithPolicy structure, AgentTypes agentType,
+      DesireKeys desireKey, MapSizeEnums mapSize, ARace race) throws Exception {
+    createDirectoryIfItDoesNotExist(agentType.name(), outputFolder + "/" + mapSize.name() + "/"
         + "/" + race.name());
-    String path = getLearntDecisionPath(agentTypeID, desireKeyID, mapSize, race);
+    String path = getLearntDecisionPath(agentType, desireKey, mapSize, race);
     SerializationUtil.serialize(structure, path);
   }
 
   @Override
-  public String getLearntDecisionPath(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
+  public String getLearntDecisionPath(AgentTypes agentType, DesireKeys desireKey,
       MapSizeEnums mapSize, ARace race) {
     return outputFolder + "/" + mapSize.name() + "/"
-        + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID.getName() + ".db";
+        + "/" + race.name() + "/" + agentType.name() + "/" + desireKey.name() + ".db";
   }
 
   /**

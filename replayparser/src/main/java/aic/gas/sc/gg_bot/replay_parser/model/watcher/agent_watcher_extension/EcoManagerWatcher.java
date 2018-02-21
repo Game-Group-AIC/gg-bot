@@ -12,7 +12,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.PlanWatcherInitializationStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
@@ -70,7 +69,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
 
     public ExpansionPlanWatcher(
         FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
-        DesireKeyID desireKey) {
+        DesireKeys desireKey) {
       super(featureContainerInitializationStrategy, desireKey);
     }
 

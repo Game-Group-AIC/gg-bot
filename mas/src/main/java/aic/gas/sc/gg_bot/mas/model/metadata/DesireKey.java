@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  * Class describing metadata for desire - used for identification and parameter type definition.
  */
 @Slf4j
-public class DesireKey extends DesireKeyID implements FactContainerInterface {
+public class DesireKey implements FactContainerInterface {
 
   private final Map<FactKey<?>, Fact<?>> factParameterMap = new HashMap<>();
   private final Map<FactKey<?>, FactSet<?>> factSetParameterMap = new HashMap<>();
@@ -29,22 +29,28 @@ public class DesireKey extends DesireKeyID implements FactContainerInterface {
   private final Set<FactKey<?>> parametersTypesForFactSets;
 
   @Getter
-  private final DesireKeyID id;
+  private final DesireKeyID desireKeyId;
 
   @Builder
   private DesireKey(
-      DesireKeyID id,
+      DesireKeyID desireKeyId,
       Set<Fact<?>> staticFactValues,
       Set<FactSet<?>> staticFactSets,
       Set<FactKey<?>> parametersTypesForFacts,
       Set<FactKey<?>> parametersTypesForFactSets) {
-
-    super(id.getName(), id.getID());
-    this.id = id;
+    this.desireKeyId = desireKeyId;
     staticFactValues.forEach(fact -> factParameterMap.put(fact.getType(), fact));
     staticFactSets.forEach(factSet -> factSetParameterMap.put(factSet.getType(), factSet));
     this.parametersTypesForFacts = parametersTypesForFacts;
     this.parametersTypesForFactSets = parametersTypesForFactSets;
+  }
+
+  public String getName() {
+    return desireKeyId.getName();
+  }
+
+  public int getId() {
+    return desireKeyId.getID();
   }
 
   public Set<FactKey<?>> parametersTypesForStaticFacts() {

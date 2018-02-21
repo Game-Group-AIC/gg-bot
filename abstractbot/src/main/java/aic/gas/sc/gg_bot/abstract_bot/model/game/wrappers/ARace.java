@@ -47,4 +47,9 @@ public enum ARace {
     return ARace.values()[RANDOM.nextInt(races)];
   }
 
+
+  @Override
+  public String toString() {
+    return name;
+  }
 }

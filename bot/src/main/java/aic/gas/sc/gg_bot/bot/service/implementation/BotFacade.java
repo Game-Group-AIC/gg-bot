@@ -213,8 +213,6 @@ public class BotFacade extends DefaultBWListener {
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = Optional
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
-//        log.info("Destroying " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
-//            .orElse("null"));
         agent.ifPresent(
             agentUnit -> masFacade.removeAgentFromSystem(agentUnit, unit.getType().isBuilding()));
       }
@@ -231,10 +229,6 @@ public class BotFacade extends DefaultBWListener {
         Optional<AgentUnit> agent = Optional
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
         agent.ifPresent(agentUnit -> masFacade.removeAgentFromSystem(agentUnit, true));
-
-//        log.info("Morphing from " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
-//            .orElse("null")
-//            + " to " + unit.getType().toString());
 
         //put it under lock
         buildLockerService.lock(WrapperTypeFactory.createFrom(unit.getType()));
@@ -317,7 +311,7 @@ public class BotFacade extends DefaultBWListener {
 //                Order.ResetCollision,
 //                Order.ZergBirth, Order.Guard)
 //            .noneMatch(order -> unit.getOrder() == order))
-//        .map(unit -> (unit.getType().isWorker() ? "W" : "B") + " " + unit.getId() + ": " + unit
+//        .map(unit -> (unit.getType().isWorker() ? "W" : "B") + " " + unit.getDesireKeyId() + ": " + unit
 //            .getOrder().toString())
 //        .collect(Collectors.joining(","));
 //    if (!cOrders.equals(orders)) {
@@ -345,20 +339,24 @@ public class BotFacade extends DefaultBWListener {
 
     //learnt desires
     Map<DesireKeyID, Boolean> commitmentToLearntDesires = masFacade
-        .returnCommitmentToDesires(DesireKeys.LEARNT_DESIRE_KEYS);
+        .returnCommitmentToDesires(DesireKeys.LEARNT_DESIRE_KEYS.stream()
+            .map(DesireKeys::getId).collect(Collectors.toSet()));
+
     String message = DesireKeys.LEARNT_DESIRE_KEYS.stream()
-        .map(desireKeyID -> desireKeyID.getName() + ": " + Optional
-            .ofNullable(commitmentToLearntDesires.get(desireKeyID)).map(aBoolean ->
+        .map(desireKey -> desireKey + ": " + Optional
+            .ofNullable(commitmentToLearntDesires.get(desireKey.getId())).map(aBoolean ->
                 aBoolean ? "1" : "0").orElse("N/A"))
         .collect(Collectors.joining("\n"));
     Annotator.printMessage(message, 10, 10, game);
 
-    //buildings
+    // buildings
     Map<DesireKeyID, Boolean> commitmentToBuildDesires = masFacade
-        .returnCommitmentToDesires(DesireKeys.BUILDING_DESIRE_KEYS);
+        .returnCommitmentToDesires(DesireKeys.BUILDING_DESIRE_KEYS.stream()
+            .map(DesireKeys::getId).collect(Collectors.toSet()));
+
     message = DesireKeys.BUILDING_DESIRE_KEYS.stream()
-        .map(desireKeyID -> desireKeyID.getName() + ": " + Optional
-            .ofNullable(commitmentToBuildDesires.get(desireKeyID)).map(aBoolean ->
+        .map(desireKey -> desireKey + ": " + Optional
+            .ofNullable(commitmentToBuildDesires.get(desireKey.getId())).map(aBoolean ->
                 aBoolean ? "1" : "0").orElse("N/A"))
         .collect(Collectors.joining("\n"));
     Annotator.printMessage(message, 200, 10, game);

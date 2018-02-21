@@ -38,6 +38,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EcoManagerAgentType {
 
+  public static final ConfigurationWithSharedDesire BUILD_EXTRACTOR_SHARED = createConfigurationWithSharedDesireToBuildFromTemplate(
+      MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, (memory, desireParameters) -> {
+        Optional<ABaseLocationWrapper> baseWithoutExtractor = getOurBaseWithoutExtractor(
+            memory);
+        if (baseWithoutExtractor.isPresent()) {
+          memory.updateFact(BASE_TO_MOVE, baseWithoutExtractor.get());
+        } else {
+          memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
+        }
+      }, (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+
   public static final AgentType ECO_MANAGER = AgentType.builder()
       .agentTypeID(AgentTypes.ECO_MANAGER.getId())
       .usingTypesForFacts(Stream.of(BASE_TO_MOVE, LOCATION)
@@ -256,16 +267,6 @@ public class EcoManagerAgentType {
               .collect(Collectors.toSet()))
       .build();
 
-  public static final ConfigurationWithSharedDesire BUILD_EXTRACTOR_SHARED = createConfigurationWithSharedDesireToBuildFromTemplate(
-      MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, (memory, desireParameters) -> {
-        Optional<ABaseLocationWrapper> baseWithoutExtractor = getOurBaseWithoutExtractor(
-            memory);
-        if (baseWithoutExtractor.isPresent()) {
-          memory.updateFact(BASE_TO_MOVE, baseWithoutExtractor.get());
-        } else {
-          memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
-        }
-      }, (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
 
   /**
    * Finds base without extractor given the beliefs

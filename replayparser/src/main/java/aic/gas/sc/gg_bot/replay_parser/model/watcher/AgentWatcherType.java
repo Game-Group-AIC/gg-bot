@@ -1,7 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
 import java.util.HashSet;
@@ -14,8 +13,9 @@ import lombok.Getter;
  * AgentWatcher type
  */
 @Getter
-public class AgentWatcherType extends AgentTypeID {
+public class AgentWatcherType {
 
+  private final AgentTypes agentType;
   private final Set<FactKey<?>> factKeys;
   private final Set<FactKey<?>> factSetsKeys;
   private final List<PlanWatcherInitializationStrategy> planWatchers;
@@ -24,11 +24,24 @@ public class AgentWatcherType extends AgentTypeID {
   protected AgentWatcherType(AgentTypes agentType, Set<FactKey<?>> factKeys,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers, Reasoning reasoning) {
-    super(agentType.getId().getName(), agentType.getId().getID());
+    this.agentType = agentType;
     this.factKeys = factKeys;
     this.factSetsKeys = factSetsKeys;
     this.planWatchers = planWatchers;
     this.reasoning = Optional.ofNullable(reasoning);
+  }
+
+  public Integer getID() {
+    return agentType.ordinal();
+  }
+
+  public String getName() {
+    return agentType.name();
+  }
+
+  @Override
+  public String toString() {
+    return agentType.name();
   }
 
   /**

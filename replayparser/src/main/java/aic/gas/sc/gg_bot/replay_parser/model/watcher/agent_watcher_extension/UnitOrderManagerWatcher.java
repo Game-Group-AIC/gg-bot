@@ -6,7 +6,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.PlanWatcherInitializationStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
@@ -69,7 +68,7 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
     private Set<Integer> committedAgents = new HashSet<>();
 
     UnitPlanWatcher(FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
-        DesireKeyID desireKey,
+        DesireKeys desireKey,
         DecideUnitTypeSatisfactionStrategy decideUnitTypeSatisfactionStrategy) {
       super(featureContainerInitializationStrategy, desireKey);
       this.decideUnitTypeSatisfactionStrategy = decideUnitTypeSatisfactionStrategy;

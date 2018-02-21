@@ -3,8 +3,6 @@ package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.*;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -259,52 +257,53 @@ public class FeatureContainerHeaders {
   //TODO (un)burrow lurker
   //TODO mutate lurkers
   //TODO research
-  private static final Map<AgentTypeID, Map<DesireKeyID, FeatureContainerHeader>> ASSIGNMENT = new HashMap<>();
+  private static final Map<AgentTypes, Map<DesireKeys, FeatureContainerHeader>> ASSIGNMENT = new HashMap<>();
 
   static {
     //ECO manager
-    Map<DesireKeyID, FeatureContainerHeader> ecomDesires = new HashMap<>();
+    Map<DesireKeys, FeatureContainerHeader> ecomDesires = new HashMap<>();
     ecomDesires.put(DesireKeys.BUILD_EXTRACTOR, FeatureContainerHeaders.BUILD_EXTRACTOR);
     ecomDesires.put(DesireKeys.INCREASE_CAPACITY, FeatureContainerHeaders.INCREASE_CAPACITY);
     ecomDesires.put(DesireKeys.BUILD_WORKER, FeatureContainerHeaders.BUILD_WORKER);
     ecomDesires.put(DesireKeys.EXPAND, FeatureContainerHeaders.EXPAND);
-    ASSIGNMENT.put(AgentTypes.ECO_MANAGER.getId(), ecomDesires);
+    ASSIGNMENT.put(AgentTypes.ECO_MANAGER, ecomDesires);
 
     //Build order manager
-    Map<DesireKeyID, FeatureContainerHeader> bmoDesires = new HashMap<>();
+    Map<DesireKeys, FeatureContainerHeader> bmoDesires = new HashMap<>();
     bmoDesires.put(DesireKeys.ENABLE_GROUND_MELEE, FeatureContainerHeaders.ENABLE_GROUND_MELEE);
     bmoDesires.put(DesireKeys.UPGRADE_TO_LAIR, FeatureContainerHeaders.UPGRADE_TO_LAIR);
     bmoDesires.put(DesireKeys.ENABLE_AIR, FeatureContainerHeaders.ENABLE_AIR);
     bmoDesires.put(DesireKeys.ENABLE_GROUND_RANGED, FeatureContainerHeaders.ENABLE_GROUND_RANGED);
-    bmoDesires.put(DesireKeys.ENABLE_STATIC_ANTI_AIR, FeatureContainerHeaders.ENABLE_STATIC_ANTI_AIR);
-    ASSIGNMENT.put(AgentTypes.BUILDING_ORDER_MANAGER.getId(), bmoDesires);
+    bmoDesires
+        .put(DesireKeys.ENABLE_STATIC_ANTI_AIR, FeatureContainerHeaders.ENABLE_STATIC_ANTI_AIR);
+    ASSIGNMENT.put(AgentTypes.BUILDING_ORDER_MANAGER, bmoDesires);
 
     //Unit order manager
-    Map<DesireKeyID, FeatureContainerHeader> umoDesires = new HashMap<>();
+    Map<DesireKeys, FeatureContainerHeader> umoDesires = new HashMap<>();
     umoDesires.put(DesireKeys.BOOST_AIR, FeatureContainerHeaders.BOOST_AIR);
     umoDesires.put(DesireKeys.BOOST_GROUND_MELEE, FeatureContainerHeaders.BOOST_GROUND_MELEE);
     umoDesires.put(DesireKeys.BOOST_GROUND_RANGED, FeatureContainerHeaders.BOOST_GROUND_RANGED);
-    ASSIGNMENT.put(AgentTypes.UNIT_ORDER_MANAGER.getId(), umoDesires);
+    ASSIGNMENT.put(AgentTypes.UNIT_ORDER_MANAGER, umoDesires);
 
     //BASE
-    Map<DesireKeyID, FeatureContainerHeader> baseDesires = new HashMap<>();
+    Map<DesireKeys, FeatureContainerHeader> baseDesires = new HashMap<>();
     baseDesires.put(DesireKeys.HOLD_AIR, FeatureContainerHeaders.HOLD_AIR);
     baseDesires.put(DesireKeys.HOLD_GROUND, FeatureContainerHeaders.HOLD_GROUND);
     baseDesires.put(DesireKeys.BUILD_CREEP_COLONY, FeatureContainerHeaders.DEFENSE);
     baseDesires.put(DesireKeys.BUILD_SUNKEN_COLONY, FeatureContainerHeaders.DEFENSE);
     baseDesires.put(DesireKeys.BUILD_SPORE_COLONY, FeatureContainerHeaders.DEFENSE);
-    ASSIGNMENT.put(AgentTypes.BASE_LOCATION.getId(), baseDesires);
+    ASSIGNMENT.put(AgentTypes.BASE_LOCATION, baseDesires);
   }
 
-  public static Optional<FeatureContainerHeader> getHeader(AgentTypeID agentType,
-      DesireKeyID desireKey) {
+  public static Optional<FeatureContainerHeader> getHeader(AgentTypes agentType,
+      DesireKeys desireKey) {
     if (!ASSIGNMENT.containsKey(agentType)) {
-      log.info("Agent: " + agentType.getName() + " is not contained.");
+      log.info("Agent: " + agentType.name() + " is not contained.");
       return Optional.empty();
     }
-    Map<DesireKeyID, FeatureContainerHeader> map = ASSIGNMENT.get(agentType);
+    Map<DesireKeys, FeatureContainerHeader> map = ASSIGNMENT.get(agentType);
     if (!map.containsKey(desireKey)) {
-      log.info("Desire: " + desireKey.getName() + " is not contained.");
+      log.info("Desire: " + desireKey.name() + " is not contained.");
       return Optional.empty();
     }
     return Optional.ofNullable(map.get(desireKey));

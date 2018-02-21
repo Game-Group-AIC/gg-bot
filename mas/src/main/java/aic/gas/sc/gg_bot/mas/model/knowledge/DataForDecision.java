@@ -5,12 +5,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverter;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSets;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.*;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import java.util.HashMap;
 import java.util.List;
@@ -65,9 +60,12 @@ public class DataForDecision {
     this.desireParameters = desireParameters;
 
     initializer.getDesiresToConsider().forEach(key -> {
-      madeCommitmentToTypes.put(key, new FactConverter.BeliefFromKeyPresence(this, key));
-      didNotMakeCommitmentToTypes.put(key, new FactConverter.BeliefFromKeyPresence(this, key));
-      typesAboutToMakeDecision.put(key, new FactConverter.BeliefFromKeyPresence(this, key));
+      madeCommitmentToTypes
+          .put(key.getDesireKeyId(), new FactConverter.BeliefFromKeyPresence(this, key));
+      didNotMakeCommitmentToTypes
+          .put(key.getDesireKeyId(), new FactConverter.BeliefFromKeyPresence(this, key));
+      typesAboutToMakeDecision
+          .put(key.getDesireKeyId(), new FactConverter.BeliefFromKeyPresence(this, key));
     });
 
     //static values

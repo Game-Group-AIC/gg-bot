@@ -929,8 +929,10 @@ public class BaseLocationAgentType {
    * It is unlocked only when building is built
    */
   private static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-      FactWithOptionalValueSet<T> completedCount, FactKey<Integer> factCountToTrackPreviousCount,
-      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
+      FactWithOptionalValueSet<T> completedCount,
+      FactKey<Integer> factCountToTrackPreviousCount,
+      DesireKey desireKey,
+      AUnitTypeWrapper unitTypeWrapper,
       FeatureContainerHeader featureContainerHeader,
       Stream<DesireKey> desireKeysWithSharedIntentionStream,
       Stream<DesireKey> desireKeysWithAbstractIntentionStream,
@@ -967,8 +969,14 @@ public class BaseLocationAgentType {
                         && forCommitment
                         .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
                         && Decider
-                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
-                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
+                        .getDecision(
+                            AgentTypes.BASE_LOCATION,
+                            DesireKeys.values[desireKey.getId()],
+                            dataForDecision,
+                            featureContainerHeader,
+                            memory.getCurrentClock(),
+                            memory.getAgentId()
+                        ))
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .globalBeliefTypesByAgentType(
@@ -985,9 +993,13 @@ public class BaseLocationAgentType {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    (!Decider
-                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
-                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
+                    (!Decider.getDecision(
+                        AgentTypes.BASE_LOCATION,
+                        DesireKeys.values[desireKey.getId()],
+                        dataForDecision,
+                        featureContainerHeader,
+                        memory.getCurrentClock(),
+                        memory.getAgentId())
                         && !BotFacade.RESOURCE_MANAGER
                         .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper)

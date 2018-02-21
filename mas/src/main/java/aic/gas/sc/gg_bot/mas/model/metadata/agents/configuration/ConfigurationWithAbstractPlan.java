@@ -24,8 +24,10 @@ public class ConfigurationWithAbstractPlan extends CommonConfiguration {
       CommitmentDeciderInitializer decisionInIntention,
       Set<DesireKey> typesOfDesiresToConsiderWhenCommitting,
       Set<DesireKey> typesOfDesiresToConsiderWhenRemovingCommitment,
-      Set<DesireKey> desiresForOthers, Set<DesireKey> desiresWithAbstractIntention,
-      Set<DesireKey> desiresWithIntentionToAct, Set<DesireKey> desiresWithIntentionToReason,
+      Set<DesireKey> desiresForOthers,
+      Set<DesireKey> desiresWithAbstractIntention,
+      Set<DesireKey> desiresWithIntentionToAct,
+      Set<DesireKey> desiresWithIntentionToReason,
       ReactionOnChangeStrategy reactionOnChangeStrategy,
       ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
     super(decisionInDesire, decisionInIntention, typesOfDesiresToConsiderWhenCommitting,

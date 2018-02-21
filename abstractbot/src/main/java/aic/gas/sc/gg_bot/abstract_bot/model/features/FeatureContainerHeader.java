@@ -1,20 +1,10 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.features;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSets;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.*;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,7 +30,7 @@ public class FeatureContainerHeader {
   private final int sizeOfFeatureVector;
   private final boolean trackCommittedOtherAgents;
   private final List<StrategyToFillValueInVectorUsingBeliefs<?>> strategiesToFillVectorOrdered = new ArrayList<>();
-  private final List<DesireKeyID> desiresToFillVectorOrdered;
+  private final List<DesireKeys> desiresToFillVectorOrdered;
   private final int forHowLongToCacheDecision;
 
   @Builder
@@ -50,7 +40,8 @@ public class FeatureContainerHeader {
       Set<FactWithOptionalValueSets<?>> convertersForFactSetsForGlobalBeliefs,
       Set<FactWithSetOfOptionalValuesForAgentType<?>> convertersForFactsForGlobalBeliefsByAgentType,
       Set<FactWithOptionalValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType,
-      Set<DesireKeyID> interestedInCommitments, boolean trackCommittedOtherAgents,
+      Set<DesireKeys> interestedInCommitments,
+      boolean trackCommittedOtherAgents,
       int forHowLongToCacheDecision) {
     this.convertersForFacts = convertersForFacts;
     this.convertersForFactSets = convertersForFactSets;
@@ -100,14 +91,14 @@ public class FeatureContainerHeader {
     //add commitments
     indexesSet.clear();
     addIndexes(
-        interestedInCommitments.stream().map(DesireKeyID::getID).collect(Collectors.toList()),
+        interestedInCommitments.stream().map(DesireKeys::ordinal).collect(Collectors.toList()),
         indexesSet);
     indexesForCommitment = indexesSet.stream().sorted().collect(Collectors.toList());
 
     //sort strategies to create vector
     Collections.sort(strategiesToFillVectorOrdered);
     desiresToFillVectorOrdered = interestedInCommitments.stream()
-        .sorted(Comparator.comparingInt(DesireKeyID::getID))
+        .sorted(Comparator.comparingInt(DesireKeys::ordinal))
         .collect(Collectors.toList());
 
     //one additional dimension to track commitment by other agents
@@ -132,7 +123,7 @@ public class FeatureContainerHeader {
     //do commitments
     for (int i = 0; i < desiresToFillVectorOrdered.size(); i++) {
       vector[i + strategiesToFillVectorOrdered.size()] = dataForDecision
-          .getFeatureValueMadeCommitmentToType(desiresToFillVectorOrdered.get(i));
+          .getFeatureValueMadeCommitmentToType(desiresToFillVectorOrdered.get(i).getId());
     }
 
     //do count of committed agents
@@ -188,7 +179,7 @@ public class FeatureContainerHeader {
     private Set<FactWithOptionalValueSets<?>> convertersForFactSetsForGlobalBeliefs = new HashSet<>();
     private Set<FactWithSetOfOptionalValuesForAgentType<?>> convertersForFactsForGlobalBeliefsByAgentType = new HashSet<>();
     private Set<FactWithOptionalValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType = new HashSet<>();
-    private Set<DesireKeyID> interestedInCommitments = new HashSet<>();
+    private Set<DesireKeys> interestedInCommitments = new HashSet<>();
     private boolean trackCommittedOtherAgents = false;
     private int forHowLongToCacheDecision = 10;
   }
