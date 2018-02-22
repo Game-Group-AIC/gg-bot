@@ -7,7 +7,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.PlanWatcherInitializationStrategy;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.IPlanWatcherInitializationStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.FeatureContainer;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
@@ -27,7 +27,7 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
   public UnitOrderManagerWatcher() {
     super(UnitOrderManagerWatcherType.builder()
         .agentType(AgentTypes.UNIT_ORDER_MANAGER)
-        .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
+        .planWatchers(Arrays.asList(new IPlanWatcherInitializationStrategy[]{
 
             //BOOST_AIR
             () -> new UnitPlanWatcher(
@@ -57,19 +57,19 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
     );
   }
 
-  private interface DecideUnitTypeSatisfactionStrategy {
+  private interface IDecideUnitTypeSatisfactionStrategy {
 
     boolean satisfiesType(AUnitTypeWrapper unitTypeWrapper);
   }
 
   private static class UnitPlanWatcher extends PlanWatcher {
 
-    private final DecideUnitTypeSatisfactionStrategy decideUnitTypeSatisfactionStrategy;
+    private final IDecideUnitTypeSatisfactionStrategy decideUnitTypeSatisfactionStrategy;
     private Set<Integer> committedAgents = new HashSet<>();
 
-    UnitPlanWatcher(FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
+    UnitPlanWatcher(IFeatureContainerInitializationStrategy featureContainerInitializationStrategy,
         DesireKeys desireKey,
-        DecideUnitTypeSatisfactionStrategy decideUnitTypeSatisfactionStrategy) {
+        IDecideUnitTypeSatisfactionStrategy decideUnitTypeSatisfactionStrategy) {
       super(featureContainerInitializationStrategy, desireKey);
       this.decideUnitTypeSatisfactionStrategy = decideUnitTypeSatisfactionStrategy;
     }

@@ -13,7 +13,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.PlanWatcherInitializationStrategy;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.IPlanWatcherInitializationStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.FeatureContainer;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
@@ -34,7 +34,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
   public EcoManagerWatcher() {
     super(EcoManagerWatcherType.builder()
         .agentType(AgentTypes.ECO_MANAGER)
-        .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
+        .planWatchers(Arrays.asList(new IPlanWatcherInitializationStrategy[]{
 
             //BUILD_EXTRACTOR
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(
@@ -72,7 +72,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
     private Set<Integer> committedAgents = new HashSet<>();
 
     public ExpansionPlanWatcher(
-        FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
+        IFeatureContainerInitializationStrategy featureContainerInitializationStrategy,
         DesireKeys desireKey) {
       super(featureContainerInitializationStrategy, desireKey);
     }

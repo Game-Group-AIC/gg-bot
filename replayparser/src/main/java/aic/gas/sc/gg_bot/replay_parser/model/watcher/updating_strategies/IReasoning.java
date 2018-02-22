@@ -6,7 +6,7 @@ import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 /**
  * Template for belief updating strategy
  */
-public interface Reasoning {
+public interface IReasoning {
 
   /**
    * Update beliefs

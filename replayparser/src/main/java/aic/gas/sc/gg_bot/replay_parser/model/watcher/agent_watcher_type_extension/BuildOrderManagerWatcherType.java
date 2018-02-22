@@ -16,7 +16,7 @@ public class BuildOrderManagerWatcherType extends AgentWatcherType {
   @Builder
   private BuildOrderManagerWatcherType(AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
-      List<PlanWatcherInitializationStrategy> planWatchers) {
+      List<IPlanWatcherInitializationStrategy> planWatchers) {
     super(agentType, factSetsKeys, planWatchers, null);
   }
 

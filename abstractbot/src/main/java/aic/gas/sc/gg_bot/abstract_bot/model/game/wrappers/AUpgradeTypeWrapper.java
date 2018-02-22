@@ -16,7 +16,7 @@ import lombok.Getter;
 /**
  * Wrapper for UpgradeType
  */
-public class AUpgradeTypeWrapper extends AbstractWrapper<UpgradeType> implements TypeToBuy {
+public class AUpgradeTypeWrapper extends AbstractWrapper<UpgradeType> implements ITypeToBuy {
 
   //types, only for zerg
   public static final AUpgradeTypeWrapper METABOLIC_BOOST_TYPE = WrapperTypeFactory

@@ -5,14 +5,7 @@ import bwapi.TechType;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwapi.WeaponType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -20,7 +13,7 @@ import lombok.Getter;
 /**
  * Wrapper for BWMirror UnitType It also make it possible to use it by different threads
  */
-public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeToBuy {
+public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements ITypeToBuy {
 
   //types, only for zerg
   public static final AUnitTypeWrapper ZERGLING_TYPE = WrapperTypeFactory

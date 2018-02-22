@@ -15,7 +15,7 @@ import lombok.Getter;
 /**
  * Wrapper for TechType
  */
-public class ATechTypeWrapper extends AbstractWrapper<TechType> implements TypeToBuy {
+public class ATechTypeWrapper extends AbstractWrapper<TechType> implements ITypeToBuy {
 
   //types, only for zerg
   public static final ATechTypeWrapper RESEARCH_BURROW_TYPE = WrapperTypeFactory

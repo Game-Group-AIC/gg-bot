@@ -6,7 +6,7 @@ import bwapi.UnitCommandType;
 /**
  * Extension of unit wrapper with fields related to commanding unit. This unit can also be commanded
  */
-public class AUnitWithCommands extends AUnitOfPlayer implements UnitActions {
+public class AUnitWithCommands extends AUnitOfPlayer implements IUnitActions {
 
   AUnitWithCommands(Unit unit, boolean isCreatingUnit, int frameCount) {
     super(unit, isCreatingUnit, frameCount);

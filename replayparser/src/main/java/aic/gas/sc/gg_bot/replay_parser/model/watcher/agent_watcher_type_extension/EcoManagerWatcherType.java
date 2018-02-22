@@ -17,7 +17,7 @@ public class EcoManagerWatcherType extends AgentWatcherType {
   private EcoManagerWatcherType(
       AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
-      List<PlanWatcherInitializationStrategy> planWatchers) {
+      List<IPlanWatcherInitializationStrategy> planWatchers) {
     super(agentType, factSetsKeys, planWatchers, null);
   }
 

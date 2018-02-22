@@ -7,7 +7,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrappe
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.UnitWatcherType;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.IReasoning;
 import aic.gas.sc.gg_bot.replay_parser.service.IAgentUnitHandler;
 import bwapi.Game;
 import bwapi.Order;
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AgentUnitFactory implements IAgentUnitHandler {
 
-  private static final Reasoning MORPHING_REASONING = (beliefs, mediatorService) -> {
+  private static final IReasoning MORPHING_REASONING = (beliefs, mediatorService) -> {
     AUnitOfPlayer me = beliefs.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
     if (me.getOrder().isPresent() && Stream
         .of(Order.ZergBuildingMorph, Order.IncompleteBuilding, Order.ZergUnitMorph)
@@ -41,7 +41,7 @@ public class AgentUnitFactory implements IAgentUnitHandler {
   private static final List<Order> ordersCheckForAttack = Arrays.asList(Order.AttackMove,
       Order.AttackTile, Order.AttackUnit, Order.HarassMove, Order.Move);
 
-  private static final Reasoning UNIT_TARGET_LOCATION = (beliefs, mediatorService) -> {
+  private static final IReasoning UNIT_TARGET_LOCATION = (beliefs, mediatorService) -> {
     AUnitOfPlayer me = beliefs.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
     Optional<Order> order = me.getOrder();
     if (order.isPresent() && ordersCheckForAttack.contains(order.get())) {

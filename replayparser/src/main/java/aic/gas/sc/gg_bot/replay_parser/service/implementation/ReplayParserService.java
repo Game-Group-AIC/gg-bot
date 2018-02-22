@@ -6,7 +6,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractPositionWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
-import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
+import aic.gas.sc.gg_bot.replay_parser.model.IAgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.*;
 import aic.gas.sc.gg_bot.replay_parser.service.IAgentUnitHandler;
@@ -170,7 +170,7 @@ public class ReplayParserService extends DefaultBWListener implements IReplayPar
 
   private class GameListener extends DefaultBWListener implements Runnable {
 
-    private final List<AgentMakingObservations> agentsWithObservations = new ArrayList<>();
+    private final List<IAgentMakingObservations> agentsWithObservations = new ArrayList<>();
     // keep track of units watchers
     private final Map<Integer, UnitWatcher> watchersOfUnits = new HashMap<>();
     private Mirror mirror = new Mirror();
@@ -348,7 +348,7 @@ public class ReplayParserService extends DefaultBWListener implements IReplayPar
 
         try {
           //make observations
-          agentsWithObservations.forEach(AgentMakingObservations::makeObservation);
+          agentsWithObservations.forEach(IAgentMakingObservations::makeObservation);
 
           //watch agents, update their additional beliefs and track theirs commitment
           watcherMediatorService.tellAgentsToObserveSystemAndHandlePlans();

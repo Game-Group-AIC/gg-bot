@@ -8,8 +8,8 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.AgentEnvironmentObservation;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.IAgentEnvironmentObservation;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.IReasoning;
 import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +26,7 @@ import lombok.Getter;
 public class UnitWatcherType extends AgentWatcherType {
 
   @Getter
-  private static final AgentEnvironmentObservation agentEnvironmentObservation = (aUnit, beliefs, frame) -> {
+  private static final IAgentEnvironmentObservation agentEnvironmentObservation = (aUnit, beliefs, frame) -> {
     AUnitWithCommands unitWithCommands = aUnit.makeObservationOfEnvironment(frame);
     beliefs.updateFactSetByFact(REPRESENTS_UNIT, unitWithCommands);
     return unitWithCommands;
@@ -36,7 +36,7 @@ public class UnitWatcherType extends AgentWatcherType {
   private UnitWatcherType(
       AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
-      List<PlanWatcherInitializationStrategy> planWatchers,
+      List<IPlanWatcherInitializationStrategy> planWatchers,
       ReasoningForAgentWithUnitRepresentation reasoning) {
     super(agentType, factSetsKeys, planWatchers, reasoning);
     this.getFactSetsKeys().addAll(Arrays.asList(ENEMY_BUILDING, ENEMY_AIR,
@@ -49,17 +49,17 @@ public class UnitWatcherType extends AgentWatcherType {
    */
   public static class UnitWatcherTypeBuilder extends AgentWatcherTypeBuilder {
     private Set<FactKey<?>> factSetsKeys = new HashSet<>();
-    private List<PlanWatcherInitializationStrategy> planWatchers = new ArrayList<>();
+    private List<IPlanWatcherInitializationStrategy> planWatchers = new ArrayList<>();
   }
 
   /**
    * Extension of reasoning to provide common beliefs updates
    */
-  public static class ReasoningForAgentWithUnitRepresentation implements Reasoning {
+  public static class ReasoningForAgentWithUnitRepresentation implements IReasoning {
 
-    private final Reasoning reasoning;
+    private final IReasoning reasoning;
 
-    public ReasoningForAgentWithUnitRepresentation(Reasoning reasoning) {
+    public ReasoningForAgentWithUnitRepresentation(IReasoning reasoning) {
       this.reasoning = reasoning;
     }
 

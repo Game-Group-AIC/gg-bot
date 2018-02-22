@@ -21,7 +21,7 @@ public class AbstractAgentWatcherUtils {
     private final AUnitTypeWrapper typeToWatchFor;
 
     public AbstractPlanWatcher(
-        FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
+        IFeatureContainerInitializationStrategy featureContainerInitializationStrategy,
         DesireKeys desireKey, AUnitTypeWrapper typeToWatchFor) {
       super(featureContainerInitializationStrategy, desireKey);
       this.typeToWatchFor = typeToWatchFor;

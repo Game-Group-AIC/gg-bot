@@ -1,17 +1,9 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.bot;
 
-import aic.gas.sc.gg_bot.abstract_bot.model.TypeWrapperStrategy;
+import aic.gas.sc.gg_bot.abstract_bot.model.ITypeWrapperStrategy;
 import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.UpgradeTypeStatus;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATilePosition;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 
 /**
@@ -305,10 +297,10 @@ public class FactKeys {
       return null;
     }
   };
-  public static final FactKey<TypeWrapperStrategy> MORPH_TO = new FactKey<TypeWrapperStrategy>(
+  public static final FactKey<ITypeWrapperStrategy> MORPH_TO = new FactKey<ITypeWrapperStrategy>(
       "MORPH_TO", false) {
     @Override
-    public TypeWrapperStrategy getInitValue() {
+    public ITypeWrapperStrategy getInitValue() {
       return null;
     }
   };

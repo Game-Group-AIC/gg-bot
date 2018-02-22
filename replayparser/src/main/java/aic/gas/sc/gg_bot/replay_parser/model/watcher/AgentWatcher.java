@@ -2,6 +2,7 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.IPlanWatcherInitializationStrategy;
 import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class AgentWatcher<T extends AgentWatcherType> {
     beliefs = new Beliefs(agentWatcherType);
     this.ID = idCounter++;
     this.plansToWatch = agentWatcherType.getPlanWatchers().stream()
-        .map(AgentWatcherType.PlanWatcherInitializationStrategy::returnPlanWatcher)
+        .map(IPlanWatcherInitializationStrategy::returnPlanWatcher)
         .collect(Collectors.toList());
   }
 

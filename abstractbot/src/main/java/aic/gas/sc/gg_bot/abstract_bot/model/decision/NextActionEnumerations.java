@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Enumeration of all possible commitments based on policy
  */
-public enum NextActionEnumerations implements Serializable, NextActionStrategy {
+public enum NextActionEnumerations implements Serializable, INextActionStrategy {
   YES {
     @Override
     public boolean commit() {

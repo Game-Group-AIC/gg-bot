@@ -3,7 +3,7 @@ package aic.gas.sc.gg_bot.bot.service.implementation;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATechTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.TypeToBuy;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ITypeToBuy;
 import aic.gas.sc.gg_bot.bot.service.IRequirementsChecker;
 import bwapi.Player;
 import java.util.HashSet;
@@ -19,7 +19,7 @@ public class RequirementsChecker implements IRequirementsChecker {
   private Set<ATechTypeWrapper> researchedTechs = new HashSet<>();
 
   @Override
-  public <T extends AbstractWrapper<?> & TypeToBuy> boolean areDependenciesMeet(T t) {
+  public <T extends AbstractWrapper<?> & ITypeToBuy> boolean areDependenciesMeet(T t) {
     return t.unitTypeDependencies()
         .allMatch(unitTypeWrapper -> builtUnitTypes.contains(unitTypeWrapper))
         && (!t.techTypeDependency().isPresent() || researchedTechs

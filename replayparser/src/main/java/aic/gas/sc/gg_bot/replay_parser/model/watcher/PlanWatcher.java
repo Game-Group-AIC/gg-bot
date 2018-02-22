@@ -25,7 +25,7 @@ public abstract class PlanWatcher {
   private boolean isCommitted = false;
 
   protected PlanWatcher(
-      FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
+      IFeatureContainerInitializationStrategy featureContainerInitializationStrategy,
       DesireKeys desireKey) {
     this.container = featureContainerInitializationStrategy.returnFeatureContainer();
     this.desireKey = desireKey;
@@ -96,7 +96,7 @@ public abstract class PlanWatcher {
   /**
    * Create instance of FeatureContainer
    */
-  public interface FeatureContainerInitializationStrategy {
+  public interface IFeatureContainerInitializationStrategy {
 
     FeatureContainer returnFeatureContainer();
   }

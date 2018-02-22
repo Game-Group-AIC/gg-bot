@@ -2,7 +2,7 @@ package aic.gas.sc.gg_bot.bot.service.implementation;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
-import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.TypeToBuy;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ITypeToBuy;
 import aic.gas.sc.gg_bot.bot.service.IRequirementsChecker;
 import aic.gas.sc.gg_bot.bot.service.IResourceManager;
 import bwapi.Player;
@@ -133,7 +133,7 @@ public class ResourceManager implements IResourceManager {
     }
   }
 
-  private <T extends AbstractWrapper<?> & TypeToBuy> boolean checkQueue(T t, int agentId,
+  private <T extends AbstractWrapper<?> & ITypeToBuy> boolean checkQueue(T t, int agentId,
       List<Tuple<?>> list) {
     synchronized (MONITOR) {
       try {
@@ -160,12 +160,12 @@ public class ResourceManager implements IResourceManager {
   }
 
   @Override
-  public <T extends AbstractWrapper<?> & TypeToBuy> boolean canSpendResourcesOn(T t, int agentId) {
+  public <T extends AbstractWrapper<?> & ITypeToBuy> boolean canSpendResourcesOn(T t, int agentId) {
     return checkQueue(t, agentId, resourcesAvailableFor);
   }
 
   @Override
-  public <T extends AbstractWrapper<?> & TypeToBuy> void makeReservation(T t, int agentId) {
+  public <T extends AbstractWrapper<?> & ITypeToBuy> void makeReservation(T t, int agentId) {
     synchronized (MONITOR) {
       try {
         while (updatingResources) {
@@ -185,7 +185,7 @@ public class ResourceManager implements IResourceManager {
   }
 
   @Override
-  public <T extends AbstractWrapper<?> & TypeToBuy> void removeReservation(T t, int agentId) {
+  public <T extends AbstractWrapper<?> & ITypeToBuy> void removeReservation(T t, int agentId) {
     synchronized (MONITOR) {
       try {
         while (updatingResources) {
@@ -231,7 +231,8 @@ public class ResourceManager implements IResourceManager {
   }
 
   @Override
-  public <T extends AbstractWrapper<?> & TypeToBuy> boolean hasMadeReservationOn(T t, int agentId) {
+  public <T extends AbstractWrapper<?> & ITypeToBuy> boolean hasMadeReservationOn(T t,
+      int agentId) {
     return checkQueue(t, agentId, reservationQueue);
   }
 
@@ -241,7 +242,7 @@ public class ResourceManager implements IResourceManager {
 
   @EqualsAndHashCode(of = {"reservationMadeBy", "reservationMadeOn"})
   @AllArgsConstructor
-  private static class Tuple<T extends AbstractWrapper<?> & TypeToBuy> {
+  private static class Tuple<T extends AbstractWrapper<?> & ITypeToBuy> {
 
     private final int reservationMadeBy;
     private final T reservationMadeOn;

@@ -309,22 +309,12 @@ public class PlayerAgentType {
       .desiresForOthers(Collections.singleton(WORKER_SCOUT))
       .build();
 
-  private interface GetUnitsStreamStrategy<V extends AUnit> {
-
-    Stream<V> getUnitsAsStream();
-  }
-
-  private interface UpdateStatusesStrategy {
-
-    void updateBy(Set<UnitTypeStatus> unitTypeStatuses, WorkingMemory memoryToUpdate);
-  }
-
   /**
    * Template to estimate force
    */
   private static <V extends AUnit> ConfigurationWithCommand.WithReasoningCommandDesiredBySelf createConfigurationTemplateForForceEstimator(
-      GetUnitsStreamStrategy<V> getUnitsStreamStrategy,
-      UpdateStatusesStrategy updateStatusesStrategy) {
+      IGetUnitsStreamStrategy<V> getUnitsStreamStrategy,
+      IUpdateStatusesStrategy updateStatusesStrategy) {
     return ConfigurationWithCommand.
         WithReasoningCommandDesiredBySelf.builder()
         .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
@@ -349,6 +339,16 @@ public class PlayerAgentType {
             .decisionStrategy((dataForDecision, memory) -> true)
             .build())
         .build();
+  }
+
+  private interface IGetUnitsStreamStrategy<V extends AUnit> {
+
+    Stream<V> getUnitsAsStream();
+  }
+
+  private interface IUpdateStatusesStrategy {
+
+    void updateBy(Set<UnitTypeStatus> unitTypeStatuses, WorkingMemory memoryToUpdate);
   }
 
 }

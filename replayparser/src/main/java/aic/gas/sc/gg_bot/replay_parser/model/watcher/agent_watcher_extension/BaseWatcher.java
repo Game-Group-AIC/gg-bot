@@ -18,10 +18,10 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.*;
-import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
+import aic.gas.sc.gg_bot.replay_parser.model.IAgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.PlanWatcherInitializationStrategy;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.IPlanWatcherInitializationStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.FeatureContainer;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.PlanWatcher;
@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
  * Implementation of watcher for base
  */
 @Slf4j
-public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentMakingObservations {
+public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements IAgentMakingObservations {
 
   private final ABaseLocationWrapper baseLocation;
   private final UpdateChecksStrategy updateChecksStrategy;
@@ -410,7 +410,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
             .baseEnvironmentObservation(
                 (aBaseLocation, beliefs) -> makeObservation(aBaseLocation, beliefs, game))
             .agentType(AgentTypes.BASE_LOCATION)
-            .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
+            .planWatchers(Arrays.asList(new IPlanWatcherInitializationStrategy[]{
 
                 //TODO handle relly points
 
@@ -575,7 +575,8 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
     private Set<Integer> committedAgents = new HashSet<>();
     private final AUnitTypeWrapper typeToWatchFor;
 
-    ColonyPlanWatcher(FeatureContainerInitializationStrategy featureContainerInitializationStrategy,
+    ColonyPlanWatcher(
+        IFeatureContainerInitializationStrategy featureContainerInitializationStrategy,
         DesireKeys desireKey, AUnitTypeWrapper typeToWatchFor) {
       super(featureContainerInitializationStrategy, desireKey);
       this.typeToWatchFor = typeToWatchFor;

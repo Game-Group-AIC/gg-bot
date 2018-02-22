@@ -8,7 +8,7 @@ import bwapi.Position;
  *
  * @author Rafal Poniatowski <ravaelles@gmail.com>
  */
-public interface UnitActions {
+public interface IUnitActions {
 
   /**
    * Get reference on unit implementing this interface - to command it to execute action

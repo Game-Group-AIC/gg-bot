@@ -9,9 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 class WrapperTypeRegister<T, V extends AbstractWrapper<T>> {
 
   private final Map<T, V> types = new ConcurrentHashMap<>();
-  private final StrategyToWrapType<T, V> strategyToWrapType;
+  private final IStrategyToWrapType<T, V> strategyToWrapType;
 
-  WrapperTypeRegister(StrategyToWrapType<T, V> strategyToWrapType) {
+  WrapperTypeRegister(IStrategyToWrapType<T, V> strategyToWrapType) {
     this.strategyToWrapType = strategyToWrapType;
   }
 

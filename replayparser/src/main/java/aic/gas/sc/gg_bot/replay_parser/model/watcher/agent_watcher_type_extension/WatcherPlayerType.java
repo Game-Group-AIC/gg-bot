@@ -3,8 +3,8 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extensi
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.PlayerEnvironmentObservation;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.IPlayerEnvironmentObservation;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.IReasoning;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,14 +17,14 @@ import lombok.Getter;
 @Getter
 public class WatcherPlayerType extends AgentWatcherType {
 
-  private final PlayerEnvironmentObservation playerEnvironmentObservation;
+  private final IPlayerEnvironmentObservation playerEnvironmentObservation;
 
   @Builder
   private WatcherPlayerType(
       AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
-      List<PlanWatcherInitializationStrategy> planWatchers, Reasoning reasoning,
-      PlayerEnvironmentObservation playerEnvironmentObservation) {
+      List<IPlanWatcherInitializationStrategy> planWatchers, IReasoning reasoning,
+      IPlayerEnvironmentObservation playerEnvironmentObservation) {
     super(agentType, factSetsKeys, planWatchers, reasoning);
     this.playerEnvironmentObservation = playerEnvironmentObservation;
   }

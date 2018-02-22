@@ -6,7 +6,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FeatureContainerHeaders;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.PlanWatcherInitializationStrategy;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcherType.IPlanWatcherInitializationStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.FeatureContainer;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.BuildOrderManagerWatcherType;
 import java.util.Arrays;
@@ -19,7 +19,7 @@ public class BuildOrderManagerWatcher extends AgentWatcher<BuildOrderManagerWatc
   public BuildOrderManagerWatcher() {
     super(BuildOrderManagerWatcherType.builder()
         .agentType(AgentTypes.BUILDING_ORDER_MANAGER)
-        .planWatchers(Arrays.asList(new PlanWatcherInitializationStrategy[]{
+        .planWatchers(Arrays.asList(new IPlanWatcherInitializationStrategy[]{
 
             //ENABLE_GROUND_MELEE
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(

@@ -2,7 +2,7 @@ package aic.gas.sc.gg_bot.replay_parser.model.watcher;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.Reasoning;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.updating_strategies.IReasoning;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -17,13 +17,13 @@ public class AgentWatcherType {
 
   private final AgentTypes agentType;
   private final Set<FactKey<?>> factSetsKeys;
-  private final List<PlanWatcherInitializationStrategy> planWatchers;
-  private final Optional<Reasoning> reasoning;
+  private final List<IPlanWatcherInitializationStrategy> planWatchers;
+  private final Optional<IReasoning> reasoning;
 
   protected AgentWatcherType(
       AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
-      List<PlanWatcherInitializationStrategy> planWatchers, Reasoning reasoning) {
+      List<IPlanWatcherInitializationStrategy> planWatchers, IReasoning reasoning) {
     this.agentType = agentType;
     this.factSetsKeys = factSetsKeys;
     this.planWatchers = planWatchers;
@@ -46,7 +46,7 @@ public class AgentWatcherType {
   /**
    * Create instance of PlanWatcher
    */
-  public interface PlanWatcherInitializationStrategy {
+  public interface IPlanWatcherInitializationStrategy {
 
     /**
      * Create plan

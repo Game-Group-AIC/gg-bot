@@ -905,7 +905,7 @@ public class BaseLocationAgentType {
       FeatureContainerHeader featureContainerHeader,
       Stream<DesireKey> desireKeysWithSharedIntentionStream,
       Stream<DesireKey> desireKeysWithAbstractIntentionStream,
-      SimpleDecisionStrategy forCommitment) {
+      ISimpleDecisionStrategy forCommitment) {
     return ConfigurationWithAbstractPlan.builder()
         .reactionOnChangeStrategy((memory, desireParameters) -> {
               BotFacade.RESOURCE_MANAGER
@@ -1043,7 +1043,7 @@ public class BaseLocationAgentType {
         .build();
   }
 
-  private interface SimpleDecisionStrategy {
+  private interface ISimpleDecisionStrategy {
 
     boolean isTrue(double value);
   }

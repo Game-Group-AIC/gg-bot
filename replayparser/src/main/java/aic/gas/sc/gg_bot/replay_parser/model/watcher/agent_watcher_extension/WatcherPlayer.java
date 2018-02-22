@@ -12,7 +12,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
-import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
+import aic.gas.sc.gg_bot.replay_parser.model.IAgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.Beliefs;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_type_extension.WatcherPlayerType;
@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * Implementation of watcher for player Created by Jan on 18-Apr-17.
  */
 public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
-    AgentMakingObservations {
+    IAgentMakingObservations {
 
   private APlayer player;
 

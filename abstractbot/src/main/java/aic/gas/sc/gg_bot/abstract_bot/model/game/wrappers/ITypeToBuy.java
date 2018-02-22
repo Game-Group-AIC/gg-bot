@@ -3,7 +3,7 @@ package aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface TypeToBuy {
+public interface ITypeToBuy {
 
   int mineralCost();
 
