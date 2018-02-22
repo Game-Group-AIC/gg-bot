@@ -225,10 +225,10 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
               //status
               boolean isOurBase = bl.returnFactSetValueForGivenKey(HAS_BASE)
                   .orElse(Stream.empty()).findAny().isPresent();
-              bl.updateFact(IS_OUR_BASE, isOurBase);
+              bl.updateFactSetByFact(IS_OUR_BASE, isOurBase);
               boolean isEnemyBase = !isOurBase && bl.returnFactSetValueForGivenKey(ENEMY_BUILDING)
                   .orElse(Stream.empty()).findAny().isPresent();
-              bl.updateFact(IS_ENEMY_BASE, isEnemyBase);
+              bl.updateFactSetByFact(IS_ENEMY_BASE, isEnemyBase);
 
               //update checks
               updateChecksStrategy.updateChecks(isOurBase, isEnemyBase);
@@ -236,12 +236,12 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
               if (isEnemyBase) {
 
                 //count anti-air and anti-ground
-                bl.updateFact(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE, enemies.stream()
+                bl.updateFactSetByFact(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE, enemies.stream()
                     .map(AUnit::getType)
                     .filter(AUnitTypeWrapper::canAttackAirUnits)
                     .mapToDouble(value -> value.getAirWeapon().getDamagePerSecondNormalized())
                     .sum());
-                bl.updateFact(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE, enemies.stream()
+                bl.updateFactSetByFact(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE, enemies.stream()
                     .map(AUnit::getType)
                     .filter(AUnitTypeWrapper::canAttackGroundUnits)
                     .mapToDouble(value -> value.getGroundWeapon().getDamagePerSecondNormalized())
@@ -249,12 +249,12 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
               } else {
 
                 //we do not care whether base is unprotected against unit type if it does not belong to enemy
-                bl.eraseFactValueForGivenKey(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE);
-                bl.eraseFactValueForGivenKey(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE);
+                bl.eraseFactSetForGivenKey(DPS_OF_ANTI_AIR_UNITS_ON_ENEMY_BASE);
+                bl.eraseFactSetForGivenKey(DPS_OF_ANTI_GROUND_UNITS_ON_ENEMY_BASE);
               }
 
               //distances
-              bl.updateFact(GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
+              bl.updateFactSetByFact(GROUND_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
                   .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                       .equals(AgentTypes.BASE_LOCATION.name()))
                   .filter(agentWatcher -> agentWatcher.getBeliefs()
@@ -268,7 +268,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                   .map(locationWrapper -> locationWrapper.getGroundDistanceToBase(base))
                   .min(Double::compareTo)
                   .orElse(MAX_DISTANCE));
-              bl.updateFact(AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
+              bl.updateFactSetByFact(AIR_DISTANCE_TO_ENEMY_CLOSEST_BASE, ms.getStreamOfWatchers()
                   .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                       .equals(AgentTypes.BASE_LOCATION.name()))
                   .filter(
@@ -283,7 +283,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                   .map(locationWrapper -> locationWrapper.getAirDistanceToBase(base))
                   .min(Double::compareTo)
                   .orElse(MAX_DISTANCE));
-              bl.updateFact(GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
+              bl.updateFactSetByFact(GROUND_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
                   .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                       .equals(AgentTypes.BASE_LOCATION.name()))
                   .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
@@ -297,7 +297,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                   .map(locationWrapper -> locationWrapper.getGroundDistanceToBase(base))
                   .min(Double::compareTo)
                   .orElse(MAX_DISTANCE));
-              bl.updateFact(AIR_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
+              bl.updateFactSetByFact(AIR_DISTANCE_TO_OUR_CLOSEST_BASE, ms.getStreamOfWatchers()
                   .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getName()
                       .equals(AgentTypes.BASE_LOCATION.name()))
                   .filter(agentWatcher -> agentWatcher.getBeliefs().returnFactValueForGivenKey(
@@ -331,7 +331,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                   .sum();
 
               //air
-              bl.updateFact(DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+              bl.updateFactSetByFact(DAMAGE_AIR_CAN_INFLICT_TO_GROUND_VS_SUFFER,
                   Utils.computeRatio(
                       bl.returnFactSetValueForGivenKey(OWN_AIR).orElse(Stream.empty())
                           .map(AUnit::getType)
@@ -339,7 +339,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                           .map(AUnitTypeWrapper::getGroundWeapon)
                           .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
                           .sum(), dpsToAirsByEnemy));
-              bl.updateFact(DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER,
+              bl.updateFactSetByFact(DAMAGE_AIR_CAN_INFLICT_TO_AIR_VS_SUFFER,
                   Utils.computeRatio(
                       bl.returnFactSetValueForGivenKey(OWN_AIR).orElse(Stream.empty())
                           .map(AUnit::getType)
@@ -349,7 +349,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                           .sum(), dpsToAirsByEnemy));
 
               //ground
-              bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+              bl.updateFactSetByFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
                   Utils.computeRatio(
                       bl.returnFactSetValueForGivenKey(OWN_GROUND).orElse(Stream.empty())
                           .map(AUnit::getType)
@@ -357,7 +357,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                           .map(AUnitTypeWrapper::getGroundWeapon)
                           .mapToDouble(AWeaponTypeWrapper::getDamagePerSecondNormalized)
                           .sum(), dpsToGroundsByEnemy));
-              bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER,
+              bl.updateFactSetByFact(DAMAGE_GROUND_CAN_INFLICT_TO_AIR_VS_SUFFER,
                   Utils.computeRatio(
                       bl.returnFactSetValueForGivenKey(OWN_GROUND).orElse(Stream.empty())
                           .map(AUnit::getType)
@@ -392,7 +392,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                   .collect(Collectors.toSet());
 
               //air
-              bl.updateFact(RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE,
+              bl.updateFactSetByFact(RATIO_GLOBAL_AIR_VS_ANTI_AIR_ON_BASE,
                   Utils.computeRatio(playersUnitsGlobal.stream()
                       .map(AUnit::getType)
                       .filter(AUnitTypeWrapper::isFlyer)
@@ -400,7 +400,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                       .sum(), supplyOfAntiAir));
 
               //ground
-              bl.updateFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
+              bl.updateFactSetByFact(DAMAGE_GROUND_CAN_INFLICT_TO_GROUND_VS_SUFFER,
                   Utils.computeRatio(playersUnitsGlobal.stream()
                       .map(AUnit::getType)
                       .filter(unitTypeWrapper -> !unitTypeWrapper.isFlyer())
@@ -427,7 +427,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                         .get();
                     long groundUnitsTargetingBase = mediatorService.getStreamOfWatchers()
                         .filter(agentWatcher -> agentWatcher.getBeliefs()
-                            .isFactKeyForValueInMemory(HOLD_LOCATION))
+                            .isFactKeyForSetInMemory(HOLD_LOCATION))
                         .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
                             .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
@@ -469,7 +469,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
                         .get();
                     long groundUnitsTargetingBase = mediatorService.getStreamOfWatchers()
                         .filter(agentWatcher -> agentWatcher.getBeliefs()
-                            .isFactKeyForValueInMemory(HOLD_LOCATION))
+                            .isFactKeyForSetInMemory(HOLD_LOCATION))
                         .filter(agentWatcher -> me.equals(agentWatcher.getBeliefs()
                             .returnFactValueForGivenKey(HOLD_LOCATION).orElse(null)))
                         .map(agentWatcher -> agentWatcher.getBeliefs()
@@ -516,10 +516,10 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
             .build()
     );
     this.baseLocation = baseLocation;
-    beliefs.updateFact(IS_MINERAL_ONLY, baseLocation.isMineralOnly());
-    beliefs.updateFact(IS_ISLAND, baseLocation.isIsland());
-    beliefs.updateFact(IS_START_LOCATION, baseLocation.isStartLocation());
-    beliefs.updateFact(IS_BASE_LOCATION, baseLocation);
+    beliefs.updateFactSetByFact(IS_MINERAL_ONLY, baseLocation.isMineralOnly());
+    beliefs.updateFactSetByFact(IS_ISLAND, baseLocation.isIsland());
+    beliefs.updateFactSetByFact(IS_START_LOCATION, baseLocation.isStartLocation());
+    beliefs.updateFactSetByFact(IS_BASE_LOCATION, baseLocation);
 
     this.updateChecksStrategy = updateChecksStrategy;
   }
@@ -595,7 +595,7 @@ public class BaseWatcher extends AgentWatcher<BaseWatcherType> implements AgentM
 
       Set<Integer> agentsMorphingToType = mediatorService.getStreamOfWatchers()
           .filter(
-              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForValueInMemory(IS_MORPHING_TO))
+              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForSetInMemory(IS_MORPHING_TO))
           .filter(agentWatcher -> typeToWatchFor.equals(agentWatcher.getBeliefs()
               .returnFactValueForGivenKey(IS_MORPHING_TO).orElse(null)))
           .filter(agentWatcher ->

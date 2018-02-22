@@ -10,13 +10,14 @@ import java.util.Map;
  */
 public class ReadOnlyMemory extends Memory<PlanningTreeOfAnotherAgent> {
 
-  ReadOnlyMemory(Map<FactKey, Fact> factParameterMap, Map<FactKey, FactSet> factSetParameterMap,
+  ReadOnlyMemory(
+      Map<FactKey, FactSet> factSetParameterMap,
       PlanningTreeOfAnotherAgent tree, AgentType agentType, int agentId,
       StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
       StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
       StrategyToGetAllMemories strategyToGetAllMemories,
       InternalClockObtainingStrategy internalClockObtainingStrategy) {
-    super(factParameterMap, factSetParameterMap, tree, agentType, agentId,
+    super(factSetParameterMap, tree, agentType, agentId,
         strategyToGetSetOfMemoriesByAgentType, strategyToGetMemoryOfAgent,
         strategyToGetAllMemories, internalClockObtainingStrategy);
   }

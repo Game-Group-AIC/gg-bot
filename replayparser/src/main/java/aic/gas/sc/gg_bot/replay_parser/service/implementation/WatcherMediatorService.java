@@ -2,10 +2,8 @@ package aic.gas.sc.gg_bot.replay_parser.service.implementation;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSets;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSets;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSetsForAgentType;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
 import aic.gas.sc.gg_bot.replay_parser.service.IStorageService;
@@ -91,17 +89,9 @@ public class WatcherMediatorService implements IWatcherMediatorService {
     watchers.forEach(agentWatcher -> agentWatcher.reason(this));
   }
 
-  @Override
-  public <V> double getFeatureValueOfFact(FactWithSetOfOptionalValues<V> convertingStrategy) {
-    Stream<Optional<V>> stream = watchers.stream()
-        .map(AgentWatcher::getBeliefs)
-        .filter(beliefs -> beliefs.isFactKeyForValueInMemory(convertingStrategy.getFactKey()))
-        .map(beliefs -> beliefs.returnFactValueForGivenKey(convertingStrategy.getFactKey()));
-    return convertingStrategy.getStrategyToObtainValue().returnRawValue(stream);
-  }
 
   @Override
-  public <V> double getFeatureValueOfFactSet(FactWithOptionalValueSets<V> convertingStrategy) {
+  public <V> double getFeatureValueOfFactSet(FactValueSets<V> convertingStrategy) {
     Stream<Optional<Stream<V>>> stream = watchers.stream()
         .map(AgentWatcher::getBeliefs)
         .filter(beliefs -> beliefs.isFactKeyForSetInMemory(convertingStrategy.getFactKey()))
@@ -109,20 +99,10 @@ public class WatcherMediatorService implements IWatcherMediatorService {
     return convertingStrategy.getStrategyToObtainValue().returnRawValue(stream);
   }
 
-  @Override
-  public <V> double getFeatureValueOfFact(
-      FactWithSetOfOptionalValuesForAgentType<V> convertingStrategy) {
-    Stream<Optional<V>> stream = watchers.stream()
-        .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getID() == convertingStrategy
-            .getAgentTypeID().getID())
-        .map(AgentWatcher::getBeliefs)
-        .map(beliefs -> beliefs.returnFactValueForGivenKey(convertingStrategy.getFactKey()));
-    return convertingStrategy.getStrategyToObtainValue().returnRawValue(stream);
-  }
 
   @Override
   public <V> double getFeatureValueOfFactSet(
-      FactWithOptionalValueSetsForAgentType<V> convertingStrategy) {
+      FactValueSetsForAgentType<V> convertingStrategy) {
     Stream<Optional<Stream<V>>> stream = watchers.stream()
         .filter(agentWatcher -> agentWatcher.getAgentWatcherType().getID() == convertingStrategy
             .getAgentType().getID())

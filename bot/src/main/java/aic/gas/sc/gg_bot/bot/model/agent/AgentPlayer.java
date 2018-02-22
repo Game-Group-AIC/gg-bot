@@ -20,11 +20,11 @@ public class AgentPlayer extends AgentObservingGame<AgentTypePlayer> {
     super(agentType, botFacade);
 
     //add itself to knowledge
-    beliefs.updateFact(IS_PLAYER, aPlayer);
+    beliefs.updateFactSetByFact(IS_PLAYER, aPlayer);
     if (!enemyStartingRace.equals(ARace.UNKNOWN)) {
-      beliefs.updateFact(ENEMY_RACE, enemyStartingRace);
+      beliefs.updateFactSetByFact(ENEMY_RACE, enemyStartingRace);
     } else {
-      beliefs.updateFact(ENEMY_RACE, ARace.getRandomRace());
+      beliefs.updateFactSetByFact(ENEMY_RACE, ARace.getRandomRace());
     }
   }
 }

@@ -11,11 +11,12 @@ import lombok.Getter;
  * Container for fact type and raw value obtaining strategy
  */
 @Getter
-public class FactWithOptionalValueSetsForAgentType<V> extends FactWithOptionalValueSets<V> {
+public class FactValueSetsForAgentType<V> extends FactValueSets<V> {
 
   private final AgentTypeID agentType;
 
-  public FactWithOptionalValueSetsForAgentType(FactConverterID<V> factConverterID,
+  public FactValueSetsForAgentType(
+      FactConverterID<V> factConverterID,
       AgentTypeID agentType,
       FeatureRawValueObtainingStrategy<Stream<Optional<Stream<V>>>> strategyToObtainValue) {
     super(factConverterID, strategyToObtainValue);
@@ -34,7 +35,7 @@ public class FactWithOptionalValueSetsForAgentType<V> extends FactWithOptionalVa
       return false;
     }
 
-    FactWithOptionalValueSetsForAgentType<?> that = (FactWithOptionalValueSetsForAgentType<?>) o;
+    FactValueSetsForAgentType<?> that = (FactValueSetsForAgentType<?>) o;
 
     return agentType.equals(that.agentType);
   }

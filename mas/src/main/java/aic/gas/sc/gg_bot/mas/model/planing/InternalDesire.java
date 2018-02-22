@@ -110,9 +110,6 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
     return memory.getReadOnlyMemories();
   }
 
-  public boolean isFactKeyForValueInMemory(FactKey<?> factKey) {
-    return memory.isFactKeyForValueInMemory(factKey);
-  }
 
   public boolean isFactKeyForSetInMemory(FactKey<?> factKey) {
     return memory.isFactKeyForSetInMemory(factKey);

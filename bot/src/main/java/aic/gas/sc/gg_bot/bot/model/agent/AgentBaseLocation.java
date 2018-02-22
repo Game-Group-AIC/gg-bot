@@ -28,11 +28,12 @@ public class AgentBaseLocation extends AgentObservingGame<AgentTypeBaseLocation>
     this.location = location;
 
     //add itself to knowledge
-    beliefs.updateFact(IS_BASE_LOCATION, location);
-    beliefs.updateFact(IS_MINERAL_ONLY, location.isMineralOnly());
-    beliefs.updateFact(IS_ISLAND, location.isIsland());
-    beliefs.updateFact(IS_START_LOCATION, location.isStartLocation());
-    beliefs.updateFact(BASE_TO_MOVE, beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION).get());
+    beliefs.updateFactSetByFact(IS_BASE_LOCATION, location);
+    beliefs.updateFactSetByFact(IS_MINERAL_ONLY, location.isMineralOnly());
+    beliefs.updateFactSetByFact(IS_ISLAND, location.isIsland());
+    beliefs.updateFactSetByFact(IS_START_LOCATION, location.isStartLocation());
+    beliefs.updateFactSetByFact(BASE_TO_MOVE,
+        beliefs.returnFactValueForGivenKey(IS_BASE_LOCATION).get());
   }
 
   public String getCommitmentsAsText() {

@@ -29,12 +29,12 @@ public class AgentUnitFactory implements IAgentUnitHandler {
         .of(Order.ZergBuildingMorph, Order.IncompleteBuilding, Order.ZergUnitMorph)
         .anyMatch(order -> order == me.getOrder().get())) {
       if (!me.getTrainingQueue().isEmpty()) {
-        beliefs.updateFact(IS_MORPHING_TO, me.getTrainingQueue().get(0));
+        beliefs.updateFactSetByFact(IS_MORPHING_TO, me.getTrainingQueue().get(0));
       } else {
-        beliefs.updateFact(IS_MORPHING_TO, me.getType());
+        beliefs.updateFactSetByFact(IS_MORPHING_TO, me.getType());
       }
     } else {
-      beliefs.eraseFactValueForGivenKey(IS_MORPHING_TO);
+      beliefs.eraseFactSetForGivenKey(IS_MORPHING_TO);
     }
   };
 
@@ -59,9 +59,9 @@ public class AgentUnitFactory implements IAgentUnitHandler {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .min(Comparator.comparingDouble(value -> value.distanceTo(targetPosition)));
-      beliefs.updateFact(HOLD_LOCATION, holdInBaseLocation.get());
+      beliefs.updateFactSetByFact(HOLD_LOCATION, holdInBaseLocation.get());
     } else {
-      beliefs.updateFact(HOLD_LOCATION, HOLD_LOCATION.getInitValue());
+      beliefs.updateFactSetByFact(HOLD_LOCATION, HOLD_LOCATION.getInitValue());
     }
   };
 
@@ -73,14 +73,15 @@ public class AgentUnitFactory implements IAgentUnitHandler {
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(
             (beliefs, mediatorService) -> {
               AUnitOfPlayer me = beliefs.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
-              beliefs.updateFact(IS_GATHERING_MINERALS,
+              beliefs.updateFactSetByFact(IS_GATHERING_MINERALS,
                   me.isCarryingMinerals() || me.isGatheringMinerals()
                       || (me.getOrder().isPresent() && (
                       me.getOrder().get().equals(Order.MiningMinerals)
                           || me.getOrder().get().equals(Order.MoveToMinerals) || me.getOrder().get()
                           .equals(Order.WaitForMinerals)
                           || me.getOrder().get().equals(Order.ReturnMinerals))));
-              beliefs.updateFact(IS_GATHERING_GAS, me.isCarryingGas() || me.isGatheringGas()
+              beliefs
+                  .updateFactSetByFact(IS_GATHERING_GAS, me.isCarryingGas() || me.isGatheringGas()
                   || (me.getOrder().isPresent() && (me.getOrder().get().equals(Order.HarvestGas)
                   || me.getOrder().get().equals(Order.MoveToGas) || me.getOrder().get()
                   .equals(Order.WaitForGas)

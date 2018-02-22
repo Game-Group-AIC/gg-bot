@@ -53,11 +53,11 @@ public class PlayerAgentType {
               @Override
               public boolean act(WorkingMemory memory) {
                 APlayer aPlayer = memory.returnFactValueForGivenKey(IS_PLAYER).get();
-                memory.updateFact(AVAILABLE_MINERALS, (double) aPlayer.getMinerals());
-                memory.updateFact(AVAILABLE_GAS, (double) aPlayer.getGas());
-                memory.updateFact(POPULATION_LIMIT, (double) aPlayer.getSupplyTotal());
-                memory.updateFact(POPULATION, (double) aPlayer.getSupplyUsed());
-                memory.updateFact(FREE_SUPPLY,
+                memory.updateFactSetByFact(AVAILABLE_MINERALS, (double) aPlayer.getMinerals());
+                memory.updateFactSetByFact(AVAILABLE_GAS, (double) aPlayer.getGas());
+                memory.updateFactSetByFact(POPULATION_LIMIT, (double) aPlayer.getSupplyTotal());
+                memory.updateFactSetByFact(POPULATION, (double) aPlayer.getSupplyUsed());
+                memory.updateFactSetByFact(FREE_SUPPLY,
                     (double) (aPlayer.getSupplyTotal() - aPlayer.getSupplyUsed()));
                 return true;
               }
@@ -96,7 +96,7 @@ public class PlayerAgentType {
             .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
               @Override
               public boolean act(WorkingMemory memory) {
-                memory.updateFact(FORCE_SUPPLY_RATIO, Utils
+                memory.updateFactSetByFact(FORCE_SUPPLY_RATIO, Utils
                     .computeOurVsEnemyForceRatio(
                         memory.returnFactSetValueForGivenKey(OWN_FORCE_STATUS),
                         memory.returnFactSetValueForGivenKey(ENEMY_FORCE_STATUS)));
@@ -173,7 +173,7 @@ public class PlayerAgentType {
             .commandCreationStrategy(intention -> new ReasoningCommand(intention) {
               @Override
               public boolean act(WorkingMemory memory) {
-                memory.updateFact(ENEMY_RACE, DecisionConfiguration.getRace());
+                memory.updateFactSetByFact(ENEMY_RACE, DecisionConfiguration.getRace());
                 return true;
               }
             })
@@ -255,7 +255,7 @@ public class PlayerAgentType {
                         .map(readOnlyMemory -> readOnlyMemory
                             .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
                         .collect(Collectors.toSet()));
-                memory.updateFact(DIFFERENCE_IN_BASES, Utils
+                memory.updateFactSetByFact(DIFFERENCE_IN_BASES, Utils
                     .computeDifferenceInBases(memory.returnFactSetValueForGivenKey(OUR_BASE),
                         memory.returnFactSetValueForGivenKey(ENEMY_BASE)));
 
@@ -265,19 +265,21 @@ public class PlayerAgentType {
                     .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
                         .orElse(false))
                     .collect(Collectors.toSet());
-                memory.updateFact(AVERAGE_COUNT_OF_WORKERS_PER_BASE, ourBases.stream()
+                memory.updateFactSetByFact(AVERAGE_COUNT_OF_WORKERS_PER_BASE, ourBases.stream()
                     .map(readOnlyMemory -> readOnlyMemory
                         .returnFactSetValueForGivenKey(WORKER_ON_BASE))
                     .map(str -> str.orElse(Stream.empty()))
                     .mapToDouble(Stream::count)
                     .average().orElse(0.0));
-                memory.updateFact(AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE, ourBases.stream()
+                memory.updateFactSetByFact(AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
+                    ourBases.stream()
                     .map(readOnlyMemory -> readOnlyMemory
                         .returnFactSetValueForGivenKey(WORKER_MINING_GAS))
                     .map(str -> str.orElse(Stream.empty()))
                     .mapToDouble(Stream::count)
                     .average().orElse(0.0));
-                memory.updateFact(COUNT_OF_BASES_WITHOUT_EXTRACTORS, (int) ourBases.stream()
+                memory
+                    .updateFactSetByFact(COUNT_OF_BASES_WITHOUT_EXTRACTORS, (int) ourBases.stream()
                     .filter(readOnlyMemory -> readOnlyMemory
                         .returnFactSetValueForGivenKey(HAS_EXTRACTOR)
                         .orElse(Stream.empty()).count() == 0)

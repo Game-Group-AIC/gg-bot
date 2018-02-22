@@ -21,10 +21,9 @@ import lombok.extern.slf4j.Slf4j;
  * form of heap, and provide access to this data
  */
 @Slf4j
-public abstract class Memory<V extends PlanningTreeInterface> implements FactContainerInterface,
-    PlanningTreeInterface {
+public abstract class Memory<V extends PlanningTreeInterface>
+    implements FactContainerInterface, PlanningTreeInterface {
 
-  final Map<FactKey<?>, Fact<?>> factParameterMap = new HashMap<>();
   final Map<FactKey<?>, FactSet<?>> factSetParameterMap = new HashMap<>();
   final V tree;
   @Getter
@@ -48,8 +47,6 @@ public abstract class Memory<V extends PlanningTreeInterface> implements FactCon
     this.strategyToGetMemoryOfAgent = strategyToGetMemoryOfAgent;
     this.strategyToGetAllMemories = strategyToGetAllMemories;
     this.internalClockObtainingStrategy = internalClockObtainingStrategy;
-    agentType.getUsingTypesForFacts()
-        .forEach(factKey -> this.factParameterMap.put(factKey, factKey.returnEmptyFact()));
     agentType.getUsingTypesForFactSets()
         .forEach(factKey -> this.factSetParameterMap.put(factKey, factKey.returnEmptyFactSet()));
   }
@@ -57,7 +54,7 @@ public abstract class Memory<V extends PlanningTreeInterface> implements FactCon
   /**
    * To make read only copy...
    */
-  Memory(Map<FactKey, Fact> factParameterMap, Map<FactKey, FactSet> factSetParameterMap, V tree,
+  Memory(Map<FactKey, FactSet> factSetParameterMap, V tree,
       AgentType agentType, int agentId,
       StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
       StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
@@ -70,7 +67,6 @@ public abstract class Memory<V extends PlanningTreeInterface> implements FactCon
     this.strategyToGetMemoryOfAgent = strategyToGetMemoryOfAgent;
     this.strategyToGetAllMemories = strategyToGetAllMemories;
     this.internalClockObtainingStrategy = internalClockObtainingStrategy;
-    factParameterMap.forEach((factKey, o) -> this.factParameterMap.put(factKey, o.copyFact()));
     factSetParameterMap
         .forEach((factKey, set) -> this.factSetParameterMap.put(factKey, set.copyFact()));
   }
@@ -78,10 +74,6 @@ public abstract class Memory<V extends PlanningTreeInterface> implements FactCon
   //TODO hack
   public int getCurrentClock() {
     return internalClockObtainingStrategy.internalClockCounter();
-  }
-
-  public boolean isFactKeyForValueInMemory(FactKey<?> factKey) {
-    return factParameterMap.containsKey(factKey);
   }
 
   public boolean isFactKeyForSetInMemory(FactKey<?> factKey) {
@@ -107,22 +99,9 @@ public abstract class Memory<V extends PlanningTreeInterface> implements FactCon
 
   @Override
   public <K> Optional<K> returnFactValueForGivenKey(FactKey<K> factKey) {
-    Fact<K> fact = (Fact<K>) factParameterMap.get(factKey);
-    if (fact != null) {
-      return Optional.ofNullable(fact.getContent());
-    }
-    log.error(
-        factKey.getName() + " is not present in " + agentType.getName() + " type definition.");
-    return Optional.empty();
-  }
-
-  /**
-   * Returns copy of fact
-   */
-  public <K> Optional<Fact<K>> returnFactCopyForGivenKey(FactKey<K> factKey) {
-    Fact<K> fact = (Fact<K>) factParameterMap.get(factKey);
-    if (fact != null) {
-      return Optional.ofNullable(fact.copyFact());
+    FactSet<K> factSet = (FactSet<K>) factSetParameterMap.get(factKey);
+    if (factSet != null) {
+      return factSet.getContent().stream().findFirst();
     }
     log.error(
         factKey.getName() + " is not present in " + agentType.getName() + " type definition.");

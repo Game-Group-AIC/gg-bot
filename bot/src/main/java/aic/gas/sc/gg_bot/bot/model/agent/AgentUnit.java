@@ -22,8 +22,8 @@ public class AgentUnit extends AgentObservingGame<AgentTypeUnit> {
     this.unit = unit;
 
     //add itself to knowledge
-    beliefs.updateFact(IS_UNIT, unit);
-    beliefs.updateFact(REPRESENTS_UNIT, unit);
+    beliefs.updateFactSetByFact(IS_UNIT, unit);
+    beliefs.updateFactSetByFact(REPRESENTS_UNIT, unit);
   }
 
   public AUnit getUnit() {

@@ -30,9 +30,7 @@ public class WorkingMemory extends Memory<HeapOfTrees> {
    */
   public ReadOnlyMemory cloneMemory() {
     forget();
-    return new ReadOnlyMemory(factParameterMap.entrySet().stream()
-        .filter(factKeyFactEntry -> !factKeyFactEntry.getKey().isPrivate())
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
+    return new ReadOnlyMemory(
         factSetParameterMap.entrySet().stream()
             .filter(factKeyFactEntry -> !factKeyFactEntry.getKey().isPrivate())
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
@@ -44,7 +42,6 @@ public class WorkingMemory extends Memory<HeapOfTrees> {
    * Method erases no longer relevant information
    */
   private void forget() {
-    factParameterMap.values().forEach(Fact::forget);
     factSetParameterMap.values().forEach(FactSet::forget);
   }
 
@@ -52,26 +49,14 @@ public class WorkingMemory extends Memory<HeapOfTrees> {
    * Update fact value
    */
   public <V> void updateFact(FactKey<V> factKey, V value) {
-    Fact<V> fact = (Fact<V>) factParameterMap.get(factKey);
-    if (fact != null) {
-      fact.addFact(value);
-    } else {
-      log.error(
-          factKey.getName() + " is not present in " + agentType.getName() + " type definition.");
-    }
+    updateFactSetByFact(factKey, value);
   }
 
   /**
    * Erase fact value under given key
    */
   public <V> void eraseFactValueForGivenKey(FactKey<V> factKey) {
-    Fact<V> fact = (Fact<V>) factParameterMap.get(factKey);
-    if (fact != null) {
-      fact.removeFact();
-    } else {
-      log.error(
-          factKey.getName() + " is not present in " + agentType.getName() + " type definition.");
-    }
+    eraseFactSetForGivenKey(factKey);
   }
 
   /**

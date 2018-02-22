@@ -28,7 +28,7 @@ public class UnitWatcherType extends AgentWatcherType {
   @Getter
   private static final AgentEnvironmentObservation agentEnvironmentObservation = (aUnit, beliefs, frame) -> {
     AUnitWithCommands unitWithCommands = aUnit.makeObservationOfEnvironment(frame);
-    beliefs.updateFact(REPRESENTS_UNIT, unitWithCommands);
+    beliefs.updateFactSetByFact(REPRESENTS_UNIT, unitWithCommands);
     return unitWithCommands;
   };
 
@@ -92,7 +92,8 @@ public class UnitWatcherType extends AgentWatcherType {
           .filter(own -> !own.getType().isBuilding() && own.getType().isFlyer())
           .collect(Collectors.toSet()));
 
-      beliefs.updateFact(LOCATION, unit.getNearestBaseLocation().orElse(LOCATION.getInitValue()));
+      beliefs.updateFactSetByFact(LOCATION,
+          unit.getNearestBaseLocation().orElse(LOCATION.getInitValue()));
     }
 
     @Override

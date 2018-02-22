@@ -4,12 +4,9 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValue;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSets;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSet;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSets;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSetsForAgentType;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Builder;
@@ -23,42 +20,28 @@ public class CommitmentDeciderInitializer {
 
   private final DecisionStrategy decisionStrategy;
   private final Set<DesireKey> desiresToConsider;
-  private final Set<FactWithOptionalValue<?>> staticBeliefsTypes;
-  private final Set<FactWithOptionalValueSet<?>> staticBeliefsSetTypes;
-  private final Set<FactWithOptionalValue<?>> parameterValueTypes;
-  private final Set<FactWithOptionalValueSet<?>> parameterValueSetTypes;
-  private final Set<FactWithOptionalValue<?>> beliefTypes;
-  private final Set<FactWithOptionalValueSet<?>> beliefSetTypes;
-  private final Set<FactWithSetOfOptionalValues<?>> globalBeliefTypes;
-  private final Set<FactWithOptionalValueSets<?>> globalBeliefSetTypes;
-  private final Set<FactWithSetOfOptionalValuesForAgentType<?>> globalBeliefTypesByAgentType;
-  private final Set<FactWithOptionalValueSetsForAgentType<?>> globalBeliefSetTypesByAgentType;
+  private final Set<FactValueSet<?>> staticBeliefsSetTypes;
+  private final Set<FactValueSet<?>> parameterValueSetTypes;
+  private final Set<FactValueSet<?>> beliefSetTypes;
+  private final Set<FactValueSets<?>> globalBeliefSetTypes;
+  private final Set<FactValueSetsForAgentType<?>> globalBeliefSetTypesByAgentType;
   private final boolean useFactsInMemory;
 
   @Builder
   private CommitmentDeciderInitializer(DecisionStrategy decisionStrategy,
       Set<DesireKey> desiresToConsider,
-      Set<FactWithOptionalValue<?>> staticBeliefsTypes,
-      Set<FactWithOptionalValueSet<?>> staticBeliefsSetTypes,
-      Set<FactWithOptionalValue<?>> parameterValueTypes,
-      Set<FactWithOptionalValueSet<?>> parameterValueSetTypes,
-      Set<FactWithOptionalValue<?>> beliefTypes, Set<FactWithOptionalValueSet<?>> beliefSetTypes,
-      Set<FactWithSetOfOptionalValues<?>> globalBeliefTypes,
-      Set<FactWithOptionalValueSets<?>> globalBeliefSetTypes,
-      Set<FactWithSetOfOptionalValuesForAgentType<?>> globalBeliefTypesByAgentType,
-      Set<FactWithOptionalValueSetsForAgentType<?>> globalBeliefSetTypesByAgentType,
+      Set<FactValueSet<?>> staticBeliefsSetTypes,
+      Set<FactValueSet<?>> parameterValueSetTypes,
+      Set<FactValueSet<?>> beliefSetTypes,
+      Set<FactValueSets<?>> globalBeliefSetTypes,
+      Set<FactValueSetsForAgentType<?>> globalBeliefSetTypesByAgentType,
       boolean useFactsInMemory) {
     this.decisionStrategy = decisionStrategy;
     this.desiresToConsider = desiresToConsider;
-    this.staticBeliefsTypes = staticBeliefsTypes;
     this.staticBeliefsSetTypes = staticBeliefsSetTypes;
-    this.parameterValueTypes = parameterValueTypes;
     this.parameterValueSetTypes = parameterValueSetTypes;
-    this.beliefTypes = beliefTypes;
     this.beliefSetTypes = beliefSetTypes;
-    this.globalBeliefTypes = globalBeliefTypes;
     this.globalBeliefSetTypes = globalBeliefSetTypes;
-    this.globalBeliefTypesByAgentType = globalBeliefTypesByAgentType;
     this.globalBeliefSetTypesByAgentType = globalBeliefSetTypesByAgentType;
     this.useFactsInMemory = useFactsInMemory;
   }
@@ -83,18 +66,12 @@ public class CommitmentDeciderInitializer {
   }
 
   public static class CommitmentDeciderInitializerBuilder {
-
     private Set<DesireKey> desiresToConsider = new HashSet<>();
-    private Set<FactWithOptionalValue<?>> staticBeliefsTypes = new HashSet<>();
-    private Set<FactWithOptionalValueSet<?>> staticBeliefsSetTypes = new HashSet<>();
-    private Set<FactWithOptionalValue<?>> parameterValueTypes = new HashSet<>();
-    private Set<FactWithOptionalValueSet<?>> parameterValueSetTypes = new HashSet<>();
-    private Set<FactWithOptionalValue<?>> beliefTypes = new HashSet<>();
-    private Set<FactWithOptionalValueSet<?>> beliefSetTypes = new HashSet<>();
-    private Set<FactWithSetOfOptionalValues<?>> globalBeliefTypes = new HashSet<>();
-    private Set<FactWithOptionalValueSets<?>> globalBeliefSetTypes = new HashSet<>();
-    private Set<FactWithSetOfOptionalValuesForAgentType<?>> globalBeliefTypesByAgentType = new HashSet<>();
-    private Set<FactWithOptionalValueSetsForAgentType<?>> globalBeliefSetTypesByAgentType = new HashSet<>();
+    private Set<FactValueSet<?>> staticBeliefsSetTypes = new HashSet<>();
+    private Set<FactValueSet<?>> parameterValueSetTypes = new HashSet<>();
+    private Set<FactValueSet<?>> beliefSetTypes = new HashSet<>();
+    private Set<FactValueSets<?>> globalBeliefSetTypes = new HashSet<>();
+    private Set<FactValueSetsForAgentType<?>> globalBeliefSetTypesByAgentType = new HashSet<>();
     private boolean useFactsInMemory = true;
   }
 }

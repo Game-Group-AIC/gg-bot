@@ -86,12 +86,6 @@ public abstract class Intention<T extends InternalDesire<?>> implements FactCont
     return originalDesire.returnFactSetValueForGivenKeyInParameters(factKey);
   }
 
-  /**
-   * Returns fact value for desire parameters of parenting intention
-   */
-  public <V> Optional<V> returnFactValueOfParentIntentionForGivenKey(FactKey<V> factKey) {
-    return originalDesire.returnFactValueOfParentIntentionForGivenKey(factKey);
-  }
 
   /**
    * Returns fact value set for desire parameters of parenting intention
@@ -117,9 +111,6 @@ public abstract class Intention<T extends InternalDesire<?>> implements FactCont
     return originalDesire.getAgentId();
   }
 
-  public boolean isFactKeyForValueInMemory(FactKey<?> factKey) {
-    return originalDesire.isFactKeyForValueInMemory(factKey);
-  }
 
   public boolean isFactKeyForSetInMemory(FactKey<?> factKey) {
     return originalDesire.isFactKeyForSetInMemory(factKey);

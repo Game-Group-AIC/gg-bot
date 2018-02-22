@@ -5,7 +5,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.*;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
-import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
+import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -60,18 +60,18 @@ public class DesiresKeys {
   //for unit order manager
   public static final DesireKey BOOST_GROUND_MELEE = DesireKey.builder()
       .desireKeyId(DesireKeys.BOOST_GROUND_MELEE.getId())
-      .staticFactValues(Collections
-          .singleton(new Fact<>(() -> AUnitTypeWrapper.ZERGLING_TYPE, FactKeys.MORPH_TO)))
+      .staticFactSets(Collections
+          .singleton(new FactSet<>(() -> AUnitTypeWrapper.ZERGLING_TYPE, FactKeys.MORPH_TO)))
       .build();
   public static final DesireKey BOOST_GROUND_RANGED = DesireKey.builder()
       .desireKeyId(DesireKeys.BOOST_GROUND_RANGED.getId())
-      .staticFactValues(Collections
-          .singleton(new Fact<>(() -> AUnitTypeWrapper.HYDRALISK_TYPE, FactKeys.MORPH_TO)))
+      .staticFactSets(Collections
+          .singleton(new FactSet<>(() -> AUnitTypeWrapper.HYDRALISK_TYPE, FactKeys.MORPH_TO)))
       .build();
   public static final DesireKey BOOST_AIR = DesireKey.builder()
       .desireKeyId(DesireKeys.BOOST_AIR.getId())
-      .staticFactValues(Collections
-          .singleton(new Fact<>(() -> AUnitTypeWrapper.MUTALISK_TYPE, FactKeys.MORPH_TO)))
+      .staticFactSets(Collections
+          .singleton(new FactSet<>(() -> AUnitTypeWrapper.MUTALISK_TYPE, FactKeys.MORPH_TO)))
       .build();
 
   //for build order manager
@@ -172,13 +172,13 @@ public class DesiresKeys {
       .build();
   public static final DesireKey MORPH_TO_DRONE = DesireKey.builder()
       .desireKeyId(DesireKeys.MORPH_TO_DRONE.getId())
-      .staticFactValues(Collections
-          .singleton(new Fact<>(() -> AUnitTypeWrapper.DRONE_TYPE, FactKeys.MORPH_TO)))
+      .staticFactSets(Collections
+          .singleton(new FactSet<>(() -> AUnitTypeWrapper.DRONE_TYPE, FactKeys.MORPH_TO)))
       .build();
   public static final DesireKey MORPH_TO_OVERLORD = DesireKey.builder()
       .desireKeyId(DesireKeys.MORPH_TO_OVERLORD.getId())
-      .staticFactValues(Collections
-          .singleton(new Fact<>(() -> AUnitTypeWrapper.OVERLORD_TYPE, FactKeys.MORPH_TO)))
+      .staticFactSets(Collections
+          .singleton(new FactSet<>(() -> AUnitTypeWrapper.OVERLORD_TYPE, FactKeys.MORPH_TO)))
       .build();
   public static final DesireKey MORPH_TO_POOL = DesireKey.builder()
       .desireKeyId(DesireKeys.MORPH_TO_POOL.getId())

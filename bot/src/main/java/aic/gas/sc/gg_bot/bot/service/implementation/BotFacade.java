@@ -296,29 +296,6 @@ public class BotFacade extends DefaultBWListener {
     //check types
     REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);
 
-//    //TODO
-//    //print orders of workers + buildings
-//    String cOrders = self.getUnits().stream()
-//        .filter(Unit::exists)
-//        .filter(unit -> unit.getType().isWorker() || unit.getType().isBuilding() || Stream.of(
-//            UnitType.Zerg_Larva, UnitType.Zerg_Egg)
-//            .anyMatch(unitType -> unit.getType() == unitType))
-//        .filter(unit -> unit.getOrder() != null)
-//        .filter(unit -> Stream
-//            .of(Order.WaitForMinerals, Order.MiningMinerals, Order.HarvestGas, Order.MoveToMinerals,
-//                Order.MoveToGas, Order.ReturnGas, Order.ReturnMinerals, Order.WaitForGas,
-//                Order.Nothing, Order.PlayerGuard, Order.PlayerGuard, Order.Move,
-//                Order.ResetCollision,
-//                Order.ZergBirth, Order.Guard)
-//            .noneMatch(order -> unit.getOrder() == order))
-//        .map(unit -> (unit.getType().isWorker() ? "W" : "B") + " " + unit.getDesireKeyId() + ": " + unit
-//            .getOrder().toString())
-//        .collect(Collectors.joining(","));
-//    if (!cOrders.equals(orders)) {
-//      orders = cOrders;
-//      log.info(game.getFrameCount() + ": " + orders);
-//    }
-
     //hold frame for a small amount of time to give MAS time to handle new data
     {
       if ((execution = System.currentTimeMillis() - time) < maxFrameExecutionTime) {

@@ -90,7 +90,7 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
 
       Set<Integer> agentsMorphingToType = mediatorService.getStreamOfWatchers()
           .filter(
-              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForValueInMemory(IS_MORPHING_TO))
+              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForSetInMemory(IS_MORPHING_TO))
           .filter(agentWatcher -> AUnitTypeWrapper.HATCHERY_TYPE.equals(agentWatcher.getBeliefs()
               .returnFactValueForGivenKey(IS_MORPHING_TO).orElse(null)))
           .filter(agentWatcher -> !bases.contains(

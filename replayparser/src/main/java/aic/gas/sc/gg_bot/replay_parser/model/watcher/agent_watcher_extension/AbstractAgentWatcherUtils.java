@@ -32,7 +32,7 @@ public class AbstractAgentWatcherUtils {
 
       Set<Integer> agentsMorphingToType = mediatorService.getStreamOfWatchers()
           .filter(
-              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForValueInMemory(IS_MORPHING_TO))
+              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForSetInMemory(IS_MORPHING_TO))
           .filter(agentWatcher -> typeToWatchFor.equals(agentWatcher.getBeliefs()
               .returnFactValueForGivenKey(IS_MORPHING_TO).orElse(null)))
           .map(AgentWatcher::getID)

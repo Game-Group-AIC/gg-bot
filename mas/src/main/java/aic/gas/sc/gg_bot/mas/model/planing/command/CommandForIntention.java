@@ -29,12 +29,6 @@ public abstract class CommandForIntention<T extends IntentionCommand<?, ? extend
     return intention.returnFactSetValueForGivenKey(factKey);
   }
 
-  /**
-   * Get content of fact for given key from desire
-   */
-  protected <V> Optional<V> returnFactValueForGivenKeyInDesireParameters(FactKey<V> factKey) {
-    return intention.returnFactValueForGivenKeyInDesireParameters(factKey);
-  }
 
   /**
    * Get set of content of fact for given key from desire

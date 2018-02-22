@@ -1,6 +1,5 @@
 package aic.gas.sc.gg_bot.mas.model.metadata;
 
-import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
 import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import lombok.Getter;
 
@@ -35,13 +34,6 @@ public abstract class FactKey<V> extends Key {
 
 
   public abstract V getInitValue();
-
-  /**
-   * Returns new instance of fact of this type with initialization value
-   */
-  public Fact<V> returnEmptyFact() {
-    return new Fact<>(getInitValue(), this);
-  }
 
   /**
    * Returns new instance of fact set of this type with initialization value

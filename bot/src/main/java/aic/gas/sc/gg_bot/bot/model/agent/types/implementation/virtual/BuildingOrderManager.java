@@ -22,7 +22,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSetsForAgentType;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
 import java.util.Arrays;
@@ -59,7 +59,7 @@ public class BuildingOrderManager {
         ConfigurationWithSharedDesire buildPoolShared = createConfigurationWithSharedDesireToBuildFromTemplate(
             DesiresKeys.MORPH_TO_POOL, AUnitTypeWrapper.SPAWNING_POOL_TYPE,
             new FindBaseForBuilding(),
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+            (memory, desireParameters) -> memory.eraseFactSetForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(DesiresKeys.ENABLE_GROUND_MELEE, DesiresKeys.ENABLE_GROUND_MELEE,
             buildPoolShared);
 
@@ -99,7 +99,7 @@ public class BuildingOrderManager {
         ConfigurationWithSharedDesire buildExtractor = createConfigurationWithSharedDesireToBuildFromTemplate(
             DesiresKeys.MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE,
             new FindBaseForBuilding(),
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+            (memory, desireParameters) -> memory.eraseFactSetForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(DesiresKeys.BUILD_EXTRACTOR, DesiresKeys.BUILD_EXTRACTOR,
             buildExtractor);
 
@@ -120,7 +120,7 @@ public class BuildingOrderManager {
         //share desire to upgrade hatchery into lair with system - there is enough resources
         ConfigurationWithSharedDesire upgradeToLair = createConfigurationWithSharedDesireToBuildFromTemplate(
             DesiresKeys.UPGRADE_TO_LAIR, AUnitTypeWrapper.LAIR_TYPE, new FindBaseForBuilding(),
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+            (memory, desireParameters) -> memory.eraseFactSetForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(DesiresKeys.UPGRADE_TO_LAIR, DesiresKeys.UPGRADE_TO_LAIR,
             upgradeToLair);
 
@@ -145,7 +145,7 @@ public class BuildingOrderManager {
         ConfigurationWithSharedDesire buildHydraliskDen = createConfigurationWithSharedDesireToBuildFromTemplate(
             DesiresKeys.MORPH_TO_HYDRALISK_DEN, AUnitTypeWrapper.HYDRALISK_DEN_TYPE,
             new FindBaseForBuilding(),
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+            (memory, desireParameters) -> memory.eraseFactSetForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(DesiresKeys.ENABLE_GROUND_RANGED, DesiresKeys.ENABLE_GROUND_RANGED,
             buildHydraliskDen);
 
@@ -168,7 +168,7 @@ public class BuildingOrderManager {
         //share desire to build spire with system - there is enough resources
         ConfigurationWithSharedDesire buildSpire = createConfigurationWithSharedDesireToBuildFromTemplate(
             DesiresKeys.MORPH_TO_SPIRE, AUnitTypeWrapper.SPIRE_TYPE, new FindBaseForBuilding(),
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+            (memory, desireParameters) -> memory.eraseFactSetForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(DesiresKeys.ENABLE_AIR, DesiresKeys.ENABLE_AIR, buildSpire);
 
         //tell system to build extractor if missing
@@ -192,7 +192,7 @@ public class BuildingOrderManager {
         ConfigurationWithSharedDesire buildEvolutionChamber = createConfigurationWithSharedDesireToBuildFromTemplate(
             DesiresKeys.MORPH_TO_EVOLUTION_CHAMBER, AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE,
             new FindBaseForBuilding(),
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+            (memory, desireParameters) -> memory.eraseFactSetForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(DesiresKeys.ENABLE_STATIC_ANTI_AIR,
             DesiresKeys.ENABLE_STATIC_ANTI_AIR,
             buildEvolutionChamber);
@@ -215,8 +215,10 @@ public class BuildingOrderManager {
    * It is unlocked only when building is built
    */
   private static <T> ConfigurationWithAbstractPlan createConfigurationWithAbstractPlanIfBuildingIsMissingFromTemplate(
-      FactWithSetOfOptionalValuesForAgentType<T> currentCount, DesireKey desireKey,
-      AUnitTypeWrapper unitTypeWrapper, Stream<DesireKey> desireKeysWithAbstractIntentionStream) {
+      FactValueSetsForAgentType<T> currentCount,
+      DesireKey desireKey,
+      AUnitTypeWrapper unitTypeWrapper,
+      Stream<DesireKey> desireKeysWithAbstractIntentionStream) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
@@ -225,8 +227,8 @@ public class BuildingOrderManager {
                         .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
                         && !dataForDecision.madeDecisionToAny()
                         && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0)
-            .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
+                        && dataForDecision.getFeatureValueGlobalBeliefSets(currentCount) == 0)
+            .globalBeliefSetTypesByAgentType(Collections.singleton(currentCount))
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -234,8 +236,8 @@ public class BuildingOrderManager {
                 (dataForDecision, memory) ->
                     BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //building exists
-                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
-            .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
+                        || dataForDecision.getFeatureValueGlobalBeliefSets(currentCount) > 0)
+            .globalBeliefSetTypesByAgentType(Collections.singleton(currentCount))
             .build())
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
@@ -265,11 +267,11 @@ public class BuildingOrderManager {
           .collect(Collectors.toList());
       if (!ourBases.isEmpty()) {
         //prefer base on start location
-        memory.updateFact(BASE_TO_MOVE, ourBases.stream()
+        memory.updateFactSetByFact(BASE_TO_MOVE, ourBases.stream()
             .filter(ABaseLocationWrapper::isStartLocation)
             .findAny().orElse(ourBases.get(0)));
       } else {
-        memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
+        memory.eraseFactSetForGivenKey(BASE_TO_MOVE);
       }
     };
 

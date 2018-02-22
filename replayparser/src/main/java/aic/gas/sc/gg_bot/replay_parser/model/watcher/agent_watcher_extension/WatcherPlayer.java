@@ -70,11 +70,12 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
 
           //read data from player
           APlayer aPlayer = bl.returnFactValueForGivenKey(IS_PLAYER).get();
-          bl.updateFact(AVAILABLE_MINERALS, (double) aPlayer.getMinerals());
-          bl.updateFact(AVAILABLE_GAS, (double) aPlayer.getGas());
-          bl.updateFact(POPULATION_LIMIT, (double) aPlayer.getSupplyTotal());
-          bl.updateFact(POPULATION, (double) aPlayer.getSupplyUsed());
-          bl.updateFact(FREE_SUPPLY, (double) (aPlayer.getSupplyTotal() - aPlayer.getSupplyUsed()));
+          bl.updateFactSetByFact(AVAILABLE_MINERALS, (double) aPlayer.getMinerals());
+          bl.updateFactSetByFact(AVAILABLE_GAS, (double) aPlayer.getGas());
+          bl.updateFactSetByFact(POPULATION_LIMIT, (double) aPlayer.getSupplyTotal());
+          bl.updateFactSetByFact(POPULATION, (double) aPlayer.getSupplyUsed());
+          bl.updateFactSetByFact(FREE_SUPPLY,
+              (double) (aPlayer.getSupplyTotal() - aPlayer.getSupplyUsed()));
 
           //estimate enemy force
           Set<UnitTypeStatus> enemyBuildingsTypes = UnitWrapperFactory
@@ -137,14 +138,14 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
           //enemy + our force
           bl.updateFactSetByFacts(OWN_FORCE_STATUS, ownUnitsTypes);
           bl.updateFactSetByFacts(ENEMY_FORCE_STATUS, enemyUnitsTypes);
-          bl.updateFact(FORCE_SUPPLY_RATIO, Utils
+          bl.updateFactSetByFact(FORCE_SUPPLY_RATIO, Utils
               .computeOurVsEnemyForceRatio(bl.returnFactSetValueForGivenKey(OWN_FORCE_STATUS),
                   bl.returnFactSetValueForGivenKey(ENEMY_FORCE_STATUS)));
 
           //enemy race
           Optional<Race> enemyRace = UnitWrapperFactory.getStreamOfAllAliveEnemyUnits()
               .map(enemy -> enemy.getType().getRace()).findAny();
-          enemyRace.ifPresent(race -> bl.updateFact(ENEMY_RACE, ARace.getRace(race)));
+          enemyRace.ifPresent(race -> bl.updateFactSetByFact(ENEMY_RACE, ARace.getRace(race)));
 
           //bases
           bl.updateFactSetByFacts(OUR_BASE, ms.getStreamOfWatchers()
@@ -164,7 +165,7 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
               .map(agentWatcher -> agentWatcher.getBeliefs()
                   .returnFactValueForGivenKey(IS_BASE_LOCATION).get())
               .collect(Collectors.toSet()));
-          bl.updateFact(DIFFERENCE_IN_BASES, Utils
+          bl.updateFactSetByFact(DIFFERENCE_IN_BASES, Utils
               .computeDifferenceInBases(bl.returnFactSetValueForGivenKey(OUR_BASE),
                   bl.returnFactSetValueForGivenKey(ENEMY_BASE)));
 
@@ -175,19 +176,19 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
               .map(AgentWatcher::getBeliefs)
               .filter(blf -> blf.returnFactValueForGivenKey(IS_OUR_BASE).orElse(false))
               .collect(Collectors.toSet());
-          bl.updateFact(AVERAGE_COUNT_OF_WORKERS_PER_BASE, ourBases.stream()
+          bl.updateFactSetByFact(AVERAGE_COUNT_OF_WORKERS_PER_BASE, ourBases.stream()
               .map(readOnlyMemory -> readOnlyMemory
                   .returnFactSetValueForGivenKey(WORKER_ON_BASE))
               .map(str -> str.orElse(Stream.empty()))
               .mapToDouble(Stream::count)
               .average().orElse(0.0));
-          bl.updateFact(AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE, ourBases.stream()
+          bl.updateFactSetByFact(AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE, ourBases.stream()
               .map(readOnlyMemory -> readOnlyMemory
                   .returnFactSetValueForGivenKey(WORKER_MINING_GAS))
               .map(str -> str.orElse(Stream.empty()))
               .mapToDouble(Stream::count)
               .average().orElse(0.0));
-          bl.updateFact(COUNT_OF_BASES_WITHOUT_EXTRACTORS, (int) ourBases.stream()
+          bl.updateFactSetByFact(COUNT_OF_BASES_WITHOUT_EXTRACTORS, (int) ourBases.stream()
               .filter(readOnlyMemory -> readOnlyMemory
                   .returnFactSetValueForGivenKey(HAS_EXTRACTOR)
                   .orElse(Stream.empty()).count() == 0)
@@ -200,11 +201,11 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
         .build()
     );
     this.player = APlayer.wrapPlayer(player, game.getFrameCount()).get();
-    beliefs.updateFact(IS_PLAYER, this.player);
+    beliefs.updateFactSetByFact(IS_PLAYER, this.player);
   }
 
   public void makeObservation() {
-    beliefs.updateFact(IS_PLAYER,
+    beliefs.updateFactSetByFact(IS_PLAYER,
         agentWatcherType.getPlayerEnvironmentObservation().updateBeliefs(player, beliefs));
   }
 

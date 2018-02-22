@@ -37,7 +37,7 @@ public class AgentTypePlayer extends AgentTypeMakingObservations<Game> {
     APlayer player = aPlayer.get().makeObservationOfEnvironment(environment.getFrameCount());
 
     //add updated version of itself to knowledge
-    memory.updateFact(IS_PLAYER, player);
+    memory.updateFactSetByFact(IS_PLAYER, player);
     return true;
   };
 

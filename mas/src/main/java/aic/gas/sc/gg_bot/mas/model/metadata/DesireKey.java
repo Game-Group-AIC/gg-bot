@@ -1,7 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.metadata;
 
 import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
-import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
 import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DesireKey implements FactContainerInterface {
 
-  private final Map<FactKey<?>, Fact<?>> factParameterMap = new HashMap<>();
   private final Map<FactKey<?>, FactSet<?>> factSetParameterMap = new HashMap<>();
 
   @Getter
@@ -34,12 +32,10 @@ public class DesireKey implements FactContainerInterface {
   @Builder
   private DesireKey(
       DesireKeyID desireKeyId,
-      Set<Fact<?>> staticFactValues,
       Set<FactSet<?>> staticFactSets,
       Set<FactKey<?>> parametersTypesForFacts,
       Set<FactKey<?>> parametersTypesForFactSets) {
     this.desireKeyId = desireKeyId;
-    staticFactValues.forEach(fact -> factParameterMap.put(fact.getType(), fact));
     staticFactSets.forEach(factSet -> factSetParameterMap.put(factSet.getType(), factSet));
     this.parametersTypesForFacts = parametersTypesForFacts;
     this.parametersTypesForFactSets = parametersTypesForFactSets;
@@ -53,21 +49,16 @@ public class DesireKey implements FactContainerInterface {
     return desireKeyId.getID();
   }
 
-  public Set<FactKey<?>> parametersTypesForStaticFacts() {
-    return factParameterMap.keySet();
-  }
-
   public Set<FactKey<?>> parametersTypesForStaticFactsSets() {
     return factSetParameterMap.keySet();
   }
 
-  @Override
-  public <K> Optional<K> returnFactValueForGivenKey(FactKey<K> factKey) {
-    Fact<K> fact = (Fact<K>) factParameterMap.get(factKey);
-    if (fact != null) {
-      return Optional.ofNullable(fact.getContent());
+  public <V> Optional<V> returnFactValueForGivenKey(FactKey<V> factKey) {
+    FactSet<V> factSet = (FactSet<V>) factSetParameterMap.get(factKey);
+    if (factSet != null) {
+      return factSet.getContent().stream().findFirst();
     }
-    log.error(factKey.getName() + " is not present in " + this.getName() + " type definition.");
+    log.error(factKey.getName() + " is not present in parameters.");
     return Optional.empty();
   }
 
@@ -83,8 +74,6 @@ public class DesireKey implements FactContainerInterface {
 
   //builder with default fields
   public static class DesireKeyBuilder {
-
-    private Set<Fact<?>> staticFactValues = new HashSet<>();
     private Set<FactSet<?>> staticFactSets = new HashSet<>();
     private Set<FactKey<?>> parametersTypesForFacts = new HashSet<>();
     private Set<FactKey<?>> parametersTypesForFactSets = new HashSet<>();

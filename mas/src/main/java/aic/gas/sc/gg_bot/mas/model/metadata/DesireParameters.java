@@ -2,7 +2,6 @@ package aic.gas.sc.gg_bot.mas.model.metadata;
 
 import aic.gas.sc.gg_bot.mas.model.DesireKeyIdentificationInterface;
 import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
-import aic.gas.sc.gg_bot.mas.model.knowledge.Fact;
 import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import java.util.HashMap;
@@ -19,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DesireParameters implements FactContainerInterface, DesireKeyIdentificationInterface {
 
-  private final Map<FactKey, Fact<?>> factParameterMap = new HashMap<>();
   private final Map<FactKey, FactSet<?>> factSetParameterMap = new HashMap<>();
 
   @Getter
@@ -28,12 +26,6 @@ public class DesireParameters implements FactContainerInterface, DesireKeyIdenti
   public DesireParameters(Memory memory, DesireKey desireKey) {
     this.desireKey = desireKey;
 
-    //fill maps with actual parameters from memory
-    desireKey.getParametersTypesForFacts()
-        .forEach(factKey -> {
-          Optional<Fact<?>> value = memory.returnFactCopyForGivenKey(factKey);
-          value.ifPresent(fact -> factParameterMap.put(factKey, fact));
-        });
     desireKey.getParametersTypesForFactSets()
         .forEach(factKey -> {
           Optional<FactSet<?>> value = memory.returnFactSetCopyForGivenKey(factKey);
@@ -42,9 +34,9 @@ public class DesireParameters implements FactContainerInterface, DesireKeyIdenti
   }
 
   public <V> Optional<V> returnFactValueForGivenKey(FactKey<V> factKey) {
-    Fact<V> fact = (Fact<V>) factParameterMap.get(factKey);
-    if (fact != null) {
-      return Optional.ofNullable(fact.getContent());
+    FactSet<V> factSet = (FactSet<V>) factSetParameterMap.get(factKey);
+    if (factSet != null) {
+      return factSet.getContent().stream().findFirst();
     }
     log.error(factKey.getName() + " is not present in parameters.");
     return Optional.empty();
@@ -70,9 +62,6 @@ public class DesireParameters implements FactContainerInterface, DesireKeyIdenti
 
     DesireParameters that = (DesireParameters) o;
 
-    if (!factParameterMap.equals(that.factParameterMap)) {
-      return false;
-    }
     if (!factSetParameterMap.equals(that.factSetParameterMap)) {
       return false;
     }
@@ -81,8 +70,7 @@ public class DesireParameters implements FactContainerInterface, DesireKeyIdenti
 
   @Override
   public int hashCode() {
-    int result = factParameterMap.hashCode();
-    result = 31 * result + factSetParameterMap.hashCode();
+    int result = factSetParameterMap.hashCode();
     result = 31 * result + desireKey.hashCode();
     return result;
   }

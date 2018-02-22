@@ -1,9 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.service;
 
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSets;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSetsForAgentType;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValues;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSets;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSetsForAgentType;
 import aic.gas.sc.gg_bot.replay_parser.model.watcher.AgentWatcher;
 import java.util.stream.Stream;
 
@@ -39,23 +37,13 @@ public interface IWatcherMediatorService {
   void tellAgentsToObserveSystemAndHandlePlans();
 
   /**
-   * Convert fact to feature value
+   * Convert fact set to feature value
    */
-  <V> double getFeatureValueOfFact(FactWithSetOfOptionalValues<V> convertingStrategy);
+  <V> double getFeatureValueOfFactSet(FactValueSets<V> convertingStrategy);
 
   /**
    * Convert fact set to feature value
    */
-  <V> double getFeatureValueOfFactSet(FactWithOptionalValueSets<V> convertingStrategy);
-
-  /**
-   * Convert fact to feature value
-   */
-  <V> double getFeatureValueOfFact(FactWithSetOfOptionalValuesForAgentType<V> convertingStrategy);
-
-  /**
-   * Convert fact set to feature value
-   */
-  <V> double getFeatureValueOfFactSet(FactWithOptionalValueSetsForAgentType<V> convertingStrategy);
+  <V> double getFeatureValueOfFactSet(FactValueSetsForAgentType<V> convertingStrategy);
 
 }

@@ -79,7 +79,7 @@ public class UnitOrderManagerWatcher extends AgentWatcher<UnitOrderManagerWatche
 
       Set<Integer> agentsMorphingToType = mediatorService.getStreamOfWatchers()
           .filter(
-              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForValueInMemory(IS_MORPHING_TO))
+              agentWatcher -> agentWatcher.getBeliefs().isFactKeyForSetInMemory(IS_MORPHING_TO))
           .filter(agentWatcher -> decideUnitTypeSatisfactionStrategy
               .satisfiesType(agentWatcher.getBeliefs()
                   .returnFactValueForGivenKey(IS_MORPHING_TO).orElse(null)))

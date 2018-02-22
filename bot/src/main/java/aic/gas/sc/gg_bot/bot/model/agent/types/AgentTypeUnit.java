@@ -68,7 +68,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
               .collect(Collectors.toSet()));
 
           memory
-              .updateFact(LOCATION, unit.getNearestBaseLocation().orElse(LOCATION.getInitValue()));
+              .updateFactSetByFact(LOCATION,
+                  unit.getNearestBaseLocation().orElse(LOCATION.getInitValue()));
 
           return true;
         }
@@ -93,22 +94,22 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
       .reactionOnChangeStrategy((memory, desireParameters) -> {
         AUnitOfPlayer me = memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get();
         if (!me.getTrainingQueue().isEmpty()) {
-          memory.updateFact(IS_MORPHING_TO, me.getTrainingQueue().get(0));
+          memory.updateFactSetByFact(IS_MORPHING_TO, me.getTrainingQueue().get(0));
         } else {
-          memory.updateFact(IS_MORPHING_TO, me.getType());
+          memory.updateFactSetByFact(IS_MORPHING_TO, me.getType());
         }
       })
       .reactionOnChangeStrategyInIntention(
-          (memory, desireParameters) -> memory.eraseFactValueForGivenKey(IS_MORPHING_TO))
+          (memory, desireParameters) -> memory.eraseFactSetForGivenKey(IS_MORPHING_TO))
       .decisionInDesire(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 1)
-          .beliefTypes(Collections.singleton(FactConverters.IS_MORPHING))
+              dataForDecision.getFeatureValueBeliefSets(FactConverters.IS_MORPHING) == 1)
+          .beliefSetTypes(Collections.singleton(FactConverters.IS_MORPHING))
           .build())
       .decisionInIntention(CommitmentDeciderInitializer.builder()
           .decisionStrategy((dataForDecision, memory) ->
-              dataForDecision.getFeatureValueBeliefs(FactConverters.IS_MORPHING) == 0)
-          .beliefTypes(Collections.singleton(FactConverters.IS_MORPHING))
+              dataForDecision.getFeatureValueBeliefSets(FactConverters.IS_MORPHING) == 0)
+          .beliefSetTypes(Collections.singleton(FactConverters.IS_MORPHING))
           .build())
       .build();
 
@@ -125,8 +126,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         .makeObservationOfEnvironment(environment.getFrameCount());
 
     //add updated version of itself to knowledge
-    memory.updateFact(IS_UNIT, unit);
-    memory.updateFact(REPRESENTS_UNIT, unit);
+    memory.updateFactSetByFact(IS_UNIT, unit);
+    memory.updateFactSetByFact(REPRESENTS_UNIT, unit);
     return true;
   };
 
@@ -176,7 +177,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         .reactionOnChangeStrategy((memory, desireParameters) -> memory.updateFact(PLACE_TO_REACH,
             desireParameters.returnFactValueForGivenKey(IS_BASE_LOCATION).get().getPosition()))
         .reactionOnChangeStrategyInIntention(
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(PLACE_TO_REACH))
+            (memory, desireParameters) -> memory.eraseFactSetForGivenKey(PLACE_TO_REACH))
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
             .desiresToConsider(Collections.singleton(desireKey))

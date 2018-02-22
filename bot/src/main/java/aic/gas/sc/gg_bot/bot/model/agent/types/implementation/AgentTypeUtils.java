@@ -10,7 +10,7 @@ import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSetsForAgentType;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
 import java.util.Collections;
@@ -30,9 +30,12 @@ public class AgentTypeUtils {
    * It is unlocked only when building is built
    */
   public static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-      FactWithSetOfOptionalValuesForAgentType<T> currentCount, DesireKey desireKey,
-      AUnitTypeWrapper unitTypeWrapper, FeatureContainerHeader featureContainerHeader,
-      Stream<DesireKey> desireKeysWithAbstractIntentionStream, AgentTypes agentType) {
+      FactValueSetsForAgentType<T> currentCount,
+      DesireKey desireKey,
+      AUnitTypeWrapper unitTypeWrapper,
+      FeatureContainerHeader featureContainerHeader,
+      Stream<DesireKey> desireKeysWithAbstractIntentionStream,
+      AgentTypes agentType) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
@@ -41,18 +44,19 @@ public class AgentTypeUtils {
                         .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
                         && !dataForDecision.madeDecisionToAny()
                         && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
+                        && dataForDecision.getFeatureValueGlobalBeliefSets(currentCount) == 0
                         //learnt decision
                         && Decider.getDecision(agentType, DesireKeys.values[desireKey.getId()],
                         dataForDecision, featureContainerHeader, memory.getCurrentClock(),
                         memory.getAgentId()))
-            .globalBeliefTypesByAgentType(Stream.concat(
-                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
+            .globalBeliefSetTypesByAgentType(Stream.concat(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType()
+                    .stream(),
                 Stream.of(currentCount))
                 .collect(Collectors.toSet()))
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -65,14 +69,15 @@ public class AgentTypeUtils {
                         .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //building exists
-                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
-            .globalBeliefTypesByAgentType(Stream.concat(
-                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
+                        || dataForDecision.getFeatureValueGlobalBeliefSets(currentCount) > 0)
+            .globalBeliefSetTypesByAgentType(Stream.concat(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType()
+                    .stream(),
                 Stream.of(currentCount))
                 .collect(Collectors.toSet()))
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .build())
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
@@ -90,7 +95,9 @@ public class AgentTypeUtils {
    * Initialize abstract training plan top
    */
   public static ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToTrainFromTemplate(
-      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper, AgentTypes agentType,
+      DesireKey desireKey,
+      AUnitTypeWrapper unitTypeWrapper,
+      AgentTypes agentType,
       FeatureContainerHeader featureContainerHeader) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
@@ -104,11 +111,11 @@ public class AgentTypeUtils {
                         && Decider.getDecision(agentType, DesireKeys.values[desireKey.getId()],
                         dataForDecision,
                         featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
-            .globalBeliefTypesByAgentType(
-                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .globalBeliefSetTypesByAgentType(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -121,11 +128,11 @@ public class AgentTypeUtils {
                         .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
                         //has been just trained
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper))
-            .globalBeliefTypesByAgentType(
-                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-            .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
+            .globalBeliefSetTypesByAgentType(
+                featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .build())
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
@@ -140,7 +147,8 @@ public class AgentTypeUtils {
    * Template to create shared desire to build building
    */
   public static ConfigurationWithSharedDesire createConfigurationWithSharedDesireToBuildFromTemplate(
-      DesireKey desireToShareKey, AUnitTypeWrapper unitTypeWrapper,
+      DesireKey desireToShareKey,
+      AUnitTypeWrapper unitTypeWrapper,
       ReactionOnChangeStrategy findPlace,
       ReactionOnChangeStrategy removePlace) {
     return ConfigurationWithSharedDesire.builder()
@@ -171,7 +179,8 @@ public class AgentTypeUtils {
    * Template to create shared desire to train unit
    */
   public static ConfigurationWithSharedDesire createConfigurationWithSharedDesireToTrainFromTemplate(
-      DesireKey desireToShareKey, AUnitTypeWrapper unitTypeWrapper) {
+      DesireKey desireToShareKey,
+      AUnitTypeWrapper unitTypeWrapper) {
     return ConfigurationWithSharedDesire.builder()
         .sharedDesireKey(desireToShareKey)
         .counts(1)

@@ -3,7 +3,9 @@ package aic.gas.sc.gg_bot.abstract_bot.model.features;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
-import aic.gas.sc.gg_bot.mas.model.metadata.containers.*;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSet;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSets;
+import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSetsForAgentType;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.Builder;
@@ -19,12 +21,9 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 public class FeatureContainerHeader {
 
-  private final Set<FactWithOptionalValue<?>> convertersForFacts;
-  private final Set<FactWithOptionalValueSet<?>> convertersForFactSets;
-  private final Set<FactWithSetOfOptionalValues<?>> convertersForFactsForGlobalBeliefs;
-  private final Set<FactWithOptionalValueSets<?>> convertersForFactSetsForGlobalBeliefs;
-  private final Set<FactWithSetOfOptionalValuesForAgentType<?>> convertersForFactsForGlobalBeliefsByAgentType;
-  private final Set<FactWithOptionalValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType;
+  private final Set<FactValueSet<?>> convertersForFactSets;
+  private final Set<FactValueSets<?>> convertersForFactSetsForGlobalBeliefs;
+  private final Set<FactValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType;
   private final List<Integer> indexes;
   private final List<Integer> indexesForCommitment;
   private final int sizeOfFeatureVector;
@@ -34,20 +33,15 @@ public class FeatureContainerHeader {
   private final int forHowLongToCacheDecision;
 
   @Builder
-  private FeatureContainerHeader(Set<FactWithOptionalValue<?>> convertersForFacts,
-      Set<FactWithOptionalValueSet<?>> convertersForFactSets,
-      Set<FactWithSetOfOptionalValues<?>> convertersForFactsForGlobalBeliefs,
-      Set<FactWithOptionalValueSets<?>> convertersForFactSetsForGlobalBeliefs,
-      Set<FactWithSetOfOptionalValuesForAgentType<?>> convertersForFactsForGlobalBeliefsByAgentType,
-      Set<FactWithOptionalValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType,
+  private FeatureContainerHeader(
+      Set<FactValueSet<?>> convertersForFactSets,
+      Set<FactValueSets<?>> convertersForFactSetsForGlobalBeliefs,
+      Set<FactValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType,
       Set<DesireKeys> interestedInCommitments,
       boolean trackCommittedOtherAgents,
       int forHowLongToCacheDecision) {
-    this.convertersForFacts = convertersForFacts;
     this.convertersForFactSets = convertersForFactSets;
-    this.convertersForFactsForGlobalBeliefs = convertersForFactsForGlobalBeliefs;
     this.convertersForFactSetsForGlobalBeliefs = convertersForFactSetsForGlobalBeliefs;
-    this.convertersForFactsForGlobalBeliefsByAgentType = convertersForFactsForGlobalBeliefsByAgentType;
     this.convertersForFactSetsForGlobalBeliefsByAgentType = convertersForFactSetsForGlobalBeliefsByAgentType;
     this.trackCommittedOtherAgents = trackCommittedOtherAgents;
     this.forHowLongToCacheDecision = forHowLongToCacheDecision;
@@ -55,31 +49,16 @@ public class FeatureContainerHeader {
     Set<Integer> indexesSet = new HashSet<>();
 
     //add indexes
-    addIndexes(convertersForFacts.stream().map(FactConverterID::getId).collect(Collectors.toList()),
-        indexesSet);
-    strategiesToFillVectorOrdered.addAll(convertersForFacts.stream()
-        .map(StrategyToFillValueInVectorUsingBeliefs.FromBeliefs::new)
-        .collect(Collectors.toList()));
     addIndexes(
         convertersForFactSets.stream().map(FactConverterID::getId).collect(Collectors.toList()),
         indexesSet);
     strategiesToFillVectorOrdered.addAll(convertersForFactSets.stream()
         .map(StrategyToFillValueInVectorUsingBeliefs.FromBeliefsSet::new)
         .collect(Collectors.toList()));
-    addIndexes(convertersForFactsForGlobalBeliefs.stream().map(FactConverterID::getId)
-        .collect(Collectors.toList()), indexesSet);
-    strategiesToFillVectorOrdered.addAll(convertersForFactsForGlobalBeliefs.stream()
-        .map(StrategyToFillValueInVectorUsingBeliefs.FromGlobalBeliefs::new)
-        .collect(Collectors.toList()));
     addIndexes(convertersForFactSetsForGlobalBeliefs.stream().map(FactConverterID::getId)
         .collect(Collectors.toList()), indexesSet);
     strategiesToFillVectorOrdered.addAll(convertersForFactSetsForGlobalBeliefs.stream()
         .map(StrategyToFillValueInVectorUsingBeliefs.FromGlobalBeliefsSets::new)
-        .collect(Collectors.toList()));
-    addIndexes(convertersForFactsForGlobalBeliefsByAgentType.stream().map(FactConverterID::getId)
-        .collect(Collectors.toList()), indexesSet);
-    strategiesToFillVectorOrdered.addAll(convertersForFactsForGlobalBeliefsByAgentType.stream()
-        .map(StrategyToFillValueInVectorUsingBeliefs.FromGlobalBeliefsByAgentType::new)
         .collect(Collectors.toList()));
     addIndexes(convertersForFactSetsForGlobalBeliefsByAgentType.stream().map(FactConverterID::getId)
         .collect(Collectors.toList()), indexesSet);
@@ -173,12 +152,9 @@ public class FeatureContainerHeader {
    */
   public static class FeatureContainerHeaderBuilder {
 
-    private Set<FactWithOptionalValue<?>> convertersForFacts = new HashSet<>();
-    private Set<FactWithOptionalValueSet<?>> convertersForFactSets = new HashSet<>();
-    private Set<FactWithSetOfOptionalValues<?>> convertersForFactsForGlobalBeliefs = new HashSet<>();
-    private Set<FactWithOptionalValueSets<?>> convertersForFactSetsForGlobalBeliefs = new HashSet<>();
-    private Set<FactWithSetOfOptionalValuesForAgentType<?>> convertersForFactsForGlobalBeliefsByAgentType = new HashSet<>();
-    private Set<FactWithOptionalValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType = new HashSet<>();
+    private Set<FactValueSet<?>> convertersForFactSets = new HashSet<>();
+    private Set<FactValueSets<?>> convertersForFactSetsForGlobalBeliefs = new HashSet<>();
+    private Set<FactValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType = new HashSet<>();
     private Set<DesireKeys> interestedInCommitments = new HashSet<>();
     private boolean trackCommittedOtherAgents = false;
     private int forHowLongToCacheDecision = 10;
@@ -207,28 +183,12 @@ public class FeatureContainerHeader {
     }
 
     /**
-     * For agent's beliefs - single fact
-     */
-    static class FromBeliefs extends
-        StrategyToFillValueInVectorUsingBeliefs<FactWithOptionalValue<?>> {
-
-      FromBeliefs(FactWithOptionalValue<?> converterID) {
-        super(converterID);
-      }
-
-      @Override
-      public double getValue(DataForDecision dataForDecision) {
-        return dataForDecision.getFeatureValueBeliefs(converterID);
-      }
-    }
-
-    /**
      * For agent's beliefs - set of fact
      */
     static class FromBeliefsSet extends
-        StrategyToFillValueInVectorUsingBeliefs<FactWithOptionalValueSet<?>> {
+        StrategyToFillValueInVectorUsingBeliefs<FactValueSet<?>> {
 
-      FromBeliefsSet(FactWithOptionalValueSet<?> converterID) {
+      FromBeliefsSet(FactValueSet<?> converterID) {
         super(converterID);
       }
 
@@ -241,26 +201,10 @@ public class FeatureContainerHeader {
     /**
      * For global beliefs - single fact
      */
-    static class FromGlobalBeliefs extends
-        StrategyToFillValueInVectorUsingBeliefs<FactWithSetOfOptionalValues<?>> {
-
-      FromGlobalBeliefs(FactWithSetOfOptionalValues<?> converterID) {
-        super(converterID);
-      }
-
-      @Override
-      public double getValue(DataForDecision dataForDecision) {
-        return dataForDecision.getFeatureValueGlobalBeliefs(converterID);
-      }
-    }
-
-    /**
-     * For global beliefs - single fact
-     */
     static class FromGlobalBeliefsSets extends
-        StrategyToFillValueInVectorUsingBeliefs<FactWithOptionalValueSets<?>> {
+        StrategyToFillValueInVectorUsingBeliefs<FactValueSets<?>> {
 
-      FromGlobalBeliefsSets(FactWithOptionalValueSets<?> converterID) {
+      FromGlobalBeliefsSets(FactValueSets<?> converterID) {
         super(converterID);
       }
 
@@ -273,26 +217,10 @@ public class FeatureContainerHeader {
     /**
      * For global beliefs - single fact
      */
-    static class FromGlobalBeliefsByAgentType extends
-        StrategyToFillValueInVectorUsingBeliefs<FactWithSetOfOptionalValuesForAgentType<?>> {
-
-      FromGlobalBeliefsByAgentType(FactWithSetOfOptionalValuesForAgentType<?> converterID) {
-        super(converterID);
-      }
-
-      @Override
-      public double getValue(DataForDecision dataForDecision) {
-        return dataForDecision.getFeatureValueGlobalBeliefs(converterID);
-      }
-    }
-
-    /**
-     * For global beliefs - single fact
-     */
     static class FromGlobalBeliefsSetsByAgentType extends
-        StrategyToFillValueInVectorUsingBeliefs<FactWithOptionalValueSetsForAgentType<?>> {
+        StrategyToFillValueInVectorUsingBeliefs<FactValueSetsForAgentType<?>> {
 
-      FromGlobalBeliefsSetsByAgentType(FactWithOptionalValueSetsForAgentType<?> converterID) {
+      FromGlobalBeliefsSetsByAgentType(FactValueSetsForAgentType<?> converterID) {
         super(converterID);
       }
 

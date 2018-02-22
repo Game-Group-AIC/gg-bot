@@ -29,6 +29,12 @@ public class FactSet<V> {
     this.decayMap = new HashMap<>();
   }
 
+  public FactSet(V content, FactKey<V> type) {
+    this.decayMap = new HashMap<>();
+    this.decayMap.put(content, 0);
+    this.type = type;
+  }
+
   public Set<V> getContent() {
     return decayMap.keySet();
   }

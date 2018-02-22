@@ -59,16 +59,10 @@ public class FeatureContainer {
     hasChanged = false;
 
     //update features values
-    containerHeader.getConvertersForFactsForGlobalBeliefs().forEach(
-        converter -> updatedFact(converter, mediatorService.getFeatureValueOfFact(converter)));
     containerHeader.getConvertersForFactSetsForGlobalBeliefs().forEach(
         converter -> updatedFact(converter, mediatorService.getFeatureValueOfFactSet(converter)));
-    containerHeader.getConvertersForFacts()
-        .forEach(converter -> updatedFact(converter, beliefs.getFeatureValueOfFact(converter)));
     containerHeader.getConvertersForFactSets()
         .forEach(converter -> updatedFact(converter, beliefs.getFeatureValueOfFactSet(converter)));
-    containerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().forEach(
-        converter -> updatedFact(converter, mediatorService.getFeatureValueOfFact(converter)));
     containerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType().forEach(
         converter -> updatedFact(converter, mediatorService.getFeatureValueOfFactSet(converter)));
 

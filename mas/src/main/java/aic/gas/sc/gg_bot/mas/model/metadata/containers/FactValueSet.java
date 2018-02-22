@@ -10,11 +10,12 @@ import lombok.Getter;
  * Container for fact type and raw value obtaining strategy
  */
 @Getter
-public class FactWithOptionalValueSet<V> extends FactConverterID<V> {
+public class FactValueSet<V> extends FactConverterID<V> {
 
   private final FeatureRawValueObtainingStrategy<Optional<Stream<V>>> strategyToObtainValue;
 
-  public FactWithOptionalValueSet(FactConverterID<V> factConverterID,
+  public FactValueSet(
+      FactConverterID<V> factConverterID,
       FeatureRawValueObtainingStrategy<Optional<Stream<V>>> strategyToObtainValue) {
     super(factConverterID.getId(), factConverterID.getFactKey(), factConverterID.getName());
     this.strategyToObtainValue = strategyToObtainValue;
