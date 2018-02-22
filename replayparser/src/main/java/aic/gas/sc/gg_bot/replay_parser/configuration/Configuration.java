@@ -10,23 +10,23 @@ import lombok.Getter;
 public class Configuration {
 
   @Builder.Default
-  private int batchSize = 2000;
+  private int batchSize = 100;
 
   @Builder.Default
-  private int iterations = 1000;
+  private int iterations = 20;
 
   @Builder.Default
   private int clusters = 300;
 
   //set last "dummy state" to large negative number as we do not want to go there
   @Builder.Default
-  private int minReward = -10000;
+  private int minReward = -1;
 
   @Builder.Default
-  private int maxReward = 10000;
+  private int maxReward = 1;
 
   @Builder.Default
-  private int irlNoChangeStopCondition = 100;
+  private int irlNoChangeStopCondition = 10;
 
   @Builder.Default
   private double initialLearningRate = 0.1;
@@ -53,7 +53,7 @@ public class Configuration {
   private double beta = 10;
 
   @Builder.Default
-  private int steps = 10000;
+  private int steps = 50;
 
   @Builder.Default
   private long timeBudget = 1000 * 60 * 5;

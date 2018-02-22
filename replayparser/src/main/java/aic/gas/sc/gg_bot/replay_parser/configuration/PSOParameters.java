@@ -10,16 +10,16 @@ import lombok.Getter;
 public class PSOParameters {
 
   @Builder.Default
-  private final double learningRateLoc = 2;
+  private final double learningRateLoc = 0.5;
 
   @Builder.Default
-  private final double learningRateGlo = 2;
+  private final double learningRateGlo = 0.5;
 
   @Builder.Default
   private final int countOfParticles = 50;
 
   @Builder.Default
-  private final int neighborhoodSize = 5;
+  private final int neighborhoodSize = 3;
 
   @Builder.Default
   private final int noImprovmentTerminationCondition = 2;
