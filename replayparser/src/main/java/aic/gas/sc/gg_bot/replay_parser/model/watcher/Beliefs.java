@@ -4,6 +4,7 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +27,7 @@ public class Beliefs {
   public <K> Optional<K> returnFactValueForGivenKey(FactKey<K> factKey) {
     FactSet<K> factSet = (FactSet<K>) factSets.get(factKey);
     if (factSet != null) {
-      return factSet.getContent().stream().findFirst();
+      return factSet.getContent().stream().filter(Objects::nonNull).findFirst();
     }
     log.error(factKey.getName() + " is not present.");
     return Optional.empty();
@@ -107,7 +108,7 @@ public class Beliefs {
   }
 
   public boolean isFactKeyForSetInMemory(FactKey<?> factKey) {
-    return factSets.containsKey(factKey);
+    return factSets.containsKey(factKey) && factSets.get(factKey).getContent() != null;
   }
 
 }

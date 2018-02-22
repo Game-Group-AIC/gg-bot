@@ -2,11 +2,7 @@ package aic.gas.sc.gg_bot.mas.model.metadata;
 
 import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
 import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Getter;
@@ -56,7 +52,7 @@ public class DesireKey implements FactContainerInterface {
   public <V> Optional<V> returnFactValueForGivenKey(FactKey<V> factKey) {
     FactSet<V> factSet = (FactSet<V>) factSetParameterMap.get(factKey);
     if (factSet != null) {
-      return factSet.getContent().stream().findFirst();
+      return factSet.getContent().stream().filter(Objects::nonNull).findFirst();
     }
     log.error(factKey.getName() + " is not present in parameters.");
     return Optional.empty();

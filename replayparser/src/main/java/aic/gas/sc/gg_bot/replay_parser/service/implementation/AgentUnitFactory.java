@@ -88,60 +88,60 @@ public class AgentUnitFactory implements IAgentUnitHandler {
                   || me.getOrder().get().equals(Order.ReturnGas))));
               MORPHING_REASONING.updateBeliefs(beliefs, mediatorService);
             }))
-        .factKeys(Stream.of(IS_GATHERING_MINERALS, IS_GATHERING_GAS, IS_MORPHING_TO)
+        .factSetsKeys(Stream.of(IS_GATHERING_MINERALS, IS_GATHERING_GAS, IS_MORPHING_TO)
             .collect(Collectors.toSet()))
         .build());
 
     //buildings
     agentConfigurationForUnitType.put(HATCHERY_TYPE, UnitWatcherType.builder()
         .agentType(HATCHERY)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(SPAWNING_POOL_TYPE, UnitWatcherType.builder()
         .agentType(SPAWNING_POOL)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(EXTRACTOR_TYPE, UnitWatcherType.builder()
         .agentType(EXTRACTOR)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(LAIR_TYPE, UnitWatcherType.builder()
         .agentType(LAIR)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(SPIRE_TYPE, UnitWatcherType.builder()
         .agentType(SPIRE)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(EVOLUTION_CHAMBER_TYPE, UnitWatcherType.builder()
         .agentType(EVOLUTION_CHAMBER)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(HYDRALISK_DEN_TYPE, UnitWatcherType.builder()
         .agentType(HYDRALISK_DEN)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     //static defense
     agentConfigurationForUnitType.put(SUNKEN_COLONY_TYPE, UnitWatcherType.builder()
         .agentType(SUNKEN_COLONY)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(CREEP_COLONY_TYPE, UnitWatcherType.builder()
         .agentType(CREEP_COLONY)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(SPORE_COLONY_TYPE, UnitWatcherType.builder()
         .agentType(SPORE_COLONY)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
 
@@ -156,19 +156,19 @@ public class AgentUnitFactory implements IAgentUnitHandler {
     //attack units
     agentConfigurationForUnitType.put(ZERGLING_TYPE, UnitWatcherType.builder()
         .agentType(ZERGLING)
-        .factKeys(new HashSet<>(Collections.singleton(HOLD_LOCATION)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(HOLD_LOCATION)))
         .reasoning(
             new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_TARGET_LOCATION))
         .build());
     agentConfigurationForUnitType.put(MUTALISK_TYPE, UnitWatcherType.builder()
         .agentType(MUTALISK)
-        .factKeys(new HashSet<>(Collections.singleton(HOLD_LOCATION)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(HOLD_LOCATION)))
         .reasoning(
             new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_TARGET_LOCATION))
         .build());
     agentConfigurationForUnitType.put(HYDRALISK_TYPE, UnitWatcherType.builder()
         .agentType(HYDRALISK)
-        .factKeys(new HashSet<>(Collections.singleton(HOLD_LOCATION)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(HOLD_LOCATION)))
         .reasoning(
             new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(UNIT_TARGET_LOCATION))
         .build());
@@ -176,12 +176,12 @@ public class AgentUnitFactory implements IAgentUnitHandler {
     //"barracks"
     agentConfigurationForUnitType.put(EGG_TYPE, UnitWatcherType.builder()
         .agentType(EGG)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
     agentConfigurationForUnitType.put(LARVA_TYPE, UnitWatcherType.builder()
         .agentType(LARVA)
-        .factKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
+        .factSetsKeys(new HashSet<>(Collections.singleton(IS_MORPHING_TO)))
         .reasoning(new UnitWatcherType.ReasoningForAgentWithUnitRepresentation(MORPHING_REASONING))
         .build());
   }

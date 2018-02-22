@@ -14,18 +14,16 @@ import lombok.Builder;
 public class UnitOrderManagerWatcherType extends AgentWatcherType {
 
   @Builder
-  private UnitOrderManagerWatcherType(AgentTypes agentType, Set<FactKey<?>> factKeys,
+  private UnitOrderManagerWatcherType(AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers) {
-    super(agentType, factKeys, factSetsKeys, planWatchers, null);
+    super(agentType, factSetsKeys, planWatchers, null);
   }
 
   /**
    * Builder with default values
    */
   public static class UnitOrderManagerWatcherTypeBuilder extends AgentWatcherTypeBuilder {
-
-    private Set<FactKey<?>> factKeys = new HashSet<>();
     private Set<FactKey<?>> factSetsKeys = new HashSet<>();
   }
 }

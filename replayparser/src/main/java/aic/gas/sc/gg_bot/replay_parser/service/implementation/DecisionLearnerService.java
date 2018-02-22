@@ -20,7 +20,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.irl.DecisionState;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.State;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Trajectory;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.TrajectoryWrapper;
-import aic.gas.sc.gg_bot.replay_parser.service.*;
+import aic.gas.sc.gg_bot.replay_parser.service.IDecisionLearnerService;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.mdp.core.action.SimpleAction;
@@ -52,17 +52,19 @@ public class DecisionLearnerService implements IDecisionLearnerService {
   private static final List<ARace> RACES = Stream.of(ARace.values())
       .filter(race -> !race.equals(ARace.UNKNOWN))
       .collect(Collectors.toList());
-  private final IStorageService storageService = StorageService.getInstance();
-  private final IStateClusteringService stateClusteringService = new StateClusteringService();
-  private final IPolicyLearningService policyLearningService = new PolicyLearningService();
-  private final IFeatureNormalizerService featureNormalizerService = new FeatureNormalizerService();
-  private final IPairFindingService differentConsecutivePairFindingService = new DifferentConsecutivePairFindingService();
+  private final StorageService storageService = StorageService.getInstance();
+  private final StateClusteringService stateClusteringService = new StateClusteringService();
+  private final PolicyLearningService policyLearningService = new PolicyLearningService();
+  private final FeatureNormalizerService featureNormalizerService = new FeatureNormalizerService();
+  private final DifferentConsecutivePairFindingService differentConsecutivePairFindingService = new DifferentConsecutivePairFindingService();
 
   /**
    * Find nearest representative
    */
-  private static DecisionState closestStateRepresentative(double[] featureVector,
-      List<FeatureNormalizer> normalizers, List<DecisionState> decisionStates) {
+  private static DecisionState closestStateRepresentative(
+      double[] featureVector,
+      List<FeatureNormalizer> normalizers,
+      List<DecisionState> decisionStates) {
     double[] normalizedVectorForState = VectorNormalizer
         .normalizeFeatureVector(featureVector, normalizers);
     Optional<DecisionState> closestState = decisionStates.stream()
@@ -82,11 +84,16 @@ public class DecisionLearnerService implements IDecisionLearnerService {
         .flatMap(race -> storageService
             .getParsedAgentTypesWithDesiresTypesContainedInStorage(mapSize, race)
             .entrySet().stream().flatMap(entry -> entry.getValue().stream()
-                .map(desireKey -> new Tuple(mapSize, race, entry.getKey(), desireKey)))))
+                .map(desireKey -> {
+                  return new Tuple(mapSize, race, entry.getKey(), desireKey);
+                }))))
         .filter(tuple -> {
           String path = storageService
               .getLearntDecisionPath(tuple.agentType, tuple.desireKey, tuple.mapSize,
                   tuple.race);
+          if (new File(path).exists()) {
+            log.info("File " + path + " exists, skipping.");
+          }
           return !new File(path).exists();
         })
         .collect(Collectors.toList());
@@ -162,8 +169,7 @@ public class DecisionLearnerService implements IDecisionLearnerService {
     @Override
     public void run() {
       String path = storageService
-          .getLearntDecisionPath(tuple.agentType, tuple.desireKey, tuple.mapSize,
-              tuple.race);
+          .getLearntDecisionPath(tuple.agentType, tuple.desireKey, tuple.mapSize, tuple.race);
 
       if (new File(path).exists()) {
         log.info("File " + path + " exists, skipping.");

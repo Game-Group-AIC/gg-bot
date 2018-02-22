@@ -207,6 +207,18 @@ public class ReplayParserService extends DefaultBWListener implements IReplayPar
         watchersOfUnits.clear();
         agentUnitHandler = new AgentUnitFactory();
 
+        // set player to parse
+        Set<Integer> playersToParse = currentGame.getPlayers().stream()
+            .filter(p -> p.getRace().equals(Race.Zerg))
+            .filter(p -> p.allUnitCount() == 9)
+            .map(Player::getID)
+            .collect(Collectors.toSet());
+
+        if (playersToParse.size() == 0) {
+          log.error("No zerg player found in this replay");
+          System.exit(2);
+        }
+
         // Use BWTA to analyze map.
         // This may take a few minutes if the map is processed first time!
         log.info("Analyzing map...");
@@ -219,18 +231,6 @@ public class ReplayParserService extends DefaultBWListener implements IReplayPar
             .filter(BaseLocation::isStartLocation)
             .count();
         DecisionConfiguration.setMapSize(MapSizeEnums.getByStartBases(mapSize));
-
-        // set player to parse
-        Set<Integer> playersToParse = currentGame.getPlayers().stream()
-            .filter(p -> p.getRace().equals(Race.Zerg))
-            .filter(p -> p.allUnitCount() == 9)
-            .map(Player::getID)
-            .collect(Collectors.toSet());
-
-        if(playersToParse.size() == 0) {
-          log.error("No zerg player found in this replay");
-          System.exit(2);
-        }
 
         parsingPlayer = currentGame.getPlayers().stream()
             .filter(p -> playersToParse.contains(p.getID()))

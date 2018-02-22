@@ -14,18 +14,17 @@ import lombok.Builder;
 public class EcoManagerWatcherType extends AgentWatcherType {
 
   @Builder
-  private EcoManagerWatcherType(AgentTypes agentType, Set<FactKey<?>> factKeys,
+  private EcoManagerWatcherType(
+      AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers) {
-    super(agentType, factKeys, factSetsKeys, planWatchers, null);
+    super(agentType, factSetsKeys, planWatchers, null);
   }
 
   /**
    * Builder with default values
    */
   public static class EcoManagerWatcherTypeBuilder extends AgentWatcherTypeBuilder {
-
-    private Set<FactKey<?>> factKeys = new HashSet<>();
     private Set<FactKey<?>> factSetsKeys = new HashSet<>();
   }
 }

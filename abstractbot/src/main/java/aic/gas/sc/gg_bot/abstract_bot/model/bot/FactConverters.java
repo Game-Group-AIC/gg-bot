@@ -55,6 +55,7 @@ public class FactConverters {
       optionalStream -> optionalStream.filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .mapToDouble(Optional::get)
           .sum());
 
@@ -64,6 +65,7 @@ public class FactConverters {
       optionalStream -> optionalStream.filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .mapToDouble(Optional::get)
           .sum());
 
@@ -174,6 +176,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(AUnit::isIdle)
           .count());
@@ -185,6 +188,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .map(Optional::get)
           .mapToDouble(APlayer::getFrameCount)
           .map(frameCount -> {
@@ -212,6 +216,7 @@ public class FactConverters {
       optionalStream.filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .mapToDouble(Optional::get)
           .sum());
 
@@ -221,6 +226,7 @@ public class FactConverters {
       optionalStream -> optionalStream.filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .mapToDouble(Optional::get)
           .sum());
 
@@ -230,6 +236,7 @@ public class FactConverters {
       optionalStream -> Math.min(optionalStream.filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .mapToInt(Optional::get)
           .sum(), 3));
 
@@ -241,6 +248,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .filter(Optional::get)
           .count()
   );
@@ -252,6 +260,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .filter(Optional::get)
           .count() >= 2 ? 1.0 : 0.0);
 
@@ -262,6 +271,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .filter(Optional::get)
           .count());
 
@@ -311,18 +321,22 @@ public class FactConverters {
   static final FactValueSetsForAgentType<Double> COUNT_OF_MINERALS = new FactValueSetsForAgentType<>(
       new FactConverterID<>(40, FactKeys.AVAILABLE_MINERALS, "COUNT_OF_MINERALS"),
       AgentTypes.PLAYER.getId(),
-      optionalStream -> (double) optionalStream.filter(Optional::isPresent)
+      optionalStream -> (double) optionalStream
+          .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .mapToDouble(Optional::get)
           .sum());
 
   static final FactValueSetsForAgentType<Double> FREE_SUPPLY = new FactValueSetsForAgentType<>(
       new FactConverterID<>(41, FactKeys.FREE_SUPPLY, "FREE_SUPPLY"), AgentTypes.PLAYER.getId(),
       optionalStream -> {
-        double count = optionalStream.filter(Optional::isPresent)
+        double count = optionalStream
+            .filter(Optional::isPresent)
             .map(Optional::get)
             .map(Stream::findFirst)
+            .filter(Optional::isPresent)
             .mapToDouble(Optional::get)
             .sum();
 
@@ -333,9 +347,11 @@ public class FactConverters {
       new FactConverterID<>(42, FactKeys.FORCE_SUPPLY_RATIO, "FORCE_SUPPLY_RATIO"),
       AgentTypes.PLAYER.getId(),
       optionalStream -> {
-        double sum = optionalStream.filter(Optional::isPresent)
+        double sum = optionalStream
+            .filter(Optional::isPresent)
             .map(Optional::get)
             .map(Stream::findFirst)
+            .filter(Optional::isPresent)
             .mapToDouble(Optional::get)
             .sum();
 
@@ -348,9 +364,11 @@ public class FactConverters {
       new FactConverterID<>(43, FactKeys.DIFFERENCE_IN_BASES, "DIFFERENCE_IN_BASES"),
       AgentTypes.PLAYER.getId(),
       optionalStream -> {
-        double sum = optionalStream.filter(Optional::isPresent)
+        double sum = optionalStream
+            .filter(Optional::isPresent)
             .map(Optional::get)
             .map(Stream::findFirst)
+            .filter(Optional::isPresent)
             .mapToDouble(Optional::get)
             .sum();
 
@@ -363,7 +381,8 @@ public class FactConverters {
       new FactConverterID<>(44, ENEMY_GROUND_FORCE_STATUS, "ENEMY_RANGED_VS_MELEE_DAMAGE"),
       AgentTypes.PLAYER.getId(),
       optionalStream -> {
-        double sum = optionalStream.filter(Optional::isPresent)
+        double sum = optionalStream
+            .filter(Optional::isPresent)
             .mapToDouble(Utils::computeRangedVsMeleeDamageRatio)
             .sum();
 
@@ -377,7 +396,8 @@ public class FactConverters {
       new FactConverterID<>(45, FactKeys.OWN_GROUND_FORCE_STATUS, "OUR_RANGED_VS_MELEE_DAMAGE"),
       AgentTypes.PLAYER.getId(),
       optionalStream -> {
-        double sum = optionalStream.filter(Optional::isPresent)
+        double sum = optionalStream
+            .filter(Optional::isPresent)
             .mapToDouble(Utils::computeRangedVsMeleeDamageRatio)
             .sum();
 
@@ -401,14 +421,12 @@ public class FactConverters {
   static final FactValueSetsForAgentType<UnitTypeStatus> HAS_AT_LEAST_10_ARMY_SUPPLY = new FactValueSetsForAgentType<>(
       new FactConverterID<>(47, FactKeys.OWN_FORCE_STATUS, "HAS_AT_LEAST_10_ARMY_SUPPLY"),
       AgentTypes.PLAYER.getId(),
-      optionalStream -> {
-        return optionalStream
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .mapToDouble(value -> value
-                .mapToDouble(v -> v.getCount() * v.getUnitTypeWrapper().supplyRequired()).sum())
-            .sum() >= 10 ? 1.0 : 0.0;
-      });
+      optionalStream -> optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .mapToDouble(value -> value
+              .mapToDouble(v -> v.getCount() * v.getUnitTypeWrapper().supplyRequired()).sum())
+          .sum() >= 10 ? 1.0 : 0.0);
 
   static final FactValueSetsForAgentType<UnitTypeStatus> SUM_OF_ENEMY_STATIC_GROUND_DMG = new FactValueSetsForAgentType<>(
       new FactConverterID<>(48, ENEMY_STATIC_GROUND_FORCE_STATUS, "SUM_OF_ENEMY_STATIC_GROUND_DMG"),
@@ -437,6 +455,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(aDouble -> aDouble < 60)
           .count());
@@ -448,6 +467,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(aDouble -> aDouble < 60)
           .count());
@@ -539,6 +559,7 @@ public class FactConverters {
               .filter(Optional::isPresent)
               .map(Optional::get)
               .map(Stream::findFirst)
+              .filter(Optional::isPresent)
               .map(Optional::get)
               .filter(AUnitTypeWrapper::isGasBuilding)
               .count(),
@@ -559,6 +580,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(AUnitTypeWrapper::isWorker)
           .count(), 2.0));
@@ -577,6 +599,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(
               unitTypeWrapper -> unitTypeWrapper.isFlyer() && !unitTypeWrapper.isNotActuallyUnit()
@@ -589,6 +612,7 @@ public class FactConverters {
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(Stream::findFirst)
+          .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(
               unitTypeWrapper -> !unitTypeWrapper.isWorker() && !unitTypeWrapper.isFlyer()

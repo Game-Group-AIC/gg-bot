@@ -16,16 +16,15 @@ import lombok.Getter;
 public class AgentWatcherType {
 
   private final AgentTypes agentType;
-  private final Set<FactKey<?>> factKeys;
   private final Set<FactKey<?>> factSetsKeys;
   private final List<PlanWatcherInitializationStrategy> planWatchers;
   private final Optional<Reasoning> reasoning;
 
-  protected AgentWatcherType(AgentTypes agentType, Set<FactKey<?>> factKeys,
+  protected AgentWatcherType(
+      AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers, Reasoning reasoning) {
     this.agentType = agentType;
-    this.factKeys = factKeys;
     this.factSetsKeys = factSetsKeys;
     this.planWatchers = planWatchers;
     this.reasoning = Optional.ofNullable(reasoning);
@@ -59,8 +58,6 @@ public class AgentWatcherType {
    * Builder with default values
    */
   public static class AgentWatcherTypeBuilder {
-
-    private Set<FactKey<?>> factKeys = new HashSet<>();
     private Set<FactKey<?>> factSetsKeys = new HashSet<>();
   }
 

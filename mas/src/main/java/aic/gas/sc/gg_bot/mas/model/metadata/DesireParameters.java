@@ -6,6 +6,7 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -36,7 +37,7 @@ public class DesireParameters implements FactContainerInterface, DesireKeyIdenti
   public <V> Optional<V> returnFactValueForGivenKey(FactKey<V> factKey) {
     FactSet<V> factSet = (FactSet<V>) factSetParameterMap.get(factKey);
     if (factSet != null) {
-      return factSet.getContent().stream().findFirst();
+      return factSet.getContent().stream().filter(Objects::nonNull).findFirst();
     }
     log.error(factKey.getName() + " is not present in parameters.");
     return Optional.empty();

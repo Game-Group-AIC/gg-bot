@@ -10,6 +10,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -101,7 +102,7 @@ public abstract class Memory<V extends PlanningTreeInterface>
   public <K> Optional<K> returnFactValueForGivenKey(FactKey<K> factKey) {
     FactSet<K> factSet = (FactSet<K>) factSetParameterMap.get(factKey);
     if (factSet != null) {
-      return factSet.getContent().stream().findFirst();
+      return factSet.getContent().stream().filter(Objects::nonNull).findFirst();
     }
     log.error(
         factKey.getName() + " is not present in " + agentType.getName() + " type definition.");

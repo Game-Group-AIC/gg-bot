@@ -20,11 +20,12 @@ public class WatcherPlayerType extends AgentWatcherType {
   private final PlayerEnvironmentObservation playerEnvironmentObservation;
 
   @Builder
-  private WatcherPlayerType(AgentTypes agentType, Set<FactKey<?>> factKeys,
+  private WatcherPlayerType(
+      AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers, Reasoning reasoning,
       PlayerEnvironmentObservation playerEnvironmentObservation) {
-    super(agentType, factKeys, factSetsKeys, planWatchers, reasoning);
+    super(agentType, factSetsKeys, planWatchers, reasoning);
     this.playerEnvironmentObservation = playerEnvironmentObservation;
   }
 
@@ -32,8 +33,6 @@ public class WatcherPlayerType extends AgentWatcherType {
    * Builder with default values
    */
   public static class WatcherPlayerTypeBuilder extends AgentWatcherTypeBuilder {
-
-    private Set<FactKey<?>> factKeys = new HashSet<>();
     private Set<FactKey<?>> factSetsKeys = new HashSet<>();
   }
 }

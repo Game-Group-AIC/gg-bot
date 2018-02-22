@@ -40,7 +40,8 @@ public class Utils {
     Set<String> filesInParsingDirectory = Arrays.stream(directory.listFiles())
         .filter(File::isFile)
         .map(File::getName)
-        .map(s -> s.replace(".db", ""))
+        // remove uuid, lazy to calc its length
+        .map(s -> s.substring(0, s.length() - "_db469ebd-3014-416d-8ce9-8e0c98e7851d.db".length()))
         .collect(Collectors.toSet());
 
     return Arrays.stream(DesireKeys.values())

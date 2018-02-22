@@ -33,22 +33,21 @@ public class UnitWatcherType extends AgentWatcherType {
   };
 
   @Builder
-  private UnitWatcherType(AgentTypes agentType, Set<FactKey<?>> factKeys,
+  private UnitWatcherType(
+      AgentTypes agentType,
       Set<FactKey<?>> factSetsKeys,
       List<PlanWatcherInitializationStrategy> planWatchers,
       ReasoningForAgentWithUnitRepresentation reasoning) {
-    super(agentType, factKeys, factSetsKeys, planWatchers, reasoning);
+    super(agentType, factSetsKeys, planWatchers, reasoning);
     this.getFactSetsKeys().addAll(Arrays.asList(ENEMY_BUILDING, ENEMY_AIR,
         ENEMY_GROUND, OWN_BUILDING, OWN_AIR, OWN_GROUND));
-    this.getFactKeys().addAll(Arrays.asList(REPRESENTS_UNIT, LOCATION));
+    this.getFactSetsKeys().addAll(Arrays.asList(REPRESENTS_UNIT, LOCATION));
   }
 
   /**
    * Builder with default values
    */
   public static class UnitWatcherTypeBuilder extends AgentWatcherTypeBuilder {
-
-    private Set<FactKey<?>> factKeys = new HashSet<>();
     private Set<FactKey<?>> factSetsKeys = new HashSet<>();
     private List<PlanWatcherInitializationStrategy> planWatchers = new ArrayList<>();
   }

@@ -45,17 +45,21 @@ public class EcoManagerWatcher extends AgentWatcher<EcoManagerWatcherType> {
 
             //BUILD_WORKER
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(
-                () -> new FeatureContainer(FeatureContainerHeaders.BUILD_WORKER), DesireKeys.BUILD_WORKER,
+                () -> new FeatureContainer(FeatureContainerHeaders.BUILD_WORKER),
+                DesireKeys.BUILD_WORKER,
                 AUnitTypeWrapper.DRONE_TYPE),
 
             //TODO does not take new hatcheries in our base in to account
             //EXPAND
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(
-                () -> new FeatureContainer(FeatureContainerHeaders.EXPAND), DesireKeys.EXPAND, AUnitTypeWrapper.HATCHERY_TYPE),
+                () -> new FeatureContainer(FeatureContainerHeaders.EXPAND),
+                DesireKeys.EXPAND,
+                AUnitTypeWrapper.HATCHERY_TYPE),
 
             //INCREASE_CAPACITY
             () -> new AbstractAgentWatcherUtils.AbstractPlanWatcher(
-                () -> new FeatureContainer(FeatureContainerHeaders.INCREASE_CAPACITY), DesireKeys.INCREASE_CAPACITY,
+                () -> new FeatureContainer(FeatureContainerHeaders.INCREASE_CAPACITY),
+                DesireKeys.INCREASE_CAPACITY,
                 AUnitTypeWrapper.OVERLORD_TYPE)
         }))
         .build()

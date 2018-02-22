@@ -35,12 +35,11 @@ public class WatcherPlayer extends AgentWatcher<WatcherPlayerType> implements
 
   public WatcherPlayer(Player player, Game game) {
     super(WatcherPlayerType.builder()
-        .factKeys(Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT,
+        .factSetsKeys(Stream.of(AVAILABLE_MINERALS, ENEMY_RACE, AVAILABLE_GAS, POPULATION_LIMIT,
             POPULATION, IS_PLAYER, FREE_SUPPLY, FORCE_SUPPLY_RATIO, DIFFERENCE_IN_BASES,
             AVERAGE_COUNT_OF_WORKERS_PER_BASE, AVERAGE_COUNT_OF_WORKERS_MINING_GAS_PER_BASE,
-            COUNT_OF_BASES_WITHOUT_EXTRACTORS)
-            .collect(Collectors.toSet()))
-        .factSetsKeys(Stream.of(UPGRADE_STATUS, OUR_BASE, ENEMY_BASE,
+            COUNT_OF_BASES_WITHOUT_EXTRACTORS,
+            UPGRADE_STATUS, OUR_BASE, ENEMY_BASE,
             OWN_AIR_FORCE_STATUS, OWN_BUILDING_STATUS, OWN_GROUND_FORCE_STATUS,
             ENEMY_AIR_FORCE_STATUS, ENEMY_BUILDING_STATUS,
             ENEMY_GROUND_FORCE_STATUS, LOCKED_UNITS, LOCKED_BUILDINGS,

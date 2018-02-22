@@ -61,7 +61,7 @@ public class StorageService implements IStorageService {
     });
   }
 
-  static IStorageService getInstance() {
+  static StorageService getInstance() {
     if (instance == null) {
       instance = new StorageService();
     }
@@ -183,8 +183,12 @@ public class StorageService implements IStorageService {
 
 
   @Override
-  public void storeLearntDecision(MDPForDecisionWithPolicy structure, AgentTypes agentType,
-      DesireKeys desireKey, MapSizeEnums mapSize, ARace race) throws Exception {
+  public void storeLearntDecision(
+      MDPForDecisionWithPolicy structure,
+      AgentTypes agentType,
+      DesireKeys desireKey,
+      MapSizeEnums mapSize,
+      ARace race) throws Exception {
     createDirectoryIfItDoesNotExist(agentType.name(), outputFolder + "/" + mapSize.name() + "/"
         + "/" + race.name());
     String path = getLearntDecisionPath(agentType, desireKey, mapSize, race);
@@ -192,8 +196,11 @@ public class StorageService implements IStorageService {
   }
 
   @Override
-  public String getLearntDecisionPath(AgentTypes agentType, DesireKeys desireKey,
-      MapSizeEnums mapSize, ARace race) {
+  public String getLearntDecisionPath(
+      AgentTypes agentType,
+      DesireKeys desireKey,
+      MapSizeEnums mapSize,
+      ARace race) {
     return outputFolder + "/" + mapSize.name() + "/"
         + "/" + race.name() + "/" + agentType.name() + "/" + desireKey.name() + ".db";
   }
