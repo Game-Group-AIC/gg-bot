@@ -5,7 +5,7 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 /**
  * Contract for command classes
  */
-public interface CommandInterface {
+public interface ICommand {
 
   /**
    * Method to be called by CommandForIntention Executor to execute command

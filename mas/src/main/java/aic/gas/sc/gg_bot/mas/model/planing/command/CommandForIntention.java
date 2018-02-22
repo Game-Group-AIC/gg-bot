@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.planing.command;
 
-import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
+import aic.gas.sc.gg_bot.mas.model.IFactContainer;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
 import java.util.Optional;
@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  * by agent
  */
 public abstract class CommandForIntention<T extends IntentionCommand<?, ? extends CommandForIntention<T>>> implements
-    CommandInterface, FactContainerInterface {
+    ICommand, IFactContainer {
 
   private final T intention;
 

@@ -7,7 +7,7 @@ import java.util.Optional;
 /**
  * Contract for each node representing desire
  */
-public interface DesireNodeInterface<V extends Node<?> & IntentionNodeInterface> {
+public interface IDesireNode<V extends Node<?> & IIntentionNode> {
 
   /**
    * Make commitment to this desire and replace itself by intention

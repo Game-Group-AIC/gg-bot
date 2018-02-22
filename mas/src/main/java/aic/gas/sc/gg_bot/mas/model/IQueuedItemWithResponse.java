@@ -5,7 +5,7 @@ package aic.gas.sc.gg_bot.mas.model;
  * methods to execute item by queue manager and send result to receiver of result for executed
  * operation
  */
-public interface QueuedItemInterfaceWithResponse<V> {
+public interface IQueuedItemWithResponse<V> {
 
   /**
    * Execute code and returns result of executed method
@@ -15,7 +15,7 @@ public interface QueuedItemInterfaceWithResponse<V> {
   /**
    * Get receiver to send respond with result to
    */
-  ResponseReceiverInterface<V> getReceiverOfResponse();
+  IResponseReceiver<V> getReceiverOfResponse();
 
   /**
    * Method to be called que manager. Default behaviour is to execute item and send result to

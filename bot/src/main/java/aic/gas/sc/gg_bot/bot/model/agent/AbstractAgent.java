@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.bot.model.agent;
 
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
@@ -20,7 +20,7 @@ public class AbstractAgent extends Agent<AgentType> {
 
   @Override
   public boolean sendCommandToExecute(ActCommand<?> command,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
+      IResponseReceiver<Boolean> responseReceiver) {
     log.error("Trying to send command on behalf of abstract agent.");
     throw new RuntimeException("Trying to send command on behalf of abstract agent.");
   }

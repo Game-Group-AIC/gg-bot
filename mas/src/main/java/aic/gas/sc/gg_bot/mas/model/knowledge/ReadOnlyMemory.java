@@ -13,9 +13,9 @@ public class ReadOnlyMemory extends Memory<PlanningTreeOfAnotherAgent> {
   ReadOnlyMemory(
       Map<FactKey, FactSet> factSetParameterMap,
       PlanningTreeOfAnotherAgent tree, AgentType agentType, int agentId,
-      StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
-      StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
-      StrategyToGetAllMemories strategyToGetAllMemories,
+      IStrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
+      IStrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
+      IStrategyToGetAllMemories strategyToGetAllMemories,
       InternalClockObtainingStrategy internalClockObtainingStrategy) {
     super(factSetParameterMap, tree, agentType, agentId,
         strategyToGetSetOfMemoriesByAgentType, strategyToGetMemoryOfAgent,

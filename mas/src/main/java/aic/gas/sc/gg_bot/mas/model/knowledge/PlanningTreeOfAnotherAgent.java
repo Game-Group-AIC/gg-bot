@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.knowledge;
 
-import aic.gas.sc.gg_bot.mas.model.PlanningTreeInterface;
+import aic.gas.sc.gg_bot.mas.model.IPlanningTree;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * Read only copy of agent's planning heap to be shared with other agents
  */
-public class PlanningTreeOfAnotherAgent implements PlanningTreeInterface {
+public class PlanningTreeOfAnotherAgent implements IPlanningTree {
 
   private final Map<DesireKey, Long> keysOfCommittedDesiresInTreeCounts;
   private final Map<DesireKey, Long> keysOfDesiresInTreeCounts;

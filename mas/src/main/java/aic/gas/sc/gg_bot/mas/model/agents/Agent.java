@@ -1,8 +1,8 @@
 package aic.gas.sc.gg_bot.mas.model.agents;
 
-import aic.gas.sc.gg_bot.mas.model.CycleSynchronizationObtainingStrategy;
+import aic.gas.sc.gg_bot.mas.model.ICycleSynchronizationObtainingStrategy;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
@@ -15,7 +15,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.DesireFromAnotherAgent;
 import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.IObservingCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.heap.HeapOfTrees;
 import aic.gas.sc.gg_bot.mas.model.planing.heap.visitors.CommandExecutor;
@@ -37,8 +37,8 @@ import lombok.extern.slf4j.Slf4j;
  * Template for agent. Main routine of agent runs in its own thread.
  */
 @Slf4j
-public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFactory,
-    ResponseReceiverInterface<Boolean>, Runnable {
+public abstract class Agent<E extends AgentType> implements IAgentTypeBehaviourFactory,
+    IResponseReceiver<Boolean>, Runnable {
 
   @Getter
   protected final E agentType;
@@ -63,7 +63,7 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
 
   //TODO hacks to prevent executing more cycles
   private final InternalClockObtainingStrategy clockObtainingStrategy;
-  private final CycleSynchronizationObtainingStrategy cycleSynchronizationObtainingStrategy;
+  private final ICycleSynchronizationObtainingStrategy cycleSynchronizationObtainingStrategy;
   //sync cycle lock
   private final Object cycleMonitor = new Object();
 
@@ -150,7 +150,7 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
    * Execute acting command
    */
   public abstract boolean sendCommandToExecute(ActCommand<?> command,
-      ResponseReceiverInterface<Boolean> responseReceiver);
+      IResponseReceiver<Boolean> responseReceiver);
 
   /**
    * Get memory of agent
@@ -285,8 +285,8 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
     /**
      * Execute observing command
      */
-    protected abstract boolean requestObservation(ObservingCommand<E> observingCommand,
-        ResponseReceiverInterface<Boolean> responseReceiver);
+    protected abstract boolean requestObservation(IObservingCommand<E> observingCommand,
+        IResponseReceiver<Boolean> responseReceiver);
 
     private void makeObservation(Worker worker) {
       synchronized (lockMonitor) {
@@ -311,7 +311,7 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
   /**
    * Worker execute workflow of this agent.
    */
-  class Worker extends Thread implements ResponseReceiverInterface<Boolean> {
+  class Worker extends Thread implements IResponseReceiver<Boolean> {
 
     //TODO refactor sync
     @Override

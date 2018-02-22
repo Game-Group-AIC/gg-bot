@@ -3,6 +3,7 @@ package aic.gas.sc.gg_bot.mas.model.metadata.agents;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.planing.DesireFromAnotherAgent;
+import aic.gas.sc.gg_bot.mas.model.planing.DesireFromAnotherAgent.WithAbstractIntention;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import java.util.Optional;
 
@@ -11,7 +12,7 @@ import java.util.Optional;
  */
 public class AnotherAgentsDesireWithAbstractIntentionFormulation extends
     DesireFormulation.WithAbstractPlan implements
-    AnotherAgentsInternalDesireFormulation<DesireFromAnotherAgent.WithAbstractIntention> {
+    IAnotherAgentsInternalDesireFormulation<WithAbstractIntention> {
 
   @Override
   public Optional<DesireFromAnotherAgent.WithAbstractIntention> formDesire(

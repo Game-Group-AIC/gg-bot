@@ -2,15 +2,7 @@ package aic.gas.sc.gg_bot.mas.model.planing.heap.visitors;
 
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.DesireNodeInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.HeapOfTrees;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeAtTopLevel;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.Node;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.Parent;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.TreeVisitorInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.VisitorAcceptor;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +14,7 @@ import java.util.stream.Collectors;
  * If commitment to intention is not removed visitor move further in subtree else do backtrack to go
  * to other branches
  */
-public class CommitmentRemovalDecider implements TreeVisitorInterface {
+public class CommitmentRemovalDecider implements ITreeVisitor {
 
   private final HeapOfTrees heapOfTrees;
 
@@ -39,8 +31,8 @@ public class CommitmentRemovalDecider implements TreeVisitorInterface {
   /**
    * Decides commitment removal of node and sends this visitor to subtree
    */
-  private <K extends Node<?> & IntentionNodeInterface & VisitorAcceptor, V extends Node<?> & DesireNodeInterface<K>> void branch(
-      Parent<V, K> parent) {
+  private <K extends Node<?> & IIntentionNode & IVisitorAcceptor, V extends Node<?> & IDesireNode<K>> void branch(
+      IParent<V, K> parent) {
     List<K> intentionNodes = parent.getNodesWithIntention();
 
     //decide removal of commitment to intentions

@@ -5,6 +5,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire;
+import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire.WithAbstractIntention;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OwnDesireWithAbstractIntentionFormulation extends
     DesireFormulation.WithAbstractPlan implements
-    OwnInternalDesireFormulation<OwnDesire.WithAbstractIntention> {
+    IOwnInternalDesireFormulation<WithAbstractIntention> {
 
   @Override
   public Optional<OwnDesire.WithAbstractIntention> formDesire(DesireKey key, WorkingMemory memory) {
@@ -43,7 +44,7 @@ public class OwnDesireWithAbstractIntentionFormulation extends
    * instance based on parent
    */
   public static class Stacked extends OwnDesireWithAbstractIntentionFormulation implements
-      OwnInternalDesireFormulationStacked<OwnDesire.WithAbstractIntention> {
+      IOwnInternalDesireFormulationStacked<WithAbstractIntention> {
 
     private final Map<DesireKey, OwnDesireWithAbstractIntentionFormulation> stack = new HashMap<>();
 

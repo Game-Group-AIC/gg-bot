@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.planing.heap;
 
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
  * Routine for shared desires removal from mediator
  */
 @Slf4j
-public class SharingDesireRemovalInSubtreeRoutine implements ResponseReceiverInterface<Boolean> {
+public class SharingDesireRemovalInSubtreeRoutine implements IResponseReceiver<Boolean> {
 
   private final Object lockMonitor = new Object();
   private Boolean unregistered = false;

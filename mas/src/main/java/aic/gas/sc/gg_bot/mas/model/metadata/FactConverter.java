@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.metadata;
 
-import aic.gas.sc.gg_bot.mas.model.FeatureRawValueObtainingStrategy;
+import aic.gas.sc.gg_bot.mas.model.IFeatureRawValueObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSet;
@@ -14,16 +14,16 @@ import lombok.Getter;
 /**
  * Template for feature
  */
-public abstract class FactConverter<V, K> implements Converter {
+public abstract class FactConverter<V, K> implements IConverter {
 
   private final DataForDecision dataForDecision;
-  private final FeatureRawValueObtainingStrategy<V> strategyToObtainValue;
+  private final IFeatureRawValueObtainingStrategy<V> strategyToObtainValue;
   private final int id;
   @Getter
   private Double value = null;
 
   FactConverter(DataForDecision dataForDecision,
-      FeatureRawValueObtainingStrategy<V> strategyToObtainValue, int id) {
+      IFeatureRawValueObtainingStrategy<V> strategyToObtainValue, int id) {
     this.dataForDecision = dataForDecision;
     this.strategyToObtainValue = strategyToObtainValue;
     this.id = id;

@@ -1,20 +1,16 @@
 package aic.gas.sc.gg_bot.mas.model.planing.heap;
 
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
-import aic.gas.sc.gg_bot.mas.model.planing.AbstractIntention;
-import aic.gas.sc.gg_bot.mas.model.planing.DesireForOthers;
-import aic.gas.sc.gg_bot.mas.model.planing.DesireFromAnotherAgent;
-import aic.gas.sc.gg_bot.mas.model.planing.Intention;
-import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.IntentionWithDesireForOtherAgents;
-import aic.gas.sc.gg_bot.mas.model.planing.InternalDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
+import aic.gas.sc.gg_bot.mas.model.planing.*;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.CommandForIntention;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.DesireNodeNotTopLevel.ForOthers;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel.WithCommand.ActingAtTopLevelParent;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel.WithCommand.ReasoningAtTopLevelParent;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel.WithDesireForOthers.TopLevelParent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends InternalDesire<?>>, T extends InternalDesire<V>> extends
-    Node.TopLevel implements IntentionNodeInterface, VisitorAcceptor {
+    Node.TopLevel implements IIntentionNode, IVisitorAcceptor {
 
   final V intention;
 
@@ -47,7 +43,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
    * Class to extend template - to define intention node without child
    */
   public abstract static class WithCommand<V extends IntentionCommand<? extends InternalDesire<? extends IntentionCommand<?, ?>>, ?>, K extends CommandForIntention<? extends IntentionCommand<T, K>>, T extends InternalDesire<V>> extends
-      IntentionNodeAtTopLevel<V, T> implements NodeWithCommand<K> {
+      IntentionNodeAtTopLevel<V, T> implements INodeWithCommand<K> {
 
     private WithCommand(HeapOfTrees heapOfTrees, T desire) {
       super(heapOfTrees, desire);
@@ -82,7 +78,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
      */
     public static class FromAnotherAgent extends
         WithCommand<IntentionCommand.FromAnotherAgent, ActCommand.DesiredByAnotherAgent, DesireFromAnotherAgent.WithIntentionWithPlan> implements
-        ResponseReceiverInterface<Boolean> {
+        IResponseReceiver<Boolean> {
 
       private final DesireFromAnotherAgent.WithIntentionWithPlan desire;
       private final Object lockMonitor = new Object();
@@ -156,7 +152,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
       }
 
       @Override
-      public void accept(TreeVisitorInterface treeVisitor) {
+      public void accept(ITreeVisitor treeVisitor) {
         treeVisitor.visit(this);
       }
 
@@ -209,7 +205,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
       }
 
       @Override
-      public void accept(TreeVisitorInterface treeVisitor) {
+      public void accept(ITreeVisitor treeVisitor) {
         treeVisitor.visit(this);
       }
     }
@@ -251,7 +247,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
       }
 
       @Override
-      public void accept(TreeVisitorInterface treeVisitor) {
+      public void accept(ITreeVisitor treeVisitor) {
         treeVisitor.visit(this);
       }
     }
@@ -315,7 +311,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
     }
 
     @Override
-    public void accept(TreeVisitorInterface treeVisitor) {
+    public void accept(ITreeVisitor treeVisitor) {
       treeVisitor.visit(this);
     }
 
@@ -331,12 +327,12 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
    */
   public abstract static class WithAbstractPlan<V extends AbstractIntention<? extends InternalDesire<?>>, T extends InternalDesire<V>> extends
       IntentionNodeAtTopLevel<V, T> implements
-      IntentionNodeWithChildes<IntentionNodeNotTopLevel.WithCommand.ReasoningAtTopLevelParent,
-          IntentionNodeNotTopLevel.WithCommand.ActingAtTopLevelParent, IntentionNodeNotTopLevel.WithDesireForOthers.TopLevelParent,
+      IIntentionNodeWithChildes<ReasoningAtTopLevelParent,
+          ActingAtTopLevelParent, TopLevelParent,
           IntentionNodeNotTopLevel.WithAbstractPlan.TopLevelParent, DesireNodeNotTopLevel.WithCommand.ReasoningAtTopLevelParent,
-          DesireNodeNotTopLevel.WithCommand.ActingAtTopLevelParent, DesireNodeNotTopLevel.ForOthers.TopLevelParent,
+          DesireNodeNotTopLevel.WithCommand.ActingAtTopLevelParent, ForOthers.TopLevelParent,
           DesireNodeNotTopLevel.WithAbstractPlan.TopLevelParent>,
-      Parent<DesireNodeNotTopLevel<?, ?>, IntentionNodeNotTopLevel<?, ?, ?>> {
+      IParent<DesireNodeNotTopLevel<?, ?>, IntentionNodeNotTopLevel<?, ?, ?>> {
 
     private final SharingDesireRemovalInSubtreeRoutine sharingDesireRemovalInSubtreeRoutine = new SharingDesireRemovalInSubtreeRoutine();
 
@@ -358,12 +354,12 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
           if (sharingDesireRemovalInSubtreeRoutine
               .unregisterSharedDesire(sharedDesires, heapOfTrees)) {
             getDesireUpdater().getNodesWithIntention()
-                .forEach(IntentionNodeInterface::actOnRemoval);
+                .forEach(IIntentionNode::actOnRemoval);
             formDesireNodeToReplaceIntentionNode();
             return true;
           }
         } else {
-          getDesireUpdater().getNodesWithIntention().forEach(IntentionNodeInterface::actOnRemoval);
+          getDesireUpdater().getNodesWithIntention().forEach(IIntentionNode::actOnRemoval);
           formDesireNodeToReplaceIntentionNode();
           return true;
         }
@@ -373,7 +369,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
 
     @Override
     public void actOnRemoval() {
-      getDesireUpdater().getNodesWithIntention().forEach(IntentionNodeInterface::actOnRemoval);
+      getDesireUpdater().getNodesWithIntention().forEach(IIntentionNode::actOnRemoval);
       intention.actOnRemoval();
     }
 
@@ -427,7 +423,7 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
     }
 
     @Override
-    public void accept(TreeVisitorInterface treeVisitor) {
+    public void accept(ITreeVisitor treeVisitor) {
       treeVisitor.visit(this);
     }
 

@@ -3,15 +3,7 @@ package aic.gas.sc.gg_bot.mas.model.planing.heap.visitors;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.DesireNodeInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.HeapOfTrees;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeAtTopLevel;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.Node;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.Parent;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.TreeVisitorInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.VisitorAcceptor;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +15,7 @@ import java.util.stream.Collectors;
  * in root of subtree decide based on gate (and supplied arguments to it) if agent should commit to
  * this desire (if so, intention is made) and visitor move further in subtree else backtrack
  */
-public class CommitmentDecider implements TreeVisitorInterface {
+public class CommitmentDecider implements ITreeVisitor {
 
   private final HeapOfTrees heapOfTrees;
 
@@ -39,8 +31,8 @@ public class CommitmentDecider implements TreeVisitorInterface {
   /**
    * Decides commitment of parent's childes and sends this visitor to subtree
    */
-  private <K extends Node<?> & IntentionNodeInterface & VisitorAcceptor, V extends Node<?> & DesireNodeInterface<K>> void branch(
-      Parent<V, K> parent) {
+  private <K extends Node<?> & IIntentionNode & IVisitorAcceptor, V extends Node<?> & IDesireNode<K>> void branch(
+      IParent<V, K> parent) {
     List<V> desiresNodes = parent.getNodesWithDesire();
     List<DesireKey> didNotMakeCommitmentToTypes = new ArrayList<>();
 

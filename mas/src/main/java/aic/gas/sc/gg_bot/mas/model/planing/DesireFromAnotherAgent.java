@@ -3,8 +3,9 @@ package aic.gas.sc.gg_bot.mas.model.planing;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.command.CommandFormulationStrategy;
+import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand.FromAnotherAgent;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand.DesiredByAnotherAgent;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ICommandFormulationStrategy;
 import java.util.Set;
 import lombok.Getter;
 
@@ -14,15 +15,15 @@ import lombok.Getter;
 public abstract class DesireFromAnotherAgent<T extends Intention<? extends DesireFromAnotherAgent<?>>> extends
     InternalDesire<T> {
 
-  final ReactionOnChangeStrategy reactionOnChangeStrategyInIntention;
+  final IReactionOnChangeStrategy reactionOnChangeStrategyInIntention;
   @Getter
   private final SharedDesireForAgents desireForAgents;
 
   DesireFromAnotherAgent(SharedDesireForAgents desireOriginatedFrom, WorkingMemory memory,
       CommitmentDeciderInitializer commitmentDecider,
       CommitmentDeciderInitializer removeCommitment, boolean isAbstract,
-      ReactionOnChangeStrategy reactionOnChangeStrategy,
-      ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+      IReactionOnChangeStrategy reactionOnChangeStrategy,
+      IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
     super(desireOriginatedFrom.desireParameters, memory, commitmentDecider, removeCommitment,
         isAbstract,
         desireOriginatedFrom.originatorId, reactionOnChangeStrategy);
@@ -50,8 +51,8 @@ public abstract class DesireFromAnotherAgent<T extends Intention<? extends Desir
         CommitmentDeciderInitializer removeCommitment, Set<DesireKey> desiresForOthers,
         Set<DesireKey> desiresWithAbstractIntention, Set<DesireKey> desiresWithIntentionToAct,
         Set<DesireKey> desiresWithIntentionToReason,
-        ReactionOnChangeStrategy reactionOnChangeStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+        IReactionOnChangeStrategy reactionOnChangeStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
       super(desireOriginatedFrom, memory, commitmentDecider, removeCommitment, true,
           reactionOnChangeStrategy,
           reactionOnChangeStrategyInIntention);
@@ -77,14 +78,14 @@ public abstract class DesireFromAnotherAgent<T extends Intention<? extends Desir
   public static class WithIntentionWithPlan extends
       DesireFromAnotherAgent<IntentionCommand.FromAnotherAgent> {
 
-    private final CommandFormulationStrategy<ActCommand.DesiredByAnotherAgent, IntentionCommand.FromAnotherAgent> commandCreationStrategy;
+    private final ICommandFormulationStrategy<DesiredByAnotherAgent, FromAnotherAgent> commandCreationStrategy;
 
     public WithIntentionWithPlan(SharedDesireForAgents desireOriginatedFrom, WorkingMemory memory,
         CommitmentDeciderInitializer commitmentDecider,
         CommitmentDeciderInitializer removeCommitment,
-        CommandFormulationStrategy<ActCommand.DesiredByAnotherAgent, IntentionCommand.FromAnotherAgent> commandCreationStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+        ICommandFormulationStrategy<DesiredByAnotherAgent, FromAnotherAgent> commandCreationStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
       super(desireOriginatedFrom, memory, commitmentDecider, removeCommitment, false,
           reactionOnChangeStrategy,
           reactionOnChangeStrategyInIntention);

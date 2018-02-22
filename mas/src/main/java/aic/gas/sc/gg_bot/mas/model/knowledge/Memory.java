@@ -1,8 +1,8 @@
 package aic.gas.sc.gg_bot.mas.model.knowledge;
 
-import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
+import aic.gas.sc.gg_bot.mas.model.IFactContainer;
+import aic.gas.sc.gg_bot.mas.model.IPlanningTree;
 import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
-import aic.gas.sc.gg_bot.mas.model.PlanningTreeInterface;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
@@ -22,8 +22,8 @@ import lombok.extern.slf4j.Slf4j;
  * form of heap, and provide access to this data
  */
 @Slf4j
-public abstract class Memory<V extends PlanningTreeInterface>
-    implements FactContainerInterface, PlanningTreeInterface {
+public abstract class Memory<V extends IPlanningTree>
+    implements IFactContainer, IPlanningTree {
 
   final Map<FactKey<?>, FactSet<?>> factSetParameterMap = new HashMap<>();
   final V tree;
@@ -31,15 +31,15 @@ public abstract class Memory<V extends PlanningTreeInterface>
   final AgentType agentType;
   @Getter
   final int agentId;
-  final StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType;
-  final StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent;
-  final StrategyToGetAllMemories strategyToGetAllMemories;
+  final IStrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType;
+  final IStrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent;
+  final IStrategyToGetAllMemories strategyToGetAllMemories;
   final InternalClockObtainingStrategy internalClockObtainingStrategy;
 
   Memory(V tree, AgentType agentType, int agentId,
-      StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
-      StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
-      StrategyToGetAllMemories strategyToGetAllMemories,
+      IStrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
+      IStrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
+      IStrategyToGetAllMemories strategyToGetAllMemories,
       InternalClockObtainingStrategy internalClockObtainingStrategy) {
     this.tree = tree;
     this.agentType = agentType;
@@ -57,9 +57,9 @@ public abstract class Memory<V extends PlanningTreeInterface>
    */
   Memory(Map<FactKey, FactSet> factSetParameterMap, V tree,
       AgentType agentType, int agentId,
-      StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
-      StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
-      StrategyToGetAllMemories strategyToGetAllMemories,
+      IStrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
+      IStrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
+      IStrategyToGetAllMemories strategyToGetAllMemories,
       InternalClockObtainingStrategy internalClockObtainingStrategy) {
     this.tree = tree;
     this.agentType = agentType;
@@ -197,7 +197,7 @@ public abstract class Memory<V extends PlanningTreeInterface>
   /**
    * Obtaining strategy
    */
-  public interface StrategyToGetSetOfMemoriesByAgentType {
+  public interface IStrategyToGetSetOfMemoriesByAgentType {
 
     /**
      * Get set of memories by agent type
@@ -208,7 +208,7 @@ public abstract class Memory<V extends PlanningTreeInterface>
   /**
    * Obtaining strategy
    */
-  public interface StrategyToGetMemoryOfAgent {
+  public interface IStrategyToGetMemoryOfAgent {
 
     /**
      * Get ReadOnlyMemory by agent id
@@ -219,7 +219,7 @@ public abstract class Memory<V extends PlanningTreeInterface>
   /**
    * Obtaining strategy
    */
-  public interface StrategyToGetAllMemories {
+  public interface IStrategyToGetAllMemories {
 
     /**
      * Get all beliefs in system

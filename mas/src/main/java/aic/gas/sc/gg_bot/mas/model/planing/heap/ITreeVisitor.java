@@ -8,7 +8,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
  * of visit to heapOfTrees. Using design pattern Visitor enables to have logic to handle flow
  * implemented by concrete visitor.
  */
-public interface TreeVisitorInterface {
+public interface ITreeVisitor {
 
   /**
    * Visit heapOfTrees

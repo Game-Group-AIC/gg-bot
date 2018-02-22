@@ -1,22 +1,14 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.sc.gg_bot.mas.model.QueuedItemInterfaceWithResponse;
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IQueuedItemWithResponse;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
-import aic.gas.sc.gg_bot.mas.service.CommandManager;
-import aic.gas.sc.gg_bot.mas.service.ObservingCommandManager;
+import aic.gas.sc.gg_bot.mas.model.planing.command.IObservingCommand;
+import aic.gas.sc.gg_bot.mas.service.ICommandManager;
+import aic.gas.sc.gg_bot.mas.service.IObservingCommandManager;
 import bwapi.Game;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
  * and remaining time - it make maximum to make sure that limit is not overstep.
  */
 @Slf4j
-public class GameCommandExecutor implements CommandManager<ActCommand<?>>,
-    ObservingCommandManager<Game, ObservingCommand<Game>> {
+public class GameCommandExecutor implements ICommandManager<ActCommand<?>>,
+    IObservingCommandManager<Game, IObservingCommand<Game>> {
 
   //FIFO
   private final Map<Integer, CommandQueueForAgent> queues = new HashMap<>();
@@ -172,8 +164,8 @@ public class GameCommandExecutor implements CommandManager<ActCommand<?>>,
   /**
    * Method to add item to queue with code to execute action in GAME
    */
-  public boolean addCommandToObserve(ObservingCommand<Game> command, WorkingMemory memory,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
+  public boolean addCommandToObserve(IObservingCommand<Game> command, WorkingMemory memory,
+      IResponseReceiver<Boolean> responseReceiver) {
     return addToQueue(new QueuedItemInterfaceWithResponseWithCommandClassGetter() {
 
       @Override
@@ -187,7 +179,7 @@ public class GameCommandExecutor implements CommandManager<ActCommand<?>>,
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -197,7 +189,7 @@ public class GameCommandExecutor implements CommandManager<ActCommand<?>>,
    * Method to add item to queue with code to execute action in GAME
    */
   public boolean addCommandToAct(ActCommand<?> command, WorkingMemory memory,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
+      IResponseReceiver<Boolean> responseReceiver) {
     return addToQueue(new QueuedItemInterfaceWithResponseWithCommandClassGetter() {
 
       @Override
@@ -211,7 +203,7 @@ public class GameCommandExecutor implements CommandManager<ActCommand<?>>,
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -221,7 +213,7 @@ public class GameCommandExecutor implements CommandManager<ActCommand<?>>,
    * Extension of item in queue
    */
   private static abstract class QueuedItemInterfaceWithResponseWithCommandClassGetter implements
-      QueuedItemInterfaceWithResponse<Boolean> {
+      IQueuedItemWithResponse<Boolean> {
 
     /**
      * Get agent type

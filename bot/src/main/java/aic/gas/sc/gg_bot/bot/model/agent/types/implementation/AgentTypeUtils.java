@@ -12,7 +12,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSetsForAgentType;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
-import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
+import aic.gas.sc.gg_bot.mas.model.planing.IReactionOnChangeStrategy;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -149,8 +149,8 @@ public class AgentTypeUtils {
   public static ConfigurationWithSharedDesire createConfigurationWithSharedDesireToBuildFromTemplate(
       DesireKey desireToShareKey,
       AUnitTypeWrapper unitTypeWrapper,
-      ReactionOnChangeStrategy findPlace,
-      ReactionOnChangeStrategy removePlace) {
+      IReactionOnChangeStrategy findPlace,
+      IReactionOnChangeStrategy removePlace) {
     return ConfigurationWithSharedDesire.builder()
         .sharedDesireKey(desireToShareKey)
         .counts(1)

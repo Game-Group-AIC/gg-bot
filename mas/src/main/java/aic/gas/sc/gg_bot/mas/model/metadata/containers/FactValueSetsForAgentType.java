@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.metadata.containers;
 
-import aic.gas.sc.gg_bot.mas.model.FeatureRawValueObtainingStrategy;
+import aic.gas.sc.gg_bot.mas.model.IFeatureRawValueObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactConverterID;
 import java.util.Optional;
@@ -18,7 +18,7 @@ public class FactValueSetsForAgentType<V> extends FactValueSets<V> {
   public FactValueSetsForAgentType(
       FactConverterID<V> factConverterID,
       AgentTypeID agentType,
-      FeatureRawValueObtainingStrategy<Stream<Optional<Stream<V>>>> strategyToObtainValue) {
+      IFeatureRawValueObtainingStrategy<Stream<Optional<Stream<V>>>> strategyToObtainValue) {
     super(factConverterID, strategyToObtainValue);
     this.agentType = agentType;
   }

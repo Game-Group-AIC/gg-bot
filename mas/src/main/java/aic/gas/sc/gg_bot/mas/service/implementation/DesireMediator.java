@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.mas.service.implementation;
 
-import aic.gas.sc.gg_bot.mas.model.QueuedItemInterfaceWithResponse;
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IQueuedItemWithResponse;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
@@ -31,15 +31,15 @@ public class DesireMediator extends
    * Method to add item to queue with code to register desire
    */
   public boolean registerDesire(SharedDesireInRegister sharedDesire,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
-    return addToQueue(new QueuedItemInterfaceWithResponse<Boolean>() {
+      IResponseReceiver<Boolean> responseReceiver) {
+    return addToQueue(new IQueuedItemWithResponse<Boolean>() {
       @Override
       public Boolean executeCode() {
         return workingRegister.addedDesire(sharedDesire);
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -49,15 +49,15 @@ public class DesireMediator extends
    * Method to remove agent from register of desires
    */
   public void removeAgentFromRegister(Agent agent,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
-    addToQueue(new QueuedItemInterfaceWithResponse<Boolean>() {
+      IResponseReceiver<Boolean> responseReceiver) {
+    addToQueue(new IQueuedItemWithResponse<Boolean>() {
       @Override
       public Boolean executeCode() {
         return workingRegister.removeAgent(agent);
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -67,15 +67,15 @@ public class DesireMediator extends
    * Method to add item to queue with code to unregister desire
    */
   public boolean unregisterDesire(SharedDesire sharedDesire,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
-    return addToQueue(new QueuedItemInterfaceWithResponse<Boolean>() {
+      IResponseReceiver<Boolean> responseReceiver) {
+    return addToQueue(new IQueuedItemWithResponse<Boolean>() {
       @Override
       public Boolean executeCode() {
         return workingRegister.removedDesire(sharedDesire);
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -85,8 +85,8 @@ public class DesireMediator extends
    * Method to add item to queue with code to unregister desires
    */
   public boolean unregisterDesires(Set<SharedDesire> sharedDesires,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
-    return addToQueue(new QueuedItemInterfaceWithResponse<Boolean>() {
+      IResponseReceiver<Boolean> responseReceiver) {
+    return addToQueue(new IQueuedItemWithResponse<Boolean>() {
       @Override
       public Boolean executeCode() {
         sharedDesires.forEach(workingRegister::removedDesire);
@@ -94,7 +94,7 @@ public class DesireMediator extends
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -105,8 +105,8 @@ public class DesireMediator extends
    */
   public boolean addCommitmentToDesire(Agent agentWhoWantsToCommitTo,
       SharedDesireForAgents desireForOthersHeWantsToCommitTo,
-      ResponseReceiverInterface<Optional<SharedDesireForAgents>> responseReceiver) {
-    return addToQueue(new QueuedItemInterfaceWithResponse<Optional<SharedDesireForAgents>>() {
+      IResponseReceiver<Optional<SharedDesireForAgents>> responseReceiver) {
+    return addToQueue(new IQueuedItemWithResponse<Optional<SharedDesireForAgents>>() {
       @Override
       public Optional<SharedDesireForAgents> executeCode() {
         return workingRegister
@@ -114,7 +114,7 @@ public class DesireMediator extends
       }
 
       @Override
-      public ResponseReceiverInterface<Optional<SharedDesireForAgents>> getReceiverOfResponse() {
+      public IResponseReceiver<Optional<SharedDesireForAgents>> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -125,8 +125,8 @@ public class DesireMediator extends
    */
   public boolean removeCommitmentToDesire(Agent agentWhoWantsToRemoveCommitment,
       SharedDesireForAgents desireHeWantsToRemoveCommitmentTo,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
-    return addToQueue(new QueuedItemInterfaceWithResponse<Boolean>() {
+      IResponseReceiver<Boolean> responseReceiver) {
+    return addToQueue(new IQueuedItemWithResponse<Boolean>() {
       @Override
       public Boolean executeCode() {
         return workingRegister.removeCommitmentToDesire(agentWhoWantsToRemoveCommitment,
@@ -134,7 +134,7 @@ public class DesireMediator extends
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -145,8 +145,8 @@ public class DesireMediator extends
    */
   public void removeCommitmentToDesires(Agent agentWhoWantsToRemoveCommitment,
       Set<SharedDesireForAgents> desiresHeWantsToRemoveCommitmentTo,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
-    addToQueue(new QueuedItemInterfaceWithResponse<Boolean>() {
+      IResponseReceiver<Boolean> responseReceiver) {
+    addToQueue(new IQueuedItemWithResponse<Boolean>() {
       @Override
       public Boolean executeCode() {
         desiresHeWantsToRemoveCommitmentTo.forEach(
@@ -157,7 +157,7 @@ public class DesireMediator extends
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });

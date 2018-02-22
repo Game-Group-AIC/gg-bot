@@ -1,12 +1,7 @@
 package aic.gas.sc.gg_bot.mas.model.planing.heap;
 
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
-import aic.gas.sc.gg_bot.mas.model.planing.DesireForOthers;
-import aic.gas.sc.gg_bot.mas.model.planing.Intention;
-import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.InternalDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireInRegister;
+import aic.gas.sc.gg_bot.mas.model.planing.*;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.CommandForIntention;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
@@ -18,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
  * Template for desire not in top level
  */
 @Slf4j
-public abstract class DesireNodeNotTopLevel<T extends InternalDesire<? extends Intention>, K extends Node & IntentionNodeWithChildes & Parent<?, ?>> extends
-    Node.NotTopLevel<K> implements DesireNodeInterface<IntentionNodeNotTopLevel<?, ?, ?>> {
+public abstract class DesireNodeNotTopLevel<T extends InternalDesire<? extends Intention>, K extends Node & IIntentionNodeWithChildes & IParent<?, ?>> extends
+    Node.NotTopLevel<K> implements IDesireNode<IntentionNodeNotTopLevel<?, ?, ?>> {
 
   final T desire;
 
@@ -48,7 +43,7 @@ public abstract class DesireNodeNotTopLevel<T extends InternalDesire<? extends I
   /**
    * Implementation of top node with desire for other agents
    */
-  static abstract class ForOthers<K extends Node & IntentionNodeWithChildes & Parent<?, ?>> extends
+  static abstract class ForOthers<K extends Node & IIntentionNodeWithChildes & IParent<?, ?>> extends
       DesireNodeNotTopLevel<DesireForOthers, K> {
 
     final SharingDesireRoutine sharingDesireRoutine = new SharingDesireRoutine();
@@ -126,7 +121,7 @@ public abstract class DesireNodeNotTopLevel<T extends InternalDesire<? extends I
   /**
    * Implementation of top node with desire for other agents
    */
-  static abstract class WithAbstractPlan<T extends InternalDesire<? extends Intention>, K extends Node & IntentionNodeWithChildes & Parent<?, ?>> extends
+  static abstract class WithAbstractPlan<T extends InternalDesire<? extends Intention>, K extends Node & IIntentionNodeWithChildes & IParent<?, ?>> extends
       DesireNodeNotTopLevel<T, K> {
 
     private WithAbstractPlan(K parent, T desire) {
@@ -178,7 +173,7 @@ public abstract class DesireNodeNotTopLevel<T extends InternalDesire<? extends I
   /**
    * Class to extend template - to define desire node without child
    */
-  abstract static class WithCommand<K extends Node & IntentionNodeWithChildes & Parent<?, ?>, V extends InternalDesire<? extends IntentionCommand<V, T>>, T extends CommandForIntention<? extends IntentionCommand<V, T>>> extends
+  abstract static class WithCommand<K extends Node & IIntentionNodeWithChildes & IParent<?, ?>, V extends InternalDesire<? extends IntentionCommand<V, T>>, T extends CommandForIntention<? extends IntentionCommand<V, T>>> extends
       WithAbstractPlan<V, K> {
 
     private WithCommand(K parent, V desire) {

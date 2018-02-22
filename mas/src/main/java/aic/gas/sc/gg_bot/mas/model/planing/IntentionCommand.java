@@ -2,7 +2,7 @@ package aic.gas.sc.gg_bot.mas.model.planing;
 
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.CommandForIntention;
-import aic.gas.sc.gg_bot.mas.model.planing.command.CommandFormulationStrategy;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ICommandFormulationStrategy;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import lombok.Getter;
 
@@ -13,8 +13,8 @@ public abstract class IntentionCommand<V extends InternalDesire<? extends Intent
     Intention<V> {
 
   IntentionCommand(V originalDesire, CommitmentDeciderInitializer removeCommitment,
-      ReactionOnChangeStrategy reactionOnChangeStrategy) {
-    super(originalDesire, removeCommitment, reactionOnChangeStrategy);
+      IReactionOnChangeStrategy IReactionOnChangeStrategy) {
+    super(originalDesire, removeCommitment, IReactionOnChangeStrategy);
   }
 
   /**
@@ -34,9 +34,9 @@ public abstract class IntentionCommand<V extends InternalDesire<? extends Intent
 
     FromAnotherAgent(DesireFromAnotherAgent.WithIntentionWithPlan originalDesire,
         CommitmentDeciderInitializer removeCommitment,
-        CommandFormulationStrategy<ActCommand.DesiredByAnotherAgent, FromAnotherAgent> commandCreationStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategy) {
-      super(originalDesire, removeCommitment, reactionOnChangeStrategy);
+        ICommandFormulationStrategy<ActCommand.DesiredByAnotherAgent, FromAnotherAgent> commandCreationStrategy,
+        IReactionOnChangeStrategy IReactionOnChangeStrategy) {
+      super(originalDesire, removeCommitment, IReactionOnChangeStrategy);
       this.sharedDesireForAgents = originalDesire.getDesireForAgents();
       this.command = commandCreationStrategy.formCommand(this);
     }
@@ -56,9 +56,9 @@ public abstract class IntentionCommand<V extends InternalDesire<? extends Intent
     private final ReasoningCommand command;
 
     OwnReasoning(OwnDesire.Reasoning originalDesire, CommitmentDeciderInitializer removeCommitment,
-        CommandFormulationStrategy<ReasoningCommand, OwnReasoning> commandCreationStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategy) {
-      super(originalDesire, removeCommitment, reactionOnChangeStrategy);
+        ICommandFormulationStrategy<ReasoningCommand, OwnReasoning> commandCreationStrategy,
+        IReactionOnChangeStrategy IReactionOnChangeStrategy) {
+      super(originalDesire, removeCommitment, IReactionOnChangeStrategy);
       this.command = commandCreationStrategy.formCommand(this);
     }
 
@@ -76,9 +76,9 @@ public abstract class IntentionCommand<V extends InternalDesire<? extends Intent
     private final ActCommand.Own command;
 
     OwnActing(OwnDesire.Acting originalDesire, CommitmentDeciderInitializer removeCommitment,
-        CommandFormulationStrategy<ActCommand.Own, OwnActing> commandCreationStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategy) {
-      super(originalDesire, removeCommitment, reactionOnChangeStrategy);
+        ICommandFormulationStrategy<ActCommand.Own, OwnActing> commandCreationStrategy,
+        IReactionOnChangeStrategy IReactionOnChangeStrategy) {
+      super(originalDesire, removeCommitment, IReactionOnChangeStrategy);
       this.command = commandCreationStrategy.formCommand(this);
     }
 

@@ -2,7 +2,7 @@ package aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration;
 
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
-import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
+import aic.gas.sc.gg_bot.mas.model.planing.IReactionOnChangeStrategy;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Builder;
@@ -28,8 +28,8 @@ public class ConfigurationWithAbstractPlan extends CommonConfiguration {
       Set<DesireKey> desiresWithAbstractIntention,
       Set<DesireKey> desiresWithIntentionToAct,
       Set<DesireKey> desiresWithIntentionToReason,
-      ReactionOnChangeStrategy reactionOnChangeStrategy,
-      ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+      IReactionOnChangeStrategy reactionOnChangeStrategy,
+      IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
     super(decisionInDesire, decisionInIntention, typesOfDesiresToConsiderWhenCommitting,
         typesOfDesiresToConsiderWhenRemovingCommitment, reactionOnChangeStrategy,
         reactionOnChangeStrategyInIntention);

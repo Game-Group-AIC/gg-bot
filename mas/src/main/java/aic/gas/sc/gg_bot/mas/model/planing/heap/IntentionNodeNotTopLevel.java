@@ -2,17 +2,14 @@ package aic.gas.sc.gg_bot.mas.model.planing.heap;
 
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
-import aic.gas.sc.gg_bot.mas.model.planing.AbstractIntention;
-import aic.gas.sc.gg_bot.mas.model.planing.DesireForOthers;
-import aic.gas.sc.gg_bot.mas.model.planing.Intention;
-import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.IntentionWithDesireForOtherAgents;
-import aic.gas.sc.gg_bot.mas.model.planing.InternalDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
+import aic.gas.sc.gg_bot.mas.model.planing.*;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.CommandForIntention;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.DesireNodeNotTopLevel.ForOthers;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel.WithCommand.ActingNotTopLevelParent;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel.WithCommand.ReasoningNotTopLevelParent;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel.WithDesireForOthers.NotTopLevelParent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -24,8 +21,8 @@ import lombok.extern.slf4j.Slf4j;
  * Template for intention not in top level
  */
 @Slf4j
-public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends InternalDesire<?>>, T extends InternalDesire<? extends V>, K extends Node & IntentionNodeWithChildes & Parent<?, ?>> extends
-    Node.NotTopLevel<K> implements IntentionNodeInterface, VisitorAcceptor {
+public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends InternalDesire<?>>, T extends InternalDesire<? extends V>, K extends Node & IIntentionNodeWithChildes & IParent<?, ?>> extends
+    Node.NotTopLevel<K> implements IIntentionNode, IVisitorAcceptor {
 
   final V intention;
 
@@ -44,7 +41,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
   /**
    * Implementation of top node with desire for other agents
    */
-  public static abstract class WithDesireForOthers<K extends Node & IntentionNodeWithChildes & Parent<?, ?>> extends
+  public static abstract class WithDesireForOthers<K extends Node & IIntentionNodeWithChildes & IParent<?, ?>> extends
       IntentionNodeNotTopLevel<IntentionWithDesireForOtherAgents, DesireForOthers, K> {
 
     private final SharingDesireRemovalRoutine sharingDesireRemovalRoutine = new SharingDesireRemovalRoutine();
@@ -86,7 +83,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
     }
 
     @Override
-    public void accept(TreeVisitorInterface treeVisitor) {
+    public void accept(ITreeVisitor treeVisitor) {
       treeVisitor.visit(this);
     }
 
@@ -144,8 +141,8 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
   /**
    * Class to extend template - to define intention node without child
    */
-  public abstract static class WithCommand<K extends Node & IntentionNodeWithChildes & Parent<?, ?>, V extends InternalDesire<? extends IntentionCommand<V, T>>, T extends CommandForIntention<? extends IntentionCommand<V, T>>> extends
-      IntentionNodeNotTopLevel<IntentionCommand<V, T>, V, K> implements NodeWithCommand {
+  public abstract static class WithCommand<K extends Node & IIntentionNodeWithChildes & IParent<?, ?>, V extends InternalDesire<? extends IntentionCommand<V, T>>, T extends CommandForIntention<? extends IntentionCommand<V, T>>> extends
+      IntentionNodeNotTopLevel<IntentionCommand<V, T>, V, K> implements INodeWithCommand {
 
     private WithCommand(K parent, V desire) {
       super(parent, desire);
@@ -196,7 +193,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
       }
 
       @Override
-      public void accept(TreeVisitorInterface treeVisitor) {
+      public void accept(ITreeVisitor treeVisitor) {
         treeVisitor.visitNodeWithReasoningCommand(this);
       }
 
@@ -232,7 +229,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
       }
 
       @Override
-      public void accept(TreeVisitorInterface treeVisitor) {
+      public void accept(ITreeVisitor treeVisitor) {
         treeVisitor.visitNodeWithActingCommand(this);
       }
 
@@ -271,7 +268,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
       }
 
       @Override
-      public void accept(TreeVisitorInterface treeVisitor) {
+      public void accept(ITreeVisitor treeVisitor) {
         treeVisitor.visitNodeWithReasoningCommand(this);
       }
     }
@@ -301,7 +298,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
       }
 
       @Override
-      public void accept(TreeVisitorInterface treeVisitor) {
+      public void accept(ITreeVisitor treeVisitor) {
         treeVisitor.visitNodeWithActingCommand(this);
       }
     }
@@ -312,14 +309,14 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
    * Class to extend template - to define intention node with childes
    */
   public abstract static class WithAbstractPlan<V extends AbstractIntention<? extends InternalDesire<?>>, T extends InternalDesire<V>,
-      K extends Node & IntentionNodeWithChildes & Parent<?, ?>> extends
+      K extends Node & IIntentionNodeWithChildes & IParent<?, ?>> extends
       IntentionNodeNotTopLevel<V, T, K> implements
-      IntentionNodeWithChildes<IntentionNodeNotTopLevel.WithCommand.ReasoningNotTopLevelParent,
-          IntentionNodeNotTopLevel.WithCommand.ActingNotTopLevelParent, IntentionNodeNotTopLevel.WithDesireForOthers.NotTopLevelParent,
-          IntentionNodeNotTopLevel.WithAbstractPlan.NotTopLevelParent, DesireNodeNotTopLevel.WithCommand.ReasoningNotTopLevelParent,
-          DesireNodeNotTopLevel.WithCommand.ActingNotTopLevelParent, DesireNodeNotTopLevel.ForOthers.NotTopLevelParent,
+      IIntentionNodeWithChildes<ReasoningNotTopLevelParent,
+          ActingNotTopLevelParent, NotTopLevelParent,
+          WithAbstractPlan.NotTopLevelParent, DesireNodeNotTopLevel.WithCommand.ReasoningNotTopLevelParent,
+          DesireNodeNotTopLevel.WithCommand.ActingNotTopLevelParent, ForOthers.NotTopLevelParent,
           DesireNodeNotTopLevel.WithAbstractPlan.NotTopLevelParent>,
-      Parent<DesireNodeNotTopLevel<?, ?>, IntentionNodeNotTopLevel<?, ?, ?>> {
+      IParent<DesireNodeNotTopLevel<?, ?>, IntentionNodeNotTopLevel<?, ?, ?>> {
 
     private final SharingDesireRemovalInSubtreeRoutine sharingDesireRemovalInSubtreeRoutine = new SharingDesireRemovalInSubtreeRoutine();
 
@@ -342,11 +339,11 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
               .unregisterSharedDesire(sharedDesires, heapOfTrees)) {
             replaceIntentionByDesire();
             getDesireUpdater().getNodesWithIntention()
-                .forEach(IntentionNodeInterface::actOnRemoval);
+                .forEach(IIntentionNode::actOnRemoval);
             return true;
           }
         } else {
-          getDesireUpdater().getNodesWithIntention().forEach(IntentionNodeInterface::actOnRemoval);
+          getDesireUpdater().getNodesWithIntention().forEach(IIntentionNode::actOnRemoval);
           return true;
         }
       }
@@ -355,7 +352,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
 
     @Override
     public void actOnRemoval() {
-      getDesireUpdater().getNodesWithIntention().forEach(IntentionNodeInterface::actOnRemoval);
+      getDesireUpdater().getNodesWithIntention().forEach(IIntentionNode::actOnRemoval);
       intention.actOnRemoval();
     }
 
@@ -405,7 +402,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
     }
 
     @Override
-    public void accept(TreeVisitorInterface treeVisitor) {
+    public void accept(ITreeVisitor treeVisitor) {
       treeVisitor.visit(this);
     }
 

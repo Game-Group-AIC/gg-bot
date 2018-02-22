@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Contract for desire formulations - which forms desires from agent's memory
  */
-interface OwnInternalDesireFormulation<T extends InternalDesire<? extends Intention<T>>> {
+interface IOwnInternalDesireFormulation<T extends InternalDesire<? extends Intention<T>>> {
 
   /**
    * Form desire of given key with data initialized from memory

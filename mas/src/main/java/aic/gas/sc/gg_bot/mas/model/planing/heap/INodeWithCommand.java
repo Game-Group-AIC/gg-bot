@@ -7,7 +7,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.command.CommandForIntention;
 /**
  * Contract for nodes with command
  */
-interface NodeWithCommand<T extends CommandForIntention<? extends IntentionCommand<? extends InternalDesire<? extends IntentionCommand<?, ?>>, T>>> {
+interface INodeWithCommand<T extends CommandForIntention<? extends IntentionCommand<? extends InternalDesire<? extends IntentionCommand<?, ?>>, T>>> {
 
   /**
    * Return command associated with node

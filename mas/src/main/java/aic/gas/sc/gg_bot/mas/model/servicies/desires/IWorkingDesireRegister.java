@@ -4,14 +4,14 @@ import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireInRegister;
-import aic.gas.sc.gg_bot.mas.model.servicies.WorkingRegister;
+import aic.gas.sc.gg_bot.mas.model.servicies.IWorkingRegister;
 import java.util.Optional;
 
 /**
  * Concrete implementation of DesireRegister. This class is intended as working register - register
  * keeps up to date information about desires and is intended for mediator use only.
  */
-public interface IWorkingDesireRegister extends WorkingRegister<IReadOnlyDesireRegister>,
+public interface IWorkingDesireRegister extends IWorkingRegister<IReadOnlyDesireRegister>,
     IReadOnlyDesireRegister {
 
   @Override

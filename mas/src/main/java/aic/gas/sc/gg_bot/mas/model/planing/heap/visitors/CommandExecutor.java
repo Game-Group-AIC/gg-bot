@@ -1,18 +1,10 @@
 package aic.gas.sc.gg_bot.mas.model.planing.heap.visitors;
 
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.DesireNodeInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.HeapOfTrees;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeAtTopLevel;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.IntentionNodeNotTopLevel;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.Node;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.Parent;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.TreeVisitorInterface;
-import aic.gas.sc.gg_bot.mas.model.planing.heap.VisitorAcceptor;
+import aic.gas.sc.gg_bot.mas.model.planing.heap.*;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -20,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
  * in leaf and it contains command to be executed it sends command to agent to handle it
  */
 @Slf4j
-public class CommandExecutor implements TreeVisitorInterface, ResponseReceiverInterface<Boolean> {
+public class CommandExecutor implements ITreeVisitor, IResponseReceiver<Boolean> {
 
   private final Object lockMonitor = new Object();
   private final HeapOfTrees heapOfTrees;
@@ -42,8 +34,8 @@ public class CommandExecutor implements TreeVisitorInterface, ResponseReceiverIn
   /**
    * Visit subtrees induced by intentions
    */
-  private <K extends Node<?> & IntentionNodeInterface & VisitorAcceptor, V extends Node<?> & DesireNodeInterface<K>> void branch(
-      Parent<V, K> parent) {
+  private <K extends Node<?> & IIntentionNode & IVisitorAcceptor, V extends Node<?> & IDesireNode<K>> void branch(
+      IParent<V, K> parent) {
     parent.getNodesWithIntention().forEach(k -> k.accept(this));
   }
 

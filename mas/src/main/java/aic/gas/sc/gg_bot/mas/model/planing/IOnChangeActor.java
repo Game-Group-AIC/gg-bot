@@ -7,13 +7,13 @@ import java.util.Optional;
 /**
  * Interface with default method to add functionality to react on commitment change
  */
-interface OnChangeActor {
+interface IOnChangeActor {
 
   /**
    * React on commitment
    */
   default void actOnRemoval(WorkingMemory memory, DesireParameters desireParameters,
-      Optional<ReactionOnChangeStrategy> providedReaction) {
+      Optional<IReactionOnChangeStrategy> providedReaction) {
     providedReaction.ifPresent(reaction -> reaction.updateBeliefs(memory, desireParameters));
   }
 

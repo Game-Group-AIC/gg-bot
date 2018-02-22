@@ -5,10 +5,10 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.CommonConfigura
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
+import aic.gas.sc.gg_bot.mas.model.planing.IReactionOnChangeStrategy;
 import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
 import aic.gas.sc.gg_bot.mas.model.planing.command.CommandForIntention;
-import aic.gas.sc.gg_bot.mas.model.planing.command.CommandFormulationStrategy;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ICommandFormulationStrategy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,8 +21,8 @@ public abstract class DesireFormulation {
 
   private final Map<DesireKey, CommitmentDeciderInitializer> decisionsByDesire = new HashMap<>();
   private final Map<DesireKey, CommitmentDeciderInitializer> decisionsByIntention = new HashMap<>();
-  private final Map<DesireKey, ReactionOnChangeStrategy> reactionsByIntention = new HashMap<>();
-  private final Map<DesireKey, ReactionOnChangeStrategy> reactionsByDesire = new HashMap<>();
+  private final Map<DesireKey, IReactionOnChangeStrategy> reactionsByIntention = new HashMap<>();
+  private final Map<DesireKey, IReactionOnChangeStrategy> reactionsByDesire = new HashMap<>();
 
   CommitmentDeciderInitializer getDecisionInIntention(DesireKey key) {
     return decisionsByIntention.get(key);
@@ -32,11 +32,11 @@ public abstract class DesireFormulation {
     return decisionsByDesire.get(key);
   }
 
-  ReactionOnChangeStrategy getReactionInIntention(DesireKey key) {
+  IReactionOnChangeStrategy getReactionInIntention(DesireKey key) {
     return reactionsByIntention.get(key);
   }
 
-  ReactionOnChangeStrategy getReactionInDesire(DesireKey key) {
+  IReactionOnChangeStrategy getReactionInDesire(DesireKey key) {
     return reactionsByDesire.get(key);
   }
 
@@ -105,7 +105,7 @@ public abstract class DesireFormulation {
   /**
    * Defines common structure to add configuration for intention with command
    */
-  static abstract class WithCommand<K extends CommandFormulationStrategy<? extends CommandForIntention<?>, ? extends IntentionCommand<?, ?>>> extends
+  static abstract class WithCommand<K extends ICommandFormulationStrategy<? extends CommandForIntention<?>, ? extends IntentionCommand<?, ?>>> extends
       DesireFormulation {
 
     final Map<DesireKey, K> commandsByKey = new HashMap<>();

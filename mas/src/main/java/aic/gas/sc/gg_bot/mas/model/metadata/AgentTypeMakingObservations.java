@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.metadata;
 
-import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.IObservingCommand;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -13,7 +13,7 @@ public class AgentTypeMakingObservations<E> extends AgentType {
   @Getter
   private final int skipTurnsToMakeObservation;
   @Getter
-  private ObservingCommand<E> observingCommand;
+  private IObservingCommand<E> observingCommand;
 
   /**
    * Define agent type. Together with initial desires
@@ -22,8 +22,8 @@ public class AgentTypeMakingObservations<E> extends AgentType {
       Set<DesireKey> desiresWithAbstractIntention,
       Set<DesireKey> desiresWithIntentionToAct, Set<DesireKey> desiresWithIntentionToReason,
       Set<FactKey<?>> usingTypesForFacts, Set<FactKey<?>> usingTypesForFactSets,
-      ConfigurationInitializationStrategy initializationStrategy,
-      ObservingCommand<E> observingCommand, int skipTurnsToMakeObservation) {
+      IConfigurationInitializationStrategy initializationStrategy,
+      IObservingCommand<E> observingCommand, int skipTurnsToMakeObservation) {
     super(agentTypeID, desiresForOthers, desiresWithAbstractIntention, desiresWithIntentionToAct,
         desiresWithIntentionToReason,
         usingTypesForFacts, usingTypesForFactSets, initializationStrategy);

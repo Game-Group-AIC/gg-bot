@@ -11,7 +11,7 @@ import java.util.Optional;
 /**
  * Interface for each agent to form desires
  */
-interface AgentTypeBehaviourFactory {
+interface IAgentTypeBehaviourFactory {
 
   /**
    * Forms OwnDesire WithAbstractIntention

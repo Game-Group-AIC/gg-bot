@@ -9,7 +9,7 @@ import java.util.Set;
  * Contract for planning heap (and read only version of it shared with other agents) with methods to
  * get some metadata about planning
  */
-public interface PlanningTreeInterface {
+public interface IPlanningTree {
 
   /**
    * Get set of desires type shared by other agents

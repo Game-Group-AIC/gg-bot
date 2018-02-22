@@ -1,9 +1,9 @@
 package aic.gas.sc.gg_bot.bot.service.implementation;
 
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.IObservingCommand;
 import bwapi.Game;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +22,7 @@ public class AdditionalCommandToObserveGameProcessor {
   /**
    * Method to request extra game observation
    */
-  public void requestObservation(ObservingCommand<Game> command, WorkingMemory memory,
+  public void requestObservation(IObservingCommand<Game> command, WorkingMemory memory,
       AgentType agentType) {
     GuardWaitingForResponse guardWaitingForResponse = new GuardWaitingForResponse();
     guardWaitingForResponse.requestObservation(command, memory, agentType);
@@ -31,14 +31,14 @@ public class AdditionalCommandToObserveGameProcessor {
   /**
    * Class to represent object which waits on command execution
    */
-  private class GuardWaitingForResponse implements ResponseReceiverInterface<Boolean> {
+  private class GuardWaitingForResponse implements IResponseReceiver<Boolean> {
 
     final Object lockMonitor = new Object();
 
     /**
      * Send command to observe game
      */
-    void requestObservation(ObservingCommand<Game> command, WorkingMemory memory,
+    void requestObservation(IObservingCommand<Game> command, WorkingMemory memory,
         AgentType agentType) {
       synchronized (lockMonitor) {
         if (commandExecutor.addCommandToObserve(command, memory, this)) {

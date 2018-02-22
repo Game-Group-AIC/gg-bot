@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.mas.model.planing.heap;
 
-import aic.gas.sc.gg_bot.mas.model.PlanningTreeInterface;
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IPlanningTree;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.knowledge.PlanningTreeOfAnotherAgent;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
@@ -11,14 +11,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.DesireFromAnotherAgent;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
 import aic.gas.sc.gg_bot.mas.model.servicies.desires.IReadOnlyDesireRegister;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,9 +22,9 @@ import lombok.extern.slf4j.Slf4j;
  * Facade for planning heapOfTrees. HeapOfTrees manages nodes at top level.
  */
 @Slf4j
-public class HeapOfTrees implements PlanningTreeInterface,
-    Parent<DesireNodeAtTopLevel<?>, IntentionNodeAtTopLevel<?, ?>>,
-    ResponseReceiverInterface<Boolean> {
+public class HeapOfTrees implements IPlanningTree,
+    IParent<DesireNodeAtTopLevel<?>, IntentionNodeAtTopLevel<?, ?>>,
+    IResponseReceiver<Boolean> {
 
   private final Map<SharedDesire, SharedDesireForAgents> sharedDesiresForOtherAgents = new HashMap<>();
   private final Map<SharedDesire, SharedDesireForAgents> sharedDesiresByOtherAgents = new HashMap<>();
@@ -91,9 +84,9 @@ public class HeapOfTrees implements PlanningTreeInterface,
 
     //tell nodes with abstract plans to update its childes
     manipulatorWithOwnAbstractPlan.intentionNodesByKey.values()
-        .forEach(IntentionNodeWithChildes::updateDesires);
+        .forEach(IIntentionNodeWithChildes::updateDesires);
     manipulationWithAbstractDesiresFromOthers.intentionNodesByKey.values()
-        .forEach(IntentionNodeWithChildes::updateDesires);
+        .forEach(IIntentionNodeWithChildes::updateDesires);
   }
 
   /**

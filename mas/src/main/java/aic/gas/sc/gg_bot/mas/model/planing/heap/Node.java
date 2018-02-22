@@ -1,13 +1,13 @@
 package aic.gas.sc.gg_bot.mas.model.planing.heap;
 
-import aic.gas.sc.gg_bot.mas.model.DesireKeyIdentificationInterface;
+import aic.gas.sc.gg_bot.mas.model.IDesireKeyIdentification;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 
 /**
  * Template for node. It defines common data structure (methods) for various nodes which extend it.
  */
-public abstract class Node<K extends Parent<?, ?>> implements DesireKeyIdentificationInterface {
+public abstract class Node<K extends IParent<?, ?>> implements IDesireKeyIdentification {
 
   final DesireParameters desireParameters;
   final int level;
@@ -61,7 +61,7 @@ public abstract class Node<K extends Parent<?, ?>> implements DesireKeyIdentific
   /**
    * Template for nodes not in top level
    */
-  static abstract class NotTopLevel<K extends Node & IntentionNodeWithChildes & Parent<?, ?>> extends
+  static abstract class NotTopLevel<K extends Node & IIntentionNodeWithChildes & IParent<?, ?>> extends
       Node<K> {
 
     NotTopLevel(K parent, DesireParameters desireParameters) {

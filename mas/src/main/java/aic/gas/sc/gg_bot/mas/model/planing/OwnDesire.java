@@ -4,8 +4,10 @@ import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.command.CommandFormulationStrategy;
+import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand.OwnActing;
+import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand.OwnReasoning;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand.Own;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ICommandFormulationStrategy;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import java.util.Set;
 
@@ -15,13 +17,13 @@ import java.util.Set;
 public abstract class OwnDesire<T extends Intention<? extends OwnDesire<?>>> extends
     InternalDesire<T> {
 
-  final ReactionOnChangeStrategy reactionOnChangeStrategyInIntention;
+  final IReactionOnChangeStrategy reactionOnChangeStrategyInIntention;
 
   OwnDesire(DesireKey desireKey, WorkingMemory memory,
       CommitmentDeciderInitializer commitmentDecider,
       CommitmentDeciderInitializer removeCommitment, boolean isAbstract,
-      ReactionOnChangeStrategy reactionOnChangeStrategy,
-      ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+      IReactionOnChangeStrategy reactionOnChangeStrategy,
+      IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
     super(desireKey, memory, commitmentDecider, removeCommitment, isAbstract,
         reactionOnChangeStrategy);
     this.reactionOnChangeStrategyInIntention = reactionOnChangeStrategyInIntention;
@@ -30,8 +32,8 @@ public abstract class OwnDesire<T extends Intention<? extends OwnDesire<?>>> ext
   OwnDesire(DesireKey desireKey, WorkingMemory memory,
       CommitmentDeciderInitializer commitmentDecider,
       CommitmentDeciderInitializer removeCommitment, boolean isAbstract,
-      DesireParameters parentsDesireParameters, ReactionOnChangeStrategy reactionOnChangeStrategy,
-      ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+      DesireParameters parentsDesireParameters, IReactionOnChangeStrategy reactionOnChangeStrategy,
+      IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
     super(desireKey, memory, commitmentDecider, removeCommitment, isAbstract,
         parentsDesireParameters,
         reactionOnChangeStrategy);
@@ -54,8 +56,8 @@ public abstract class OwnDesire<T extends Intention<? extends OwnDesire<?>>> ext
         CommitmentDeciderInitializer removeCommitment, Set<DesireKey> desiresForOthers,
         Set<DesireKey> desiresWithAbstractIntention,
         Set<DesireKey> desiresWithIntentionToAct, Set<DesireKey> desiresWithIntentionToReason,
-        ReactionOnChangeStrategy reactionOnChangeStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+        IReactionOnChangeStrategy reactionOnChangeStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
       super(desireKey, memory, commitmentDecider, removeCommitment, true, reactionOnChangeStrategy,
           reactionOnChangeStrategyInIntention);
       this.desiresForOthers = desiresForOthers;
@@ -69,8 +71,8 @@ public abstract class OwnDesire<T extends Intention<? extends OwnDesire<?>>> ext
         CommitmentDeciderInitializer removeCommitment, Set<DesireKey> desiresForOthers,
         Set<DesireKey> desiresWithAbstractIntention, Set<DesireKey> desiresWithIntentionToAct,
         Set<DesireKey> desiresWithIntentionToReason, DesireParameters parentsDesireParameters,
-        ReactionOnChangeStrategy reactionOnChangeStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+        IReactionOnChangeStrategy reactionOnChangeStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
       super(desireKey, memory, commitmentDecider, removeCommitment, true, parentsDesireParameters,
           reactionOnChangeStrategy, reactionOnChangeStrategyInIntention);
       this.desiresForOthers = desiresForOthers;
@@ -92,14 +94,14 @@ public abstract class OwnDesire<T extends Intention<? extends OwnDesire<?>>> ext
    */
   public static class Reasoning extends OwnDesire<IntentionCommand.OwnReasoning> {
 
-    private final CommandFormulationStrategy<ReasoningCommand, IntentionCommand.OwnReasoning> commandCreationStrategy;
+    private final ICommandFormulationStrategy<ReasoningCommand, OwnReasoning> commandCreationStrategy;
 
     public Reasoning(DesireKey desireKey, WorkingMemory memory,
         CommitmentDeciderInitializer commitmentDecider,
         CommitmentDeciderInitializer removeCommitment,
-        CommandFormulationStrategy<ReasoningCommand, IntentionCommand.OwnReasoning> commandCreationStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+        ICommandFormulationStrategy<ReasoningCommand, OwnReasoning> commandCreationStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
       super(desireKey, memory, commitmentDecider, removeCommitment, false, reactionOnChangeStrategy,
           reactionOnChangeStrategyInIntention);
       this.commandCreationStrategy = commandCreationStrategy;
@@ -108,9 +110,10 @@ public abstract class OwnDesire<T extends Intention<? extends OwnDesire<?>>> ext
     public Reasoning(DesireKey desireKey, WorkingMemory memory,
         CommitmentDeciderInitializer commitmentDecider,
         CommitmentDeciderInitializer removeCommitment,
-        CommandFormulationStrategy<ReasoningCommand, IntentionCommand.OwnReasoning> commandCreationStrategy,
-        DesireParameters parentsDesireParameters, ReactionOnChangeStrategy reactionOnChangeStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+        ICommandFormulationStrategy<ReasoningCommand, OwnReasoning> commandCreationStrategy,
+        DesireParameters parentsDesireParameters,
+        IReactionOnChangeStrategy reactionOnChangeStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
       super(desireKey, memory, commitmentDecider, removeCommitment, false, parentsDesireParameters,
           reactionOnChangeStrategy, reactionOnChangeStrategyInIntention);
       this.commandCreationStrategy = commandCreationStrategy;
@@ -128,14 +131,14 @@ public abstract class OwnDesire<T extends Intention<? extends OwnDesire<?>>> ext
    */
   public static class Acting extends OwnDesire<IntentionCommand.OwnActing> {
 
-    private final CommandFormulationStrategy<ActCommand.Own, IntentionCommand.OwnActing> commandCreationStrategy;
+    private final ICommandFormulationStrategy<Own, OwnActing> commandCreationStrategy;
 
     public Acting(DesireKey desireKey, WorkingMemory memory,
         CommitmentDeciderInitializer commitmentDecider,
         CommitmentDeciderInitializer removeCommitment,
-        CommandFormulationStrategy<ActCommand.Own, IntentionCommand.OwnActing> commandCreationStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+        ICommandFormulationStrategy<Own, OwnActing> commandCreationStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
       super(desireKey, memory, commitmentDecider, removeCommitment, false, reactionOnChangeStrategy,
           reactionOnChangeStrategyInIntention);
       this.commandCreationStrategy = commandCreationStrategy;
@@ -144,9 +147,10 @@ public abstract class OwnDesire<T extends Intention<? extends OwnDesire<?>>> ext
     public Acting(DesireKey desireKey, WorkingMemory memory,
         CommitmentDeciderInitializer commitmentDecider,
         CommitmentDeciderInitializer removeCommitment,
-        CommandFormulationStrategy<ActCommand.Own, IntentionCommand.OwnActing> commandCreationStrategy,
-        DesireParameters parentsDesireParameters, ReactionOnChangeStrategy reactionOnChangeStrategy,
-        ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+        ICommandFormulationStrategy<Own, OwnActing> commandCreationStrategy,
+        DesireParameters parentsDesireParameters,
+        IReactionOnChangeStrategy reactionOnChangeStrategy,
+        IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
       super(desireKey, memory, commitmentDecider, removeCommitment, false, parentsDesireParameters,
           reactionOnChangeStrategy, reactionOnChangeStrategyInIntention);
       this.commandCreationStrategy = commandCreationStrategy;

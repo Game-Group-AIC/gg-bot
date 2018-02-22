@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.planing;
 
-import aic.gas.sc.gg_bot.mas.model.DesireKeyIdentificationInterface;
+import aic.gas.sc.gg_bot.mas.model.IDesireKeyIdentification;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
@@ -13,7 +13,7 @@ import lombok.Getter;
  * Class describing template for desire. Desire instance represents high level abstraction of what
  * agent may want to achieve. <p>
  */
-public abstract class Desire implements DesireKeyIdentificationInterface {
+public abstract class Desire implements IDesireKeyIdentification {
 
   @Getter
   final DesireParameters desireParameters;

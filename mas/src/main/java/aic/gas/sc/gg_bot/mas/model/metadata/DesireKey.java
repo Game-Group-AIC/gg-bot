@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.metadata;
 
-import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
+import aic.gas.sc.gg_bot.mas.model.IFactContainer;
 import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import java.util.*;
 import java.util.stream.Stream;
@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
  * Class describing metadata for desire - used for identification and parameter type definition.
  */
 @Slf4j
-public class DesireKey implements FactContainerInterface {
+public class DesireKey implements IFactContainer {
 
   private final Map<FactKey<?>, FactSet<?>> factSetParameterMap = new HashMap<>();
 

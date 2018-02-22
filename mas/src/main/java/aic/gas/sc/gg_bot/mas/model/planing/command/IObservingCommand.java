@@ -5,7 +5,7 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 /**
  * Contract for observing command classes
  */
-public interface ObservingCommand<E> {
+public interface IObservingCommand<E> {
 
   /**
    * Method to be called by Executor to execute observation command by updating memory by data from

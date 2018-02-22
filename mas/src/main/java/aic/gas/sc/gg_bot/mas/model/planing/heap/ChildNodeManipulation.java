@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
  * Generic node manipulator
  */
 @Slf4j
-class ChildNodeManipulation<V extends Node<?> & VisitorAcceptor & IntentionNodeInterface, K extends Node<?> & DesireNodeInterface<?>> {
+class ChildNodeManipulation<V extends Node<?> & IVisitorAcceptor & IIntentionNode, K extends Node<?> & IDesireNode<?>> {
 
   final Map<DesireParameters, K> desiresNodesByKey = new HashMap<>();
   final Map<DesireParameters, V> intentionNodesByKey = new HashMap<>();

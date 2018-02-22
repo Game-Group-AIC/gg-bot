@@ -10,7 +10,7 @@ import java.util.stream.Stream;
  * lead to great mess (concurrency exception, unpredictable behaviour) as facts can be accessed by
  * various threads (copy is not returned due to performance issues)
  */
-public interface FactContainerInterface {
+public interface IFactContainer {
 
   /**
    * Returns read only fact value for given fact key if it exists

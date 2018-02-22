@@ -14,7 +14,7 @@ public abstract class DesireUpdater<A extends IntentionNodeNotTopLevel.WithComma
     C extends IntentionNodeNotTopLevel.WithDesireForOthers<?>, D extends IntentionNodeNotTopLevel.WithAbstractPlan<?, ?, ?>,
     E extends DesireNodeNotTopLevel.WithCommand<?, ?, ?>, F extends DesireNodeNotTopLevel.WithCommand<?, ?, ?>,
     G extends DesireNodeNotTopLevel.ForOthers<?>, H extends DesireNodeNotTopLevel.WithAbstractPlan<?, ?>,
-    K extends Node & IntentionNodeWithChildes<A, B, C, D, E, F, G, H> & Parent<?, ?>> {
+    K extends Node & IIntentionNodeWithChildes<A, B, C, D, E, F, G, H> & IParent<?, ?>> {
 
   //registers of nodes with own desires
   private final ChildNodeManipulation<A, E> manipulatorWithReasoningCommands = new ChildNodeManipulation<>();
@@ -51,7 +51,7 @@ public abstract class DesireUpdater<A extends IntentionNodeNotTopLevel.WithComma
         manipulatorWithReasoningCommands.removeDesiresForUncommittedNodesAndReturnTheirKeys(),
         forNode);
     manipulatorWithOwnAbstractPlan.intentionNodesByKey.values()
-        .forEach(IntentionNodeWithChildes::updateDesires);
+        .forEach(IIntentionNodeWithChildes::updateDesires);
   }
 
   /**

@@ -6,7 +6,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 /**
  * Interface with template for reaction on change strategy
  */
-public interface ReactionOnChangeStrategy {
+public interface IReactionOnChangeStrategy {
 
   /**
    * Strategy to update beliefs

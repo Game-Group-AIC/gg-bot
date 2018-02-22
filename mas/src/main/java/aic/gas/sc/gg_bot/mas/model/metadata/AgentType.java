@@ -1,14 +1,7 @@
 package aic.gas.sc.gg_bot.mas.model.metadata;
 
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
-import aic.gas.sc.gg_bot.mas.model.metadata.agents.AnotherAgentsDesireWithAbstractIntentionFormulation;
-import aic.gas.sc.gg_bot.mas.model.metadata.agents.AnotherAgentsDesireWithIntentionWithActingCommandFormulation;
-import aic.gas.sc.gg_bot.mas.model.metadata.agents.DesireFormulation;
-import aic.gas.sc.gg_bot.mas.model.metadata.agents.OwnDesireWithAbstractIntentionFormulation;
-import aic.gas.sc.gg_bot.mas.model.metadata.agents.OwnDesireWithIntentionWithActingCommandFormulation;
-import aic.gas.sc.gg_bot.mas.model.metadata.agents.OwnDesireWithIntentionWithReasoningCommandFormulation;
-import aic.gas.sc.gg_bot.mas.model.metadata.agents.OwnDesireWithSharedDesireFormulation;
-import aic.gas.sc.gg_bot.mas.model.metadata.agents.OwnInternalDesireFormulationStacked;
+import aic.gas.sc.gg_bot.mas.model.metadata.agents.*;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
@@ -66,7 +59,7 @@ public class AgentType {
       Set<DesireKey> desiresWithAbstractIntention, Set<DesireKey> desiresWithIntentionToAct,
       Set<DesireKey> desiresWithIntentionToReason, Set<FactKey<?>> usingTypesForFacts,
       Set<FactKey<?>> usingTypesForFactSets,
-      ConfigurationInitializationStrategy initializationStrategy) {
+      IConfigurationInitializationStrategy initializationStrategy) {
     this.agentTypeID = agentTypeID;
     this.desiresForOthers = desiresForOthers;
     this.desiresWithAbstractIntention = desiresWithAbstractIntention;
@@ -150,7 +143,7 @@ public class AgentType {
   /**
    * Check if instance of DesireFormulation supports given keys
    */
-  private <T extends DesireFormulation & OwnInternalDesireFormulationStacked<?>> void checkSupport(
+  private <T extends DesireFormulation & IOwnInternalDesireFormulationStacked<?>> void checkSupport(
       Map<DesireKey, Set<DesireKey>> keysToSupport, T desireFormulation) {
     Optional<DesireKey> first = keysToSupport.entrySet()
         .stream()
@@ -490,7 +483,7 @@ public class AgentType {
    * additional configuration outside of this method as other structures to initialize agent memory
    * are initialize only once after calling this method.
    */
-  public interface ConfigurationInitializationStrategy {
+  public interface IConfigurationInitializationStrategy {
 
     /**
      * Add configuration to type

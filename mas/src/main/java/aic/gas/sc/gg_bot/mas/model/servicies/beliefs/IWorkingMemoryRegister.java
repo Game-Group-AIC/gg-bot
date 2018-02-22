@@ -2,14 +2,14 @@ package aic.gas.sc.gg_bot.mas.model.servicies.beliefs;
 
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
-import aic.gas.sc.gg_bot.mas.model.servicies.WorkingRegister;
+import aic.gas.sc.gg_bot.mas.model.servicies.IWorkingRegister;
 
 /**
  * Concrete implementation of MemoryRegister. This class is intended as working register - register
  * keeps up to date information about agents' internal memories and is intended for mediator use
  * only.
  */
-public interface IWorkingMemoryRegister extends WorkingRegister<IReadOnlyMemoryRegister>,
+public interface IWorkingMemoryRegister extends IWorkingRegister<IReadOnlyMemoryRegister>,
     IReadOnlyMemoryRegister {
 
   @Override

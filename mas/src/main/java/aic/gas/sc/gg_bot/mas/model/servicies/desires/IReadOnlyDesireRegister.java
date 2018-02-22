@@ -3,14 +3,14 @@ package aic.gas.sc.gg_bot.mas.model.servicies.desires;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesire;
 import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
-import aic.gas.sc.gg_bot.mas.model.servicies.ReadOnlyRegister;
+import aic.gas.sc.gg_bot.mas.model.servicies.IReadOnlyRegister;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Read-only register for memory
  */
-public interface IReadOnlyDesireRegister extends ReadOnlyRegister {
+public interface IReadOnlyDesireRegister extends IReadOnlyRegister {
 
   /**
    * Get desires shared by agent

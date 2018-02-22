@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class OwnDesireWithSharedDesireFormulation extends DesireFormulation implements
-    OwnInternalDesireFormulation<DesireForOthers> {
+    IOwnInternalDesireFormulation<DesireForOthers> {
 
   final Map<DesireKey, DesireKey> sharedDesireKeyByKey = new HashMap<>();
   final Map<DesireKey, Integer> countOfAgentsToCommitByKey = new HashMap<>();
@@ -53,7 +53,7 @@ public class OwnDesireWithSharedDesireFormulation extends DesireFormulation impl
    * create instance based on parent
    */
   public static class Stacked extends OwnDesireWithSharedDesireFormulation implements
-      OwnInternalDesireFormulationStacked<DesireForOthers> {
+      IOwnInternalDesireFormulationStacked<DesireForOthers> {
 
     private final Map<DesireKey, OwnDesireWithSharedDesireFormulation> stack = new HashMap<>();
 

@@ -4,12 +4,11 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.ENEMY_RACE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_PLAYER;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.IObservingCommand;
 import bwapi.Game;
 import java.util.HashSet;
 import java.util.Optional;
@@ -26,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AgentTypePlayer extends AgentTypeMakingObservations<Game> {
 
   //single definition of command to observe to be used by all agents of this type
-  private static final ObservingCommand<Game> OBSERVING_COMMAND = (memory, environment) -> {
+  private static final IObservingCommand<Game> OBSERVING_COMMAND = (memory, environment) -> {
     Optional<APlayer> aPlayer = memory.returnFactValueForGivenKey(IS_PLAYER);
     if (!aPlayer.isPresent()) {
       log.error("Trying to access player but it is not present.");
@@ -49,7 +48,7 @@ public class AgentTypePlayer extends AgentTypeMakingObservations<Game> {
       Set<DesireKey> desiresWithAbstractIntention,
       Set<DesireKey> desiresWithIntentionToAct, Set<DesireKey> desiresWithIntentionToReason,
       Set<FactKey<?>> usingTypesForFacts, Set<FactKey<?>> usingTypesForFactSets,
-      AgentType.ConfigurationInitializationStrategy initializationStrategy,
+      IConfigurationInitializationStrategy initializationStrategy,
       int skipTurnsToMakeObservation) {
     super(agentTypeID, desiresForOthers, desiresWithAbstractIntention, desiresWithIntentionToAct,
         desiresWithIntentionToReason,

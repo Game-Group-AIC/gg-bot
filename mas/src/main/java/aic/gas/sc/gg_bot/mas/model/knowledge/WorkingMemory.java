@@ -16,9 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkingMemory extends Memory<HeapOfTrees> {
 
   public WorkingMemory(HeapOfTrees heapOfTrees, AgentType agentType, int agentId,
-      StrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
-      StrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
-      StrategyToGetAllMemories strategyToGetAllMemories,
+      IStrategyToGetSetOfMemoriesByAgentType strategyToGetSetOfMemoriesByAgentType,
+      IStrategyToGetMemoryOfAgent strategyToGetMemoryOfAgent,
+      IStrategyToGetAllMemories strategyToGetAllMemories,
       InternalClockObtainingStrategy internalClockObtainingStrategy) {
     super(heapOfTrees, agentType, agentId, strategyToGetSetOfMemoriesByAgentType,
         strategyToGetMemoryOfAgent, strategyToGetAllMemories, internalClockObtainingStrategy);

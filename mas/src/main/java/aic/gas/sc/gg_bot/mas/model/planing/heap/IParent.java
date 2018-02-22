@@ -7,7 +7,7 @@ import java.util.Optional;
 /**
  * Contract for parent - it has at least one children
  */
-public interface Parent<V extends Node<?> & DesireNodeInterface, K extends Node<?> & IntentionNodeInterface & VisitorAcceptor> {
+public interface IParent<V extends Node<?> & IDesireNode, K extends Node<?> & IIntentionNode & IVisitorAcceptor> {
 
   /**
    * Get nodes for desires

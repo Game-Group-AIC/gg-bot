@@ -1,12 +1,12 @@
 package aic.gas.sc.gg_bot.mas.service;
 
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
-import aic.gas.sc.gg_bot.mas.model.planing.command.CommandInterface;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ICommand;
 
 /**
  * Contract for CommandManager
  */
-public interface CommandManager<T extends CommandInterface> {
+public interface ICommandManager<T extends ICommand> {
 
   /**
    * Execute command and returns result of operation

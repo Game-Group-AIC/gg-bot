@@ -7,11 +7,10 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
-import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.IObservingCommand;
 import bwapi.Game;
 import bwta.BaseLocation;
 import java.util.Arrays;
@@ -30,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
 
   //single definition of command to observe to be used by all agents of this type
-  private static final ObservingCommand<Game> OBSERVING_COMMAND = (memory, environment) -> {
+  private static final IObservingCommand<Game> OBSERVING_COMMAND = (memory, environment) -> {
     Optional<ABaseLocationWrapper> baseLocation = memory
         .returnFactValueForGivenKey(IS_BASE_LOCATION);
     if (!baseLocation.isPresent()) {
@@ -50,7 +49,7 @@ public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
       Set<DesireKey> desiresWithAbstractIntention,
       Set<DesireKey> desiresWithIntentionToAct, Set<DesireKey> desiresWithIntentionToReason,
       Set<FactKey<?>> usingTypesForFacts, Set<FactKey<?>> usingTypesForFactSets,
-      AgentType.ConfigurationInitializationStrategy initializationStrategy,
+      IConfigurationInitializationStrategy initializationStrategy,
       int skipTurnsToMakeObservation) {
     super(AgentTypes.BASE_LOCATION.getId(), desiresForOthers, desiresWithAbstractIntention,
         desiresWithIntentionToAct, desiresWithIntentionToReason,

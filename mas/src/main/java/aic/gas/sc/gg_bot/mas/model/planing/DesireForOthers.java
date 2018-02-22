@@ -12,13 +12,13 @@ public class DesireForOthers extends InternalDesire<IntentionWithDesireForOtherA
 
   private final DesireKey sharedDesireKey;
   private final int limitOnNumberOfAgentsToCommit;
-  private final ReactionOnChangeStrategy reactionOnChangeStrategyInIntention;
+  private final IReactionOnChangeStrategy reactionOnChangeStrategyInIntention;
 
   public DesireForOthers(DesireKey desireKey, WorkingMemory memory,
       CommitmentDeciderInitializer commitmentDecider,
       CommitmentDeciderInitializer removeCommitment, DesireKey sharedDesireKey,
-      int limitOnNumberOfAgentsToCommit, ReactionOnChangeStrategy reactionOnChangeStrategy,
-      ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+      int limitOnNumberOfAgentsToCommit, IReactionOnChangeStrategy reactionOnChangeStrategy,
+      IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
     super(desireKey, memory, commitmentDecider, removeCommitment, false, reactionOnChangeStrategy);
     this.sharedDesireKey = sharedDesireKey;
     this.limitOnNumberOfAgentsToCommit = limitOnNumberOfAgentsToCommit;
@@ -29,8 +29,8 @@ public class DesireForOthers extends InternalDesire<IntentionWithDesireForOtherA
       CommitmentDeciderInitializer commitmentDecider,
       CommitmentDeciderInitializer removeCommitment, DesireKey sharedDesireKey,
       int limitOnNumberOfAgentsToCommit, DesireParameters parentsDesireParameters,
-      ReactionOnChangeStrategy reactionOnChangeStrategy,
-      ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
+      IReactionOnChangeStrategy reactionOnChangeStrategy,
+      IReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
     super(desireKey, memory, commitmentDecider, removeCommitment, false, parentsDesireParameters,
         reactionOnChangeStrategy);
     this.sharedDesireKey = sharedDesireKey;

@@ -18,7 +18,7 @@ import lombok.Getter;
 @Getter
 public class CommitmentDeciderInitializer {
 
-  private final DecisionStrategy decisionStrategy;
+  private final IDecisionStrategy decisionStrategy;
   private final Set<DesireKey> desiresToConsider;
   private final Set<FactValueSet<?>> staticBeliefsSetTypes;
   private final Set<FactValueSet<?>> parameterValueSetTypes;
@@ -28,7 +28,7 @@ public class CommitmentDeciderInitializer {
   private final boolean useFactsInMemory;
 
   @Builder
-  private CommitmentDeciderInitializer(DecisionStrategy decisionStrategy,
+  private CommitmentDeciderInitializer(IDecisionStrategy decisionStrategy,
       Set<DesireKey> desiresToConsider,
       Set<FactValueSet<?>> staticBeliefsSetTypes,
       Set<FactValueSet<?>> parameterValueSetTypes,
@@ -57,7 +57,7 @@ public class CommitmentDeciderInitializer {
   /**
    * DecisionStrategy
    */
-  public interface DecisionStrategy {
+  public interface IDecisionStrategy {
 
     /**
      * Returns if agent should commit to desire and make intention from it

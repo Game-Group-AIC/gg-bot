@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.mas.model.metadata;
 
-import aic.gas.sc.gg_bot.mas.model.DesireKeyIdentificationInterface;
-import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
+import aic.gas.sc.gg_bot.mas.model.IDesireKeyIdentification;
+import aic.gas.sc.gg_bot.mas.model.IFactContainer;
 import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  * this class is read only sharing it is thread safe
  */
 @Slf4j
-public class DesireParameters implements FactContainerInterface, DesireKeyIdentificationInterface {
+public class DesireParameters implements IFactContainer, IDesireKeyIdentification {
 
   private final Map<FactKey, FactSet<?>> factSetParameterMap = new HashMap<>();
 

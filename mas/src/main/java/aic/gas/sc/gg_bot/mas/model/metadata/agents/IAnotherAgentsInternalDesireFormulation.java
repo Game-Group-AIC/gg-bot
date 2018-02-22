@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Contract for desire formulations - which forms desires from shared desire by another agent
  */
-interface AnotherAgentsInternalDesireFormulation<T extends DesireFromAnotherAgent<? extends Intention<T>>> {
+interface IAnotherAgentsInternalDesireFormulation<T extends DesireFromAnotherAgent<? extends Intention<T>>> {
 
   /**
    * Form desire of given desire from another agent

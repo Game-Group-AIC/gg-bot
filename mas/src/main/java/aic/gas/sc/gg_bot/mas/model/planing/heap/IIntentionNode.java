@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * Contract for each node representing intention
  */
-public interface IntentionNodeInterface {
+public interface IIntentionNode {
 
   /**
    * Adds shared desires to given set if node contains shared desire. This method is introduce to

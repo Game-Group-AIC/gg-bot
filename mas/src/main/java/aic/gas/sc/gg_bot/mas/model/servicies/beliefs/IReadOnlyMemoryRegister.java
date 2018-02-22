@@ -2,11 +2,11 @@ package aic.gas.sc.gg_bot.mas.model.servicies.beliefs;
 
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
-import aic.gas.sc.gg_bot.mas.model.servicies.ReadOnlyRegister;
+import aic.gas.sc.gg_bot.mas.model.servicies.IReadOnlyRegister;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface IReadOnlyMemoryRegister extends ReadOnlyRegister {
+public interface IReadOnlyMemoryRegister extends IReadOnlyRegister {
 
   /**
    * Get ReadOnlyMemory by agent id

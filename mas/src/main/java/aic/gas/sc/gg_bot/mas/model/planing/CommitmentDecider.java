@@ -4,6 +4,7 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.DataForDecision;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
+import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer.IDecisionStrategy;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public class CommitmentDecider {
 
-  private final CommitmentDeciderInitializer.DecisionStrategy decisionStrategy;
+  private final IDecisionStrategy decisionStrategy;
   private final DataForDecision dataForDecision;
 
   CommitmentDecider(CommitmentDeciderInitializer commitmentDeciderInitializer,

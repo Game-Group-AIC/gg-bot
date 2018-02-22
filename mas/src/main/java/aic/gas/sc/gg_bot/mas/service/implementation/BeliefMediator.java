@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.mas.service.implementation;
 
-import aic.gas.sc.gg_bot.mas.model.QueuedItemInterfaceWithResponse;
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IQueuedItemWithResponse;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.servicies.beliefs.IReadOnlyMemoryRegister;
@@ -24,15 +24,15 @@ public class BeliefMediator extends
    * Method to add item to queue with code to register knowledge
    */
   public boolean registerBelief(ReadOnlyMemory readOnlyMemory, Agent owner,
-      ResponseReceiverInterface<Boolean> responseReceiver) {
-    return addToQueue(new QueuedItemInterfaceWithResponse<Boolean>() {
+      IResponseReceiver<Boolean> responseReceiver) {
+    return addToQueue(new IQueuedItemWithResponse<Boolean>() {
       @Override
       public Boolean executeCode() {
         return workingRegister.addAgentsMemory(readOnlyMemory, owner);
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });
@@ -41,15 +41,15 @@ public class BeliefMediator extends
   /**
    * Method to add item to queue with code to remove agent
    */
-  public boolean removeAgent(Agent owner, ResponseReceiverInterface<Boolean> responseReceiver) {
-    return addToQueue(new QueuedItemInterfaceWithResponse<Boolean>() {
+  public boolean removeAgent(Agent owner, IResponseReceiver<Boolean> responseReceiver) {
+    return addToQueue(new IQueuedItemWithResponse<Boolean>() {
       @Override
       public Boolean executeCode() {
         return workingRegister.removeAgentsMemory(owner);
       }
 
       @Override
-      public ResponseReceiverInterface<Boolean> getReceiverOfResponse() {
+      public IResponseReceiver<Boolean> getReceiverOfResponse() {
         return responseReceiver;
       }
     });

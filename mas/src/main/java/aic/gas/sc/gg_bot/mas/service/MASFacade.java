@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.service;
 
-import aic.gas.sc.gg_bot.mas.model.CycleSynchronizationObtainingStrategy;
+import aic.gas.sc.gg_bot.mas.model.ICycleSynchronizationObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.InternalClockObtainingStrategy;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
@@ -23,12 +23,12 @@ import lombok.extern.slf4j.Slf4j;
  * structures
  */
 @Slf4j
-public class MASFacade implements TerminableService {
+public class MASFacade implements ITerminableService {
 
   //for cloning data
   public static final Cloner CLONER = new Cloner();
   //instance of reasoning manager, it can be shared by agents as it is stateless
-  public static final CommandManager<ReasoningCommand> REASONING_EXECUTOR = new CommandManager<ReasoningCommand>() {
+  public static final ICommandManager<ReasoningCommand> REASONING_EXECUTOR = new ICommandManager<ReasoningCommand>() {
   };
   //framework timing configuration...
   @Setter
@@ -62,7 +62,7 @@ public class MASFacade implements TerminableService {
 
   //TODO HACK - to prevent executing more agents' cycles per frame
   @Getter
-  private final CycleSynchronizationObtainingStrategy cycleSynchronizationObtainingStrategy;
+  private final ICycleSynchronizationObtainingStrategy cycleSynchronizationObtainingStrategy;
 
   public MASFacade(InternalClockObtainingStrategy clockObtainingStrategy,
       boolean cycleSynchronization) {

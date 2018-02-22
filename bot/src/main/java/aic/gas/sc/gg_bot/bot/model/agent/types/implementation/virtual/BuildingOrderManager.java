@@ -24,7 +24,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactValueSetsForAgentType;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
-import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
+import aic.gas.sc.gg_bot.mas.model.planing.IReactionOnChangeStrategy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -253,10 +253,10 @@ public class BuildingOrderManager {
   /**
    * Template for finding base for building
    */
-  private static class FindBaseForBuilding implements ReactionOnChangeStrategy {
+  private static class FindBaseForBuilding implements IReactionOnChangeStrategy {
 
     //find base to build building
-    private static final ReactionOnChangeStrategy FIND_BASE_FOR_BUILDING = (memory, desireParameters) -> {
+    private static final IReactionOnChangeStrategy FIND_BASE_FOR_BUILDING = (memory, desireParameters) -> {
       List<ABaseLocationWrapper> ourBases = memory
           .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION.getId())
           .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE).get())

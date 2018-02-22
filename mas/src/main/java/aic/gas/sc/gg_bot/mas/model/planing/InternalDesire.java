@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model.planing;
 
-import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
+import aic.gas.sc.gg_bot.mas.model.IFactContainer;
 import aic.gas.sc.gg_bot.mas.model.agents.Agent;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class InternalDesire<T extends Intention<? extends InternalDesire<?>>> extends
-    Desire implements FactContainerInterface, OnChangeActor, OnCommitmentChangeStrategy {
+    Desire implements IFactContainer, IOnChangeActor, IOnCommitmentChangeStrategy {
 
   final CommitmentDeciderInitializer removeCommitment;
   @Getter
@@ -29,12 +29,12 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
   private final CommitmentDecider commitmentDecider;
   private final Optional<DesireParameters> parentsDesireParameters;
   @Getter
-  private final Optional<ReactionOnChangeStrategy> reactionOnChangeStrategy;
+  private final Optional<IReactionOnChangeStrategy> reactionOnChangeStrategy;
 
   InternalDesire(DesireKey desireKey, WorkingMemory memory,
       CommitmentDeciderInitializer commitmentDecider,
       CommitmentDeciderInitializer removeCommitment, boolean isAbstract,
-      ReactionOnChangeStrategy reactionOnChangeStrategy) {
+      IReactionOnChangeStrategy reactionOnChangeStrategy) {
     super(desireKey, memory);
     this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters);
     this.memory = memory;
@@ -47,7 +47,8 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
   InternalDesire(DesireKey desireKey, WorkingMemory memory,
       CommitmentDeciderInitializer commitmentDecider,
       CommitmentDeciderInitializer removeCommitment, boolean isAbstract,
-      DesireParameters parentsDesireParameters, ReactionOnChangeStrategy reactionOnChangeStrategy) {
+      DesireParameters parentsDesireParameters,
+      IReactionOnChangeStrategy reactionOnChangeStrategy) {
     super(desireKey, memory);
     this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters);
     this.memory = memory;
@@ -60,7 +61,7 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
   InternalDesire(DesireParameters desireParameters, WorkingMemory memory,
       CommitmentDeciderInitializer commitmentDecider,
       CommitmentDeciderInitializer removeCommitment, boolean isAbstract, int originatorId,
-      ReactionOnChangeStrategy reactionOnChangeStrategy) {
+      IReactionOnChangeStrategy reactionOnChangeStrategy) {
     super(desireParameters, originatorId);
     this.memory = memory;
     this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters);

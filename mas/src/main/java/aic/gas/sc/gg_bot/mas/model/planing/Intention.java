@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.mas.model.planing;
 
-import aic.gas.sc.gg_bot.mas.model.DesireKeyIdentificationInterface;
-import aic.gas.sc.gg_bot.mas.model.FactContainerInterface;
+import aic.gas.sc.gg_bot.mas.model.IDesireKeyIdentification;
+import aic.gas.sc.gg_bot.mas.model.IFactContainer;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
@@ -17,16 +17,16 @@ import lombok.Getter;
  * abstraction of what agent has committed to achieve to. It may contain other desires related to
  * this intention to be consider.
  */
-public abstract class Intention<T extends InternalDesire<?>> implements FactContainerInterface,
-    DesireKeyIdentificationInterface, OnChangeActor, OnCommitmentChangeStrategy {
+public abstract class Intention<T extends InternalDesire<?>> implements IFactContainer,
+    IDesireKeyIdentification, IOnChangeActor, IOnCommitmentChangeStrategy {
 
   protected final CommitmentDecider removeCommitment;
   private final T originalDesire;
   @Getter
-  private final Optional<ReactionOnChangeStrategy> reactionOnChangeStrategy;
+  private final Optional<IReactionOnChangeStrategy> reactionOnChangeStrategy;
 
   Intention(T originalDesire, CommitmentDeciderInitializer removeCommitment,
-      ReactionOnChangeStrategy reactionOnChangeStrategy) {
+      IReactionOnChangeStrategy reactionOnChangeStrategy) {
     this.originalDesire = originalDesire;
     this.removeCommitment = removeCommitment
         .initializeCommitmentDecider(originalDesire.desireParameters);

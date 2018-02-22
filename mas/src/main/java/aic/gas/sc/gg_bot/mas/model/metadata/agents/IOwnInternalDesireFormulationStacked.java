@@ -11,7 +11,7 @@ import java.util.Optional;
  * Contract for stacked desire formulations - which forms desires from agent's memory and based on
  * parent's type
  */
-public interface OwnInternalDesireFormulationStacked<T extends InternalDesire<? extends Intention<T>>> {
+public interface IOwnInternalDesireFormulationStacked<T extends InternalDesire<? extends Intention<T>>> {
 
   /**
    * Form desire of given key with data initialized from memory depending on parent's key. If no

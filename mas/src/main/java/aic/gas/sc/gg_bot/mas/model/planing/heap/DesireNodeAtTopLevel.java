@@ -1,14 +1,8 @@
 package aic.gas.sc.gg_bot.mas.model.planing.heap;
 
-import aic.gas.sc.gg_bot.mas.model.ResponseReceiverInterface;
+import aic.gas.sc.gg_bot.mas.model.IResponseReceiver;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
-import aic.gas.sc.gg_bot.mas.model.planing.DesireForOthers;
-import aic.gas.sc.gg_bot.mas.model.planing.DesireFromAnotherAgent;
-import aic.gas.sc.gg_bot.mas.model.planing.Intention;
-import aic.gas.sc.gg_bot.mas.model.planing.InternalDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireForAgents;
-import aic.gas.sc.gg_bot.mas.model.planing.SharedDesireInRegister;
+import aic.gas.sc.gg_bot.mas.model.planing.*;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class DesireNodeAtTopLevel<T extends InternalDesire<? extends Intention>> extends
-    Node.TopLevel implements DesireNodeInterface<IntentionNodeAtTopLevel<?, ?>> {
+    Node.TopLevel implements IDesireNode<IntentionNodeAtTopLevel<?, ?>> {
 
   final T desire;
 
@@ -67,7 +61,7 @@ public abstract class DesireNodeAtTopLevel<T extends InternalDesire<? extends In
    */
   abstract static class FromAnotherAgent<V extends DesireFromAnotherAgent<? extends Intention>> extends
       DesireNodeAtTopLevel<V> implements
-      ResponseReceiverInterface<Optional<SharedDesireForAgents>> {
+      IResponseReceiver<Optional<SharedDesireForAgents>> {
 
     private final Object lockMonitor = new Object();
 

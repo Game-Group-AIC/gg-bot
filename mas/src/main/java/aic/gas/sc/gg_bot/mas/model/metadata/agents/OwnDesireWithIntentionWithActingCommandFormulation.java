@@ -4,10 +4,11 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand.OwnActing;
 import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.command.CommandFormulationStrategy;
+import aic.gas.sc.gg_bot.mas.model.planing.OwnDesire.Acting;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand.Own;
+import aic.gas.sc.gg_bot.mas.model.planing.command.ICommandFormulationStrategy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -18,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class OwnDesireWithIntentionWithActingCommandFormulation extends
-    DesireFormulation.WithCommand<CommandFormulationStrategy<ActCommand.Own, IntentionCommand.OwnActing>> implements
-    OwnInternalDesireFormulation<OwnDesire.Acting> {
+    DesireFormulation.WithCommand<ICommandFormulationStrategy<Own, OwnActing>> implements
+    IOwnInternalDesireFormulation<Acting> {
 
   @Override
   public Optional<OwnDesire.Acting> formDesire(DesireKey key, WorkingMemory memory) {
@@ -42,7 +43,7 @@ public class OwnDesireWithIntentionWithActingCommandFormulation extends
    * to create instance based on parent
    */
   public static class Stacked extends OwnDesireWithIntentionWithActingCommandFormulation implements
-      OwnInternalDesireFormulationStacked<OwnDesire.Acting> {
+      IOwnInternalDesireFormulationStacked<Acting> {
 
     private final Map<DesireKey, OwnDesireWithIntentionWithActingCommandFormulation> stack = new HashMap<>();
 
@@ -76,7 +77,7 @@ public class OwnDesireWithIntentionWithActingCommandFormulation extends
      * Add configuration for desire
      */
     public void addDesireFormulationConfiguration(DesireKey parent, DesireKey key,
-        ConfigurationWithCommand<CommandFormulationStrategy<ActCommand.Own, IntentionCommand.OwnActing>> configuration) {
+        ConfigurationWithCommand<ICommandFormulationStrategy<Own, OwnActing>> configuration) {
       OwnDesireWithIntentionWithActingCommandFormulation formulation = stack.computeIfAbsent(parent,
           desireKey -> new OwnDesireWithIntentionWithActingCommandFormulation());
       formulation.addDesireFormulationConfiguration(key, configuration);

@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Contract for intention nodes with childes
  */
-interface IntentionNodeWithChildes<A extends IntentionNodeNotTopLevel.WithCommand<?, ?, ?>, B extends IntentionNodeNotTopLevel.WithCommand<?, ?, ?>,
+interface IIntentionNodeWithChildes<A extends IntentionNodeNotTopLevel.WithCommand<?, ?, ?>, B extends IntentionNodeNotTopLevel.WithCommand<?, ?, ?>,
     C extends IntentionNodeNotTopLevel.WithDesireForOthers<?>, D extends IntentionNodeNotTopLevel.WithAbstractPlan<?, ?, ?>,
     E extends DesireNodeNotTopLevel.WithCommand<?, ?, ?>, F extends DesireNodeNotTopLevel.WithCommand<?, ?, ?>,
     G extends DesireNodeNotTopLevel.ForOthers<?>, H extends DesireNodeNotTopLevel.WithAbstractPlan<?, ?>> {

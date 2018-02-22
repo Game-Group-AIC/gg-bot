@@ -1,6 +1,6 @@
 package aic.gas.sc.gg_bot.mas.model;
 
-public interface CycleSynchronizationObtainingStrategy {
+public interface ICycleSynchronizationObtainingStrategy {
 
   boolean areCyclesSynchronized();
 

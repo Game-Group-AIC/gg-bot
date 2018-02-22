@@ -1,8 +1,8 @@
 package aic.gas.sc.gg_bot.mas.service;
 
-import aic.gas.sc.gg_bot.mas.model.QueuedItemInterfaceWithResponse;
-import aic.gas.sc.gg_bot.mas.model.servicies.ReadOnlyRegister;
-import aic.gas.sc.gg_bot.mas.model.servicies.WorkingRegister;
+import aic.gas.sc.gg_bot.mas.model.IQueuedItemWithResponse;
+import aic.gas.sc.gg_bot.mas.model.servicies.IReadOnlyRegister;
+import aic.gas.sc.gg_bot.mas.model.servicies.IWorkingRegister;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import lombok.extern.slf4j.Slf4j;
@@ -13,11 +13,11 @@ import lombok.extern.slf4j.Slf4j;
  * communication required.
  */
 @Slf4j
-public abstract class AMediatorTemplate<V extends ReadOnlyRegister, T extends WorkingRegister<V>> implements
-    TerminableService {
+public abstract class AMediatorTemplate<V extends IReadOnlyRegister, T extends IWorkingRegister<V>> implements
+    ITerminableService {
 
   protected final T workingRegister;
-  private final BlockingQueue<QueuedItemInterfaceWithResponse<?>> queue = new LinkedBlockingDeque<>();
+  private final BlockingQueue<IQueuedItemWithResponse<?>> queue = new LinkedBlockingDeque<>();
   private final Consumer consumer = new Consumer();
   private final long maintenance;
 
@@ -32,7 +32,7 @@ public abstract class AMediatorTemplate<V extends ReadOnlyRegister, T extends Wo
   /**
    * Add request to internal queue
    */
-  protected boolean addToQueue(QueuedItemInterfaceWithResponse<?> request) {
+  protected boolean addToQueue(IQueuedItemWithResponse<?> request) {
     try {
       queue.put(request);
       return true;

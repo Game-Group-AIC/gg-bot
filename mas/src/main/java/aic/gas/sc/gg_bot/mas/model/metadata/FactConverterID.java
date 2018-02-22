@@ -6,7 +6,7 @@ import lombok.Getter;
  * Class to identify fact converter
  */
 @Getter
-public class FactConverterID<V> implements Converter {
+public class FactConverterID<V> implements IConverter {
 
   private final int id;
   private final String name;

@@ -20,7 +20,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
-import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
+import aic.gas.sc.gg_bot.mas.model.planing.command.IObservingCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import bwapi.Game;
 import bwapi.Position;
@@ -114,7 +114,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
       .build();
 
   //single definition of command to observe to be used by all agents of this type
-  private static final ObservingCommand<Game> OBSERVING_COMMAND = (memory, environment) -> {
+  private static final IObservingCommand<Game> OBSERVING_COMMAND = (memory, environment) -> {
     Optional<AUnitWithCommands> unitWithCommands = memory.returnFactValueForGivenKey(IS_UNIT);
     if (!unitWithCommands.isPresent()) {
       log.error("Trying to access commendable unit but it is not present.");
@@ -139,7 +139,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
       Set<DesireKey> desiresWithAbstractIntention,
       Set<DesireKey> desiresWithIntentionToAct, Set<DesireKey> desiresWithIntentionToReason,
       Set<FactKey<?>> usingTypesForFacts, Set<FactKey<?>> usingTypesForFactSets,
-      AgentType.ConfigurationInitializationStrategy initializationStrategy,
+      IConfigurationInitializationStrategy initializationStrategy,
       int skipTurnsToMakeObservation) {
     super(agentType.getId(), desiresForOthers, desiresWithAbstractIntention,
         desiresWithIntentionToAct,
