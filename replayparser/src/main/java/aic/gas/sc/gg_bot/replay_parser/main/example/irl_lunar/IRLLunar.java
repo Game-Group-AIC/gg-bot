@@ -1,10 +1,10 @@
 package aic.gas.sc.gg_bot.replay_parser.main.example.irl_lunar;
 
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
-import aic.gas.sc.gg_bot.replay_parser.model.irl.BatchIterator;
+import aic.gas.sc.gg_bot.replay_parser.model.irl.KFoldBatchIterator;
+import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.GPMLIRL;
+import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.GPRewardFunction;
 import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.OurGradientDescentSarsaLam;
-import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.OurMLIRL;
-import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.OurRewardFunction;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
 import burlap.behavior.functionapproximation.dense.NumericVariableFeatures;
@@ -22,28 +22,29 @@ import burlap.mdp.core.action.Action;
 import burlap.mdp.singleagent.environment.SimulatedEnvironment;
 import burlap.mdp.singleagent.oo.OOSADomain;
 import burlap.visualizer.Visualizer;
+import io.jenetics.ext.util.Tree;
+import io.jenetics.prog.ProgramGene;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class IRLLunar {
 
-  private static final Random RANDOM = new Random();
-
   public static void main(String[] args) {
-    mimicExpert(300, 3);
+    mimicExpert(1000, 4);
   }
 
-  public static void mimicExpert(int numberOfDemonstrationToUse, int indeterminateOfPolynomial) {
+  public static void mimicExpert(int numberOfDemonstrationToUse, int height) {
 
     //solve IRL problem
-    double[][] reward = OurMLIRL.learnReward(Configuration.builder().build(),
-        new BatchIterator(300,
-            ExpertExampleGenerator.getExpertsDemonstrations(numberOfDemonstrationToUse)), 5,
-        indeterminateOfPolynomial);
+    KFoldBatchIterator batchIterator = new KFoldBatchIterator(5,
+        ExpertExampleGenerator.getExpertsDemonstrations(numberOfDemonstrationToUse));
+    ProgramGene<Double> reward = GPMLIRL
+        .learnReward(Configuration.builder().build(), batchIterator, 5, height);
+    log.info(Tree.toString(reward));
 
-    OurRewardFunction rf = new OurRewardFunction(5, indeterminateOfPolynomial);
-    rf.updateCoefficients(reward);
+    GPRewardFunction rf = new GPRewardFunction(reward);
     LunarLanderDomain lld = new LunarLanderDomain();
     lld.setRf(rf);
     OOSADomain domain = lld.generateDomain();
@@ -70,8 +71,11 @@ public class IRLLunar {
 
     double defaultQ = 0.5;
     DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
-    OurGradientDescentSarsaLam agent = new OurGradientDescentSarsaLam(domain, 0.99, 10, vfa, 0.02,
+    OurGradientDescentSarsaLam agent = new OurGradientDescentSarsaLam<>(domain, 0.99, 10, vfa, 0.02,
         0.5, 500, rf);
+
+    //learn policy
+    batchIterator.getAll().forEach(episode -> agent.learnFromEpisode(episode, rf));
 
     //run agent in environment
     List<Episode> episodes = new ArrayList<>();

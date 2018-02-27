@@ -10,10 +10,10 @@ import lombok.Getter;
 public class PSOParameters {
 
   @Builder.Default
-  private final double learningRateLoc = 0.5;
+  private final double learningRateLoc = 1.5;
 
   @Builder.Default
-  private final double learningRateGlo = 0.5;
+  private final double learningRateGlo = 1.5;
 
   @Builder.Default
   private final int countOfParticles = 50;

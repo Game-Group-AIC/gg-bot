@@ -17,15 +17,15 @@ import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
 
-public class OurGradientDescentSarsaLam extends GradientDescentSarsaLam {
+public class OurGradientDescentSarsaLam<T extends RewardFunction> extends GradientDescentSarsaLam {
 
   //instance of reward shared with environment
   @Getter
-  private final OurRewardFunction rf;
+  private final T rf;
 
   public OurGradientDescentSarsaLam(SADomain domain, double gamma, int numEpisodesForPlanning,
       DifferentiableStateActionValue vfa, double learningRate, double lambda, int maxEpisodeSize,
-      OurRewardFunction rf) {
+      T rf) {
     super(domain, gamma, vfa, learningRate, maxEpisodeSize, lambda);
     this.rf = rf;
     this.numEpisodesForPlanning = numEpisodesForPlanning;
@@ -152,8 +152,6 @@ public class OurGradientDescentSarsaLam extends GradientDescentSarsaLam {
         if (et.eligibilityValue < this.minEligibityForUpdate) {
           deletedSet.add(et.weight);
         }
-
-
       }
 
       //delete traces marked for deletion

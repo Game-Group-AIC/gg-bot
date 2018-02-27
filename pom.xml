@@ -40,6 +40,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <jenetics.version>4.1.0</jenetics.version>
   </properties>
 
 
@@ -144,6 +145,12 @@
         <groupId>bwmirror</groupId>
         <artifactId>bwmirror</artifactId>
         <version>${bwmirror.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jenetics</groupId>
+        <artifactId>jenetics.prog</artifactId>
+        <version>${jenetics.version}</version>
       </dependency>
 
       <dependency>

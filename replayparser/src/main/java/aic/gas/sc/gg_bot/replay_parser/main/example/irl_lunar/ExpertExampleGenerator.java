@@ -17,20 +17,13 @@ import burlap.mdp.singleagent.environment.SimulatedEnvironment;
 import burlap.mdp.singleagent.oo.OOSADomain;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ExpertExampleGenerator {
 
-  private static final Random RANDOM = new Random();
-
   private static final String LUNAR_DEMONSTRATIONS = ".lunar_demonstrations";
   private static final String LUNAR_DEMONSTRATIONS_FOLDER = "lunar_demonstrations";
-
-  public static void main(String[] args) {
-    getExpertsDemonstrations(10);
-  }
 
   public static List<Episode> getExpertsDemonstrations(int countOfDemonstrations) {
     List<Episode> demonstrations = Episode.readEpisodes(LUNAR_DEMONSTRATIONS_FOLDER);
@@ -73,7 +66,7 @@ public class ExpertExampleGenerator {
 
     //learn policy
     for (int i = 0; i < trials; i++) {
-      agent.runLearningEpisode(env);
+      agent.runLearningEpisode(env, 1000);
       env.resetEnvironment();
     }
 
@@ -84,6 +77,8 @@ public class ExpertExampleGenerator {
       Episode episode = new Episode();
       env.resetEnvironment();
       GreedyQPolicy greedyQPolicy = agent.planFromState(env.currentObservation());
+      env.resetEnvironment();
+      boolean reachedTerminalState = false;
       while (true) {
         Action a = greedyQPolicy.action(env.currentObservation());
         episode.addState(env.currentObservation());
@@ -92,11 +87,17 @@ public class ExpertExampleGenerator {
         if (env.isInTerminalState() || episode.numTimeSteps() > 500) {
           episode.addState(env.currentObservation());
           episode.addReward(env.lastReward());
+          if (env.isInTerminalState()) {
+            log.info("Terminal state reached in it. " + i);
+            reachedTerminalState = true;
+          }
           break;
         }
       }
-      log.info("Adding new episode in iteration " + i);
-      episodes.add(episode);
+      if (reachedTerminalState) {
+        log.info("Adding new episode in iteration " + i);
+        episodes.add(episode);
+      }
     }
 
     return episodes;

@@ -1,7 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.model.irl_rl;
 
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
-import aic.gas.sc.gg_bot.replay_parser.model.irl.BatchIterator;
+import aic.gas.sc.gg_bot.replay_parser.model.irl.KFoldBatchIterator;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
 import burlap.behavior.functionapproximation.dense.NumericVariableFeatures;
@@ -28,7 +28,8 @@ public class OurMLIRL {
 
   private static final Random RANDOM = new Random();
 
-  public static double[][] learnReward(Configuration configuration, BatchIterator batchIterator,
+  public static double[][] learnReward(Configuration configuration,
+      KFoldBatchIterator batchIterator,
       int numberOfFeatures, int indeterminateOfPolynomial) {
     long start = System.currentTimeMillis();
 
@@ -81,6 +82,7 @@ public class OurMLIRL {
         break;
       }
       log.info("Iteration " + i + " finished.");
+      batchIterator.next();
     }
     log.info("RF: " + bestSolution.get().getBestSolution().toString());
     return convertToTwoDimensionalArray(bestSolution.get().getBestSolution().arrayCopy(),
@@ -92,22 +94,19 @@ public class OurMLIRL {
    *
    * @return the log-likelihood of all expert trajectories under the current reward function parameters.
    */
-  private static double logLikelihood(BatchIterator batchIterator, double[][] rewardCoefficients,
-      OurGradientDescentSarsaLam planner, int useEpisode) {
+  private static double logLikelihood(KFoldBatchIterator batchIterator,
+      double[][] rewardCoefficients, OurGradientDescentSarsaLam<OurRewardFunction> planner) {
 
     try {
       //change reward to environment
       planner.getRf().updateCoefficients(rewardCoefficients);
       planner.resetSolver();
 
-      List<Episode> episodes = batchIterator.sampleBatchFromEpisodes();
+      //learn policy
+      batchIterator.trainingData()
+          .forEach(episode -> planner.learnFromEpisode(episode, planner.getRf()));
 
-      //learn policy from episodes
-      for (int i = 0; i < useEpisode; i++) {
-        episodes.forEach(episode -> planner.learnFromEpisode(episode, planner.getRf()));
-      }
-
-      return episodes.stream()
+      return batchIterator.testingData()
           .mapToDouble(episode -> logLikelihoodOfTrajectory(episode, planner.getCurrentPolicy()))
           .sum();
     } finally {
@@ -134,12 +133,12 @@ public class OurMLIRL {
   //TODO get rid of dependencies with model + move parameters
   private static class EvaluationStrategy implements IFitnessFunctionEvaluationStrategy {
 
-    private final OurGradientDescentSarsaLam planner;
-    private final BatchIterator batchIterator;
+    private final OurGradientDescentSarsaLam<OurRewardFunction> planner;
+    private final KFoldBatchIterator batchIterator;
     private final int numberOfFeatures;
     private final int indeterminateOfPolynomial;
 
-    public EvaluationStrategy(BatchIterator batchIterator, int numberOfFeatures,
+    public EvaluationStrategy(KFoldBatchIterator batchIterator, int numberOfFeatures,
         int indeterminateOfPolynomial) {
       this.batchIterator = batchIterator;
       this.numberOfFeatures = numberOfFeatures;
@@ -173,14 +172,14 @@ public class OurMLIRL {
 
       double defaultQ = 0.5;
       DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
-      this.planner = new OurGradientDescentSarsaLam(domain, 0.99, 5, vfa, 0.02, 0.5, 500, rf);
+      this.planner = new OurGradientDescentSarsaLam<>(domain, 0.99, 5, vfa, 0.02, 0.5, 500, rf);
     }
 
     @Override
     public double evaluate(double[] vector) {
       return logLikelihood(batchIterator,
           convertToTwoDimensionalArray(vector, numberOfFeatures, indeterminateOfPolynomial),
-          planner, 1);
+          planner);
     }
   }
 
