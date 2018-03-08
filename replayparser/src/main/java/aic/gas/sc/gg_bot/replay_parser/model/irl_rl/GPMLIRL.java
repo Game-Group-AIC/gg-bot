@@ -1,16 +1,9 @@
 package aic.gas.sc.gg_bot.replay_parser.model.irl_rl;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.OurProbabilisticPolicy;
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.KFoldBatchIterator;
-import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
-import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
-import burlap.behavior.functionapproximation.dense.NumericVariableFeatures;
-import burlap.behavior.functionapproximation.sparse.tilecoding.TileCodingFeatures;
-import burlap.behavior.functionapproximation.sparse.tilecoding.TilingArrangement;
-import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
-import burlap.domain.singleagent.lunarlander.LunarLanderDomain;
-import burlap.mdp.singleagent.oo.OOSADomain;
 import io.jenetics.Genotype;
 import io.jenetics.MultiPointCrossover;
 import io.jenetics.Mutator;
@@ -23,16 +16,17 @@ import io.jenetics.prog.op.MathOp;
 import io.jenetics.prog.op.Op;
 import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GPMLIRL {
 
+  //TODO refactor configuration
   public static ProgramGene<Double> learnReward(Configuration configuration,
-      KFoldBatchIterator batchIterator,
-      int numberOfFeatures, int depth) {
-    long start = System.currentTimeMillis();
+      KFoldBatchIterator batchIterator, int numberOfFeatures, int depth,
+      IPlanerInitializerStrategy planerInitializerStrategy) {
 
     // Definition of the terminals.
     final ISeq<Op<Double>> TERMINALS = ISeq.of(
@@ -60,7 +54,8 @@ public class GPMLIRL {
         );
 
     final Engine<ProgramGene<Double>, Double> engine = Engine
-        .builder(doubleProgramGene -> logLikelihood(batchIterator, doubleProgramGene), CODEC)
+        .builder(doubleProgramGene -> logLikelihood(batchIterator, doubleProgramGene,
+            planerInitializerStrategy), CODEC)
         .maximizing()
         .alterers(
             new MultiPointCrossover<>(),
@@ -68,7 +63,7 @@ public class GPMLIRL {
         .build();
 
     return engine.stream()
-        .limit(300)
+        .limit(50)
         .peek(programGeneDoubleEvolutionResult -> log.info("Best solution in generation: "
             + programGeneDoubleEvolutionResult.getBestFitness()))
         .peek(programGeneDoubleEvolutionResult -> batchIterator.next())
@@ -82,34 +77,10 @@ public class GPMLIRL {
    * @return the log-likelihood of all expert trajectories under the current reward function parameters.
    */
   private static double logLikelihood(KFoldBatchIterator batchIterator,
-      ProgramGene<Double> program) {
+      ProgramGene<Double> program, IPlanerInitializerStrategy planerInitializerStrategy) {
 
     GPRewardFunction rf = new GPRewardFunction(program);
-
-    LunarLanderDomain lld = new LunarLanderDomain();
-    lld.setRf(rf);
-    OOSADomain domain = lld.generateDomain();
-
-    ConcatenatedObjectFeatures inputFeatures = new ConcatenatedObjectFeatures()
-        .addObjectVectorizion(LunarLanderDomain.CLASS_AGENT, new NumericVariableFeatures());
-
-    int nTilings = 5;
-    double resolution = 10.;
-
-    double xWidth = (lld.getXmax() - lld.getXmin()) / resolution;
-    double yWidth = (lld.getYmax() - lld.getYmin()) / resolution;
-    double velocityWidth = 2 * lld.getVmax() / resolution;
-    double angleWidth = 2 * lld.getAngmax() / resolution;
-
-    TileCodingFeatures tilecoding = new TileCodingFeatures(inputFeatures);
-    tilecoding.addTilingsForAllDimensionsWithWidths(
-        new double[]{xWidth, yWidth, velocityWidth, velocityWidth, angleWidth}, nTilings,
-        TilingArrangement.RANDOM_JITTER);
-
-    double defaultQ = 0.5;
-    DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
-    OurGradientDescentSarsaLam planner = new OurGradientDescentSarsaLam<>(domain, 0.99, 5, vfa,
-        0.02, 0.5, 500, rf);
+    OurGradientDescentSarsaLam planner = planerInitializerStrategy.initPlanner();
 
     //learn policy
     batchIterator.trainingData()
@@ -120,15 +91,20 @@ public class GPMLIRL {
         .sum();
   }
 
-  private static double logLikelihoodOfTrajectory(Episode ep, Policy policy) {
+  private static double logLikelihoodOfTrajectory(Episode ep, OurProbabilisticPolicy policy) {
     double logLike = 0.0D;
     for (int i = 0; i < ep.numTimeSteps() - 1; i++) {
 
       //prevent by playing action with small ppt
-      double actProb = Math.max(policy.actionProb(ep.state(i), ep.action(i)), Math.exp(-100));
+      double actProb = Math.max(policy.getProbabilityOfActionInState(ep.state(i), ep.action(i))
+          + getNoise(), Math.exp(-100));
       logLike += Math.log(actProb);
     }
     return logLike;
+  }
+
+  private static double getNoise() {
+    return ThreadLocalRandom.current().nextDouble(-0.05, 0.05);
   }
 
 }

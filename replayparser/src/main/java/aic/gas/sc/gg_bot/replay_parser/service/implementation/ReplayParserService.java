@@ -8,12 +8,22 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.replay_parser.model.AgentMakingObservations;
 import aic.gas.sc.gg_bot.replay_parser.model.tracking.Replay;
-import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.*;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BaseWatcher;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.BuildOrderManagerWatcher;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.EcoManagerWatcher;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitOrderManagerWatcher;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.UnitWatcher;
+import aic.gas.sc.gg_bot.replay_parser.model.watcher.agent_watcher_extension.WatcherPlayer;
 import aic.gas.sc.gg_bot.replay_parser.service.IAgentUnitHandler;
 import aic.gas.sc.gg_bot.replay_parser.service.IReplayLoaderService;
 import aic.gas.sc.gg_bot.replay_parser.service.IReplayParserService;
 import aic.gas.sc.gg_bot.replay_parser.service.IWatcherMediatorService;
-import bwapi.*;
+import bwapi.DefaultBWListener;
+import bwapi.Game;
+import bwapi.Mirror;
+import bwapi.Player;
+import bwapi.Race;
+import bwapi.Unit;
 import bwta.BWTA;
 import bwta.BaseLocation;
 import com.google.common.io.Files;
@@ -23,7 +33,13 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -227,7 +243,7 @@ public class ReplayParserService extends DefaultBWListener implements IReplayPar
             .map(Player::getID)
             .collect(Collectors.toSet());
 
-        if(playersToParse.size() == 0) {
+        if (playersToParse.size() == 0) {
           log.error("No zerg player found in this replay");
           System.exit(2);
         }

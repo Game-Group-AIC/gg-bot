@@ -4,13 +4,14 @@ import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.KFoldBatchIterator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.GPMLIRL;
 import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.GPRewardFunction;
+import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.IPlanerInitializerStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.OurGradientDescentSarsaLam;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.OurProbabilisticPolicy;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
 import burlap.behavior.functionapproximation.dense.NumericVariableFeatures;
 import burlap.behavior.functionapproximation.sparse.tilecoding.TileCodingFeatures;
 import burlap.behavior.functionapproximation.sparse.tilecoding.TilingArrangement;
-import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.auxiliary.EpisodeSequenceVisualizer;
 import burlap.domain.singleagent.lunarlander.LLVisualizer;
@@ -26,6 +27,7 @@ import io.jenetics.ext.util.Tree;
 import io.jenetics.prog.ProgramGene;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -37,27 +39,13 @@ public class IRLLunar {
 
   public static void mimicExpert(int numberOfDemonstrationToUse, int height) {
 
-    //solve IRL problem
-    KFoldBatchIterator batchIterator = new KFoldBatchIterator(5,
-        ExpertExampleGenerator.getExpertsDemonstrations(numberOfDemonstrationToUse));
-    ProgramGene<Double> reward = GPMLIRL
-        .learnReward(Configuration.builder().build(), batchIterator, 5, height);
-    log.info(Tree.toString(reward));
-
-    GPRewardFunction rf = new GPRewardFunction(reward);
     LunarLanderDomain lld = new LunarLanderDomain();
-    lld.setRf(rf);
     OOSADomain domain = lld.generateDomain();
-
-    LLState s = new LLState(new LLAgent(5, 0, 0), new LLBlock.LLPad(75, 95, 0, 10, "pad"));
-
     ConcatenatedObjectFeatures inputFeatures = new ConcatenatedObjectFeatures()
         .addObjectVectorizion(LunarLanderDomain.CLASS_AGENT, new NumericVariableFeatures());
 
     int nTilings = 5;
     double resolution = 10.;
-
-    SimulatedEnvironment env = new SimulatedEnvironment(domain, s);
 
     double xWidth = (lld.getXmax() - lld.getXmin()) / resolution;
     double yWidth = (lld.getYmax() - lld.getYmin()) / resolution;
@@ -70,22 +58,44 @@ public class IRLLunar {
         TilingArrangement.RANDOM_JITTER);
 
     double defaultQ = 0.5;
-    DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
-    OurGradientDescentSarsaLam agent = new OurGradientDescentSarsaLam<>(domain, 0.99, 10, vfa, 0.02,
-        0.5, 500, rf);
 
-    //learn policy
-    batchIterator.getAll().forEach(episode -> agent.learnFromEpisode(episode, rf));
+    KFoldBatchIterator batchIterator = new KFoldBatchIterator(5,
+        ExpertExampleGenerator.getExpertsDemonstrations(numberOfDemonstrationToUse));
+    List<Action> actions = batchIterator.getAll()
+        .flatMap(episode -> episode.actionSequence.stream())
+        .distinct()
+        .collect(Collectors.toList());
+
+    //default strategy to create instance of planner
+    IPlanerInitializerStrategy initializerStrategy = () -> {
+      DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
+      return new OurGradientDescentSarsaLam(0.99, vfa, 0.02, 0.5, actions);
+    };
+
+    //solve IRL problem
+    ProgramGene<Double> reward = GPMLIRL
+        .learnReward(Configuration.builder().build(), batchIterator, 5, height,
+            initializerStrategy);
+    log.info(Tree.toString(reward));
+
+    //learn policy from demonstrations
+    GPRewardFunction ourRewardFunction = new GPRewardFunction(reward);
+    DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
+    OurGradientDescentSarsaLam agent = new OurGradientDescentSarsaLam(0.99, vfa, 0.02, 0.5,
+        actions);
+    batchIterator.getAll().forEach(episode -> agent.learnFromEpisode(episode, ourRewardFunction));
+    OurProbabilisticPolicy policy = agent.getCurrentPolicy();
 
     //run agent in environment
+    LLState s = new LLState(new LLAgent(5, 0, 0), new LLBlock.LLPad(75, 95, 0, 10, "pad"));
+    SimulatedEnvironment env = new SimulatedEnvironment(domain, s);
     List<Episode> episodes = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       Episode episode = new Episode();
       env.resetEnvironment();
-      Policy greedyQPolicy = agent.planFromState(env.currentObservation());
       int trials = 0;
       while (!env.isInTerminalState()) {
-        Action a = greedyQPolicy.action(env.currentObservation());
+        Action a = policy.selectActionInState(env.currentObservation());
         episode.addState(env.currentObservation());
         episode.addAction(a);
         env.executeAction(a);

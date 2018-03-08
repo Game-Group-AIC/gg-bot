@@ -1,56 +1,32 @@
 package aic.gas.sc.gg_bot.replay_parser.model.irl_rl;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.OurProbabilisticPolicy;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.functionapproximation.FunctionGradient;
-import burlap.behavior.policy.GreedyQPolicy;
 import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.learning.tdmethods.vfa.GradientDescentSarsaLam;
 import burlap.mdp.core.action.Action;
 import burlap.mdp.core.state.State;
-import burlap.mdp.singleagent.SADomain;
-import burlap.mdp.singleagent.environment.SimulatedEnvironment;
 import burlap.mdp.singleagent.model.RewardFunction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import lombok.Getter;
 
-public class OurGradientDescentSarsaLam<T extends RewardFunction> extends GradientDescentSarsaLam {
+public class OurGradientDescentSarsaLam extends GradientDescentSarsaLam {
 
-  //instance of reward shared with environment
-  @Getter
-  private final T rf;
+  private final List<Action> actions;
 
-  public OurGradientDescentSarsaLam(SADomain domain, double gamma, int numEpisodesForPlanning,
-      DifferentiableStateActionValue vfa, double learningRate, double lambda, int maxEpisodeSize,
-      T rf) {
-    super(domain, gamma, vfa, learningRate, maxEpisodeSize, lambda);
-    this.rf = rf;
-    this.numEpisodesForPlanning = numEpisodesForPlanning;
+  public OurGradientDescentSarsaLam(double gamma, DifferentiableStateActionValue vfa,
+      double learningRate, double lambda, List<Action> actions) {
+    //null domain - we don ot need it for our use case
+    super(null, gamma, vfa, learningRate, lambda);
+    this.actions = actions;
   }
 
-  public GreedyQPolicy getCurrentPolicy() {
-    if (this.model == null) {
-      throw new RuntimeException("Planning requires a model, but none is provided.");
-    }
-    return new GreedyQPolicy(this);
-  }
-
-  @Override
-  public GreedyQPolicy planFromState(State initialState) {
-    if (this.model == null) {
-      throw new RuntimeException("Planning requires a model, but none is provided.");
-    }
-    SimulatedEnvironment env = new SimulatedEnvironment(this.domain, initialState);
-    for (int i = 0; i < this.numEpisodesForPlanning; i++) {
-      this.runLearningEpisode(env, maxEpisodeSize);
-      if (this.maxWeightChangeInLastEpisode < this.maxWeightChangeForPlanningTermination) {
-        break;
-      }
-    }
-    return new GreedyQPolicy(this);
+  public OurProbabilisticPolicy getCurrentPolicy() {
+    return new OurProbabilisticPolicy(vfa, actions);
   }
 
   public void learnFromEpisode(Episode episode, RewardFunction rewardFunction) {

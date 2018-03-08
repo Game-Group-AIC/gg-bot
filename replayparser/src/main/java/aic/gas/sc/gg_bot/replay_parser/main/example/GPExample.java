@@ -30,12 +30,10 @@ import io.jenetics.ext.SingleNodeCrossover;
 import io.jenetics.ext.util.Tree;
 import io.jenetics.prog.ProgramChromosome;
 import io.jenetics.prog.ProgramGene;
-import io.jenetics.prog.op.EphemeralConst;
 import io.jenetics.prog.op.MathOp;
 import io.jenetics.prog.op.Op;
 import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
-import io.jenetics.util.RandomRegistry;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 
@@ -120,7 +118,8 @@ public class GPExample {
 
     final ProgramGene<Double> program = engine.stream()
         .limit(2000)
-        .peek(programGeneDoubleEvolutionResult -> log.info(programGeneDoubleEvolutionResult.getBestFitness()+""))
+        .peek(programGeneDoubleEvolutionResult -> log
+            .info(programGeneDoubleEvolutionResult.getBestFitness() + ""))
         .collect(EvolutionResult.toBestGenotype())
         .getGene();
 

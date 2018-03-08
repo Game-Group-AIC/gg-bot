@@ -1,9 +1,8 @@
 package aic.gas.sc.gg_bot.replay_parser.model.irl_rl;
 
-import burlap.mdp.core.state.MutableState;
-import jsat.linear.Vec;
+import java.io.Serializable;
 
-public interface IOurState extends MutableState {
+public interface IOurState extends Serializable {
 
-  Vec getFeatureRepresentation();
+  double[] getFeatureRepresentation();
 }

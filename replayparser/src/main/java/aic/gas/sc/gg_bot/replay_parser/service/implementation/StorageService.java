@@ -5,7 +5,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.utils.Utils.getParsedDesireTypesFor
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
-import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.Policy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
@@ -189,7 +189,7 @@ public class StorageService implements IStorageService {
 
 
   @Override
-  public void storeLearntDecision(MDPForDecisionWithPolicy structure, AgentTypeID agentTypeID,
+  public void storeLearntDecision(Policy structure, AgentTypeID agentTypeID,
       DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) throws Exception {
     createDirectoryIfItDoesNotExist(agentTypeID.getName(), outputFolder + "/" + mapSize.name() + "/"
         + "/" + race.name());

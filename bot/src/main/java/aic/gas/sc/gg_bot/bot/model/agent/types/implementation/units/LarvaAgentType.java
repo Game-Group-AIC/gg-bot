@@ -12,7 +12,6 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

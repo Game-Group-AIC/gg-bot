@@ -2,7 +2,7 @@ package aic.gas.sc.gg_bot.bot.service.implementation;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
-import aic.gas.sc.gg_bot.abstract_bot.model.decision.MDPForDecisionWithPolicy;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.Policy;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumerations;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
@@ -26,8 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 public class DecisionLoadingServiceImpl implements DecisionLoadingService {
 
   private static DecisionLoadingServiceImpl instance = new DecisionLoadingServiceImpl();
-  private final Map<MapSizeEnums, Map<ARace, Map<AgentTypeID, Map<DesireKeyID, MDPForDecisionWithPolicy>>>> cache = new ConcurrentHashMap<>();
-  private Map<AgentTypeID, Map<DesireKeyID, MDPForDecisionWithPolicy>> loaded = new HashMap<>();
+  private final Map<MapSizeEnums, Map<ARace, Map<AgentTypeID, Map<DesireKeyID, Policy>>>> cache = new ConcurrentHashMap<>();
+  private Map<AgentTypeID, Map<DesireKeyID, Policy>> loaded = new HashMap<>();
 
   /**
    * Initialize cache (loads models from resources)
@@ -61,14 +61,14 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
       String fileName =
           "/" + mapSize.name() + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID
               .getName() + ".db";
-      MDPForDecisionWithPolicy mdpForDecisionWithPolicy = SerializationUtil.deserialize(
+      Policy policy = SerializationUtil.deserialize(
           DecisionLoadingServiceImpl.class.getResourceAsStream(fileName));
 
       //set cache
-      mdpForDecisionWithPolicy.initCache();
+      policy.init();
 
       //are all actions present
-      Set<NextActionEnumerations> actions = mdpForDecisionWithPolicy.getStates().stream()
+      Set<NextActionEnumerations> actions = policy.getStates().stream()
           .flatMap(stateWithPolicy -> stateWithPolicy.getNextActions().entrySet().stream()
               .filter(entry -> entry.getValue() > 0)
               .map(Entry::getKey))
@@ -83,14 +83,14 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
       cache.computeIfAbsent(mapSize, id -> new HashMap<>())
           .computeIfAbsent(race, id -> new HashMap<>())
           .computeIfAbsent(agentTypeID, id -> new HashMap<>())
-          .put(desireKeyID, mdpForDecisionWithPolicy);
+          .put(desireKeyID, policy);
       if (!loaded.containsKey(agentTypeID)) {
-        Map<DesireKeyID, MDPForDecisionWithPolicy> toAdd = new HashMap<>();
-        toAdd.put(desireKeyID, mdpForDecisionWithPolicy);
+        Map<DesireKeyID, Policy> toAdd = new HashMap<>();
+        toAdd.put(desireKeyID, policy);
         loaded.put(agentTypeID, toAdd);
       } else {
         if (!loaded.get(agentTypeID).containsKey(desireKeyID)) {
-          loaded.get(agentTypeID).put(desireKeyID, mdpForDecisionWithPolicy);
+          loaded.get(agentTypeID).put(desireKeyID, policy);
         }
       }
 
@@ -102,23 +102,23 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
   }
 
   @Override
-  public MDPForDecisionWithPolicy getDecisionPoint(AgentTypeID agentTypeID,
+  public Policy getDecisionPoint(AgentTypeID agentTypeID,
       DesireKeyID desireKeyID) {
     try {
-      MDPForDecisionWithPolicy mdpForDecisionWithPolicy = cache
+      Policy policy = cache
           .get(DecisionConfiguration.getMapSize())
           .get(DecisionConfiguration.getRace())
           .get(agentTypeID).get(desireKeyID);
 
       //TODO hack
-      if (mdpForDecisionWithPolicy == null) {
+      if (policy == null) {
         //try to load at least some
         if (loaded.containsKey(agentTypeID) && loaded.get(agentTypeID).containsKey(desireKeyID)) {
           return loaded.get(agentTypeID).get(desireKeyID);
         }
       }
 
-      return mdpForDecisionWithPolicy;
+      return policy;
     } catch (Exception e) {
 
       //try to load at least some

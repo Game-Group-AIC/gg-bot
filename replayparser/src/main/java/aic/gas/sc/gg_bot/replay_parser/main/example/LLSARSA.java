@@ -70,7 +70,7 @@ public class LLSARSA {
       episode.addAction(a);
       episode.addReward(env.lastReward());
       env.executeAction(a);
-      if (env.isInTerminalState()){
+      if (env.isInTerminalState()) {
         episode.addState(env.currentObservation());
         episode.addReward(env.lastReward());
         break;

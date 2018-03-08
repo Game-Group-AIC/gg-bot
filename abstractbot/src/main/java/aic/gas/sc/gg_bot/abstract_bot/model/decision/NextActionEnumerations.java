@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.decision;
 
+import burlap.mdp.core.action.Action;
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Map;
@@ -7,7 +8,7 @@ import java.util.Map;
 /**
  * Enumeration of all possible commitments based on policy
  */
-public enum NextActionEnumerations implements Serializable, NextActionStrategy {
+public enum NextActionEnumerations implements Serializable, NextActionStrategy, Action {
   YES {
     @Override
     public boolean commit() {
@@ -20,6 +21,7 @@ public enum NextActionEnumerations implements Serializable, NextActionStrategy {
       return false;
     }
   };
+
 
   /**
    * Return action corresponding to label
@@ -49,4 +51,13 @@ public enum NextActionEnumerations implements Serializable, NextActionStrategy {
     return ImmutableMap.of(nextAction, prob, nextAction.equals(YES) ? NO : YES, 1.0 - prob);
   }
 
+  @Override
+  public String actionName() {
+    return this.name();
+  }
+
+  @Override
+  public Action copy() {
+    return this;
+  }
 }
