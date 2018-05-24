@@ -1,5 +1,8 @@
 package aic.gas.sc.gg_bot.replay_parser.main.example.irl_lunar;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.features.OurState;
+import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
+import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.OurEpisode;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
 import burlap.behavior.functionapproximation.dense.NumericVariableFeatures;
@@ -17,25 +20,49 @@ import burlap.mdp.singleagent.environment.SimulatedEnvironment;
 import burlap.mdp.singleagent.oo.OOSADomain;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ExpertExampleGenerator {
 
-  private static final String LUNAR_DEMONSTRATIONS = ".lunar_demonstrations";
-  private static final String LUNAR_DEMONSTRATIONS_FOLDER = "lunar_demonstrations";
+  private static final String EXTENSION = "demo";
+  private static final String FOLDER = "lunar_demonstrations";
 
   public static List<Episode> getExpertsDemonstrations(int countOfDemonstrations) {
-    List<Episode> demonstrations = Episode.readEpisodes(LUNAR_DEMONSTRATIONS_FOLDER);
+    List<Episode> demonstrations = new ArrayList<>();
+//    List<Episode> demonstrations = SerializationUtil.getAllFilesInFolder(FOLDER, EXTENSION).stream()
+//        .map(file -> {
+//          try {
+//            return (Episode) SerializationUtil.deserialize(file.getAbsolutePath());
+//          } catch (Exception e) {
+//            return null;
+//          }
+//        })
+//        .filter(Objects::nonNull)
+//        .collect(Collectors.toList());
     if (demonstrations.size() < countOfDemonstrations) {
       int missingEpisodes = countOfDemonstrations - demonstrations.size();
-      demonstrations.addAll(generateEpisodes(missingEpisodes, 5000));
-      Episode.writeEpisodes(demonstrations, LUNAR_DEMONSTRATIONS_FOLDER, LUNAR_DEMONSTRATIONS);
+      List<OurEpisode> newEpisodes = generateEpisodes(missingEpisodes, 5000);
+
+//      //TODO hack, just increase count...
+//      try {
+//        int bound = newEpisodes.size();
+//        for (int i = 0; i < bound; i++) {
+//          SerializationUtil.serialize(newEpisodes.get(i), FOLDER + "/" +
+//              +(demonstrations.size() + i) + "." + EXTENSION);
+//        }
+//      } catch (Exception e) {
+//        log.info("Failed to serialize episode: " + e.getLocalizedMessage());
+//      }
+
+      demonstrations.addAll(newEpisodes);
     }
     return demonstrations.subList(0, countOfDemonstrations);
   }
 
-  public static List<Episode> generateEpisodes(int countOfEpisodesToGenerate, int trials) {
+  public static List<OurEpisode> generateEpisodes(int countOfEpisodesToGenerate, int trials) {
 
     LunarLanderDomain lld = new LunarLanderDomain();
     OOSADomain domain = lld.generateDomain();
@@ -71,26 +98,32 @@ public class ExpertExampleGenerator {
     }
 
     //run agent in environment
-    List<Episode> episodes = new ArrayList<>();
+    List<OurEpisode> episodes = new ArrayList<>();
 
     for (int i = 0; i < countOfEpisodesToGenerate; i++) {
-      Episode episode = new Episode();
+      OurEpisode episode = new OurEpisode();
       env.resetEnvironment();
       GreedyQPolicy greedyQPolicy = agent.planFromState(env.currentObservation());
       env.resetEnvironment();
       boolean reachedTerminalState = false;
       while (true) {
-        Action a = greedyQPolicy.action(env.currentObservation());
-        episode.addState(env.currentObservation());
+        LLState state = (LLState) env.currentObservation();
+        Action a = greedyQPolicy.action(state);
+        state = (LLState) env.currentObservation();
+        OurState ourState = new OurState(new double[]{state.agent.x, state.agent.y, state.agent.vx,
+            state.agent.vy, state.agent.angle});
+        episode.addState(ourState);
         episode.addAction(a);
         env.executeAction(a);
+        episode.addReward(env.lastReward());
         if (env.isInTerminalState() || episode.numTimeSteps() > 500) {
-          episode.addState(env.currentObservation());
-          episode.addReward(env.lastReward());
           if (env.isInTerminalState()) {
             log.info("Terminal state reached in it. " + i);
             reachedTerminalState = true;
           }
+          ourState = new OurState(new double[]{state.agent.x, state.agent.y, state.agent.vx,
+              state.agent.vy, state.agent.angle});
+          episode.addState(ourState);
           break;
         }
       }

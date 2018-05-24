@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Serializable data structure containing data of decision point
@@ -22,7 +23,9 @@ public class Policy implements Serializable {
 //
 //  };
 
+  @Setter
   private transient Map<Integer, DecisionInState> cache = new HashMap<>();
+  @Setter
   private transient OurProbabilisticPolicy policy;
 
   /**

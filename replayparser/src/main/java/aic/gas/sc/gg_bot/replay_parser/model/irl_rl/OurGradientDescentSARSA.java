@@ -14,19 +14,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class OurGradientDescentSarsaLam extends GradientDescentSarsaLam {
+public class OurGradientDescentSARSA extends GradientDescentSarsaLam {
 
   private final List<Action> actions;
+  private final double exploration;
 
-  public OurGradientDescentSarsaLam(double gamma, DifferentiableStateActionValue vfa,
-      double learningRate, double lambda, List<Action> actions) {
+  public OurGradientDescentSARSA(double gamma, DifferentiableStateActionValue vfa, double learningRate, double lambda,
+      List<Action> actions, double exploration) {
     //null domain - we don ot need it for our use case
     super(null, gamma, vfa, learningRate, lambda);
     this.actions = actions;
+    this.exploration = exploration;
   }
 
   public OurProbabilisticPolicy getCurrentPolicy() {
-    return new OurProbabilisticPolicy(vfa, actions);
+    return new OurProbabilisticPolicy(vfa, exploration, actions);
   }
 
   public void learnFromEpisode(Episode episode, RewardFunction rewardFunction) {

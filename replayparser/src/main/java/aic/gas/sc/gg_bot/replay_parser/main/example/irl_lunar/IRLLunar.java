@@ -1,12 +1,12 @@
 package aic.gas.sc.gg_bot.replay_parser.main.example.irl_lunar;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.features.OurState;
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.KFoldBatchIterator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.GPMLIRL;
 import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.GPRewardFunction;
 import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.IPlanerInitializerStrategy;
-import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.OurGradientDescentSarsaLam;
-import aic.gas.sc.gg_bot.abstract_bot.model.decision.OurProbabilisticPolicy;
+import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.OurGradientDescentSARSA;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
 import burlap.behavior.functionapproximation.dense.NumericVariableFeatures;
@@ -34,15 +34,14 @@ import lombok.extern.slf4j.Slf4j;
 public class IRLLunar {
 
   public static void main(String[] args) {
-    mimicExpert(1000, 4);
+    mimicExpert(10, 3);
   }
 
   public static void mimicExpert(int numberOfDemonstrationToUse, int height) {
-
     LunarLanderDomain lld = new LunarLanderDomain();
     OOSADomain domain = lld.generateDomain();
     ConcatenatedObjectFeatures inputFeatures = new ConcatenatedObjectFeatures()
-        .addObjectVectorizion(LunarLanderDomain.CLASS_AGENT, new NumericVariableFeatures());
+        .addObjectVectorizion(OurState.NAME, new NumericVariableFeatures());
 
     int nTilings = 5;
     double resolution = 10.;
@@ -53,10 +52,8 @@ public class IRLLunar {
     double angleWidth = 2 * lld.getAngmax() / resolution;
 
     TileCodingFeatures tilecoding = new TileCodingFeatures(inputFeatures);
-    tilecoding.addTilingsForAllDimensionsWithWidths(
-        new double[]{xWidth, yWidth, velocityWidth, velocityWidth, angleWidth}, nTilings,
-        TilingArrangement.RANDOM_JITTER);
-
+    tilecoding.addTilingsForAllDimensionsWithWidths(new double[]{xWidth, yWidth, velocityWidth,
+        velocityWidth, angleWidth}, nTilings, TilingArrangement.RANDOM_JITTER);
     double defaultQ = 0.5;
 
     KFoldBatchIterator batchIterator = new KFoldBatchIterator(5,
@@ -69,43 +66,89 @@ public class IRLLunar {
     //default strategy to create instance of planner
     IPlanerInitializerStrategy initializerStrategy = () -> {
       DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
-      return new OurGradientDescentSarsaLam(0.99, vfa, 0.02, 0.5, actions);
+      return new OurGradientDescentSARSA(0.99, vfa, 0.02, 0.5, actions, 0.05);
     };
 
     //solve IRL problem
-    ProgramGene<Double> reward = GPMLIRL
-        .learnReward(Configuration.builder().build(), batchIterator, 5, height,
-            initializerStrategy);
+    ProgramGene<Double> reward = GPMLIRL.learnReward(Configuration.builder().build(), batchIterator,
+        5, height, initializerStrategy);
     log.info(Tree.toString(reward));
 
     //learn policy from demonstrations
     GPRewardFunction ourRewardFunction = new GPRewardFunction(reward);
     DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
-    OurGradientDescentSarsaLam agent = new OurGradientDescentSarsaLam(0.99, vfa, 0.02, 0.5,
-        actions);
+    OurGradientDescentSARSA agent = new OurGradientDescentSARSA(0.99, vfa, 0.02,
+        0.5, actions, 0.1);
     batchIterator.getAll().forEach(episode -> agent.learnFromEpisode(episode, ourRewardFunction));
-    OurProbabilisticPolicy policy = agent.getCurrentPolicy();
 
     //run agent in environment
     LLState s = new LLState(new LLAgent(5, 0, 0), new LLBlock.LLPad(75, 95, 0, 10, "pad"));
     SimulatedEnvironment env = new SimulatedEnvironment(domain, s);
     List<Episode> episodes = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
+    List<Episode> terminatedEpisodes = new ArrayList<>();
+
+    for (int i = 0; i < 200; i++) {
       Episode episode = new Episode();
       env.resetEnvironment();
       int trials = 0;
-      while (!env.isInTerminalState()) {
-        Action a = policy.selectActionInState(env.currentObservation());
+      while (true) {
+        LLState state = (LLState) env.currentObservation();
+        OurState ourState = new OurState(new double[]{state.agent.x, state.agent.y, state.agent.vx,
+            state.agent.vy, state.agent.angle});
+        Action a = agent.getCurrentPolicy().selectActionInState(ourState);
         episode.addState(env.currentObservation());
         episode.addAction(a);
         env.executeAction(a);
+        episode.addReward(env.lastReward());
         trials++;
-        if (trials > 500) {
+        if (trials > 500 || env.isInTerminalState()) {
+          if (env.isInTerminalState()) {
+
+            if (i >= 190) {
+              terminatedEpisodes.add(episode);
+            }
+
+            //learn from episode
+//            agent.learnFromEpisode(episode, ourRewardFunction);
+            log.info("Reached terminal state in it.:" + i);
+          }
+          episode.addState(env.currentObservation());
           break;
         }
       }
-      episodes.add(episode);
+
+      if (i >= 190) {
+        episodes.add(episode);
+      }
+      //learn from episode
+//      agent.learnFromEpisode(episode, ourRewardFunction);
+//      episodes.add(episode);
     }
+
+    // avg cumulative reward for demonstrations
+    double avg = batchIterator.getAll()
+        .mapToDouble(episode -> episode.rewardSequence.stream()
+            .mapToDouble(value -> value)
+            .sum())
+        .average().orElse(0);
+    log.info("Dem. trajectories avg. cumulative reward: " + avg);
+
+    // avg cumulative reward
+    avg = episodes.stream()
+        .mapToDouble(episode -> episode.rewardSequence.stream()
+            .mapToDouble(value -> value)
+            .sum())
+        .average().orElse(0);
+    log.info("Own trajectories avg. cumulative reward: " + avg + " from " + episodes.size());
+
+    // avg cumulative reward
+    avg = terminatedEpisodes.stream()
+        .mapToDouble(episode -> episode.rewardSequence.stream()
+            .mapToDouble(value -> value)
+            .sum())
+        .average().orElse(0);
+    log.info("Own trajectories - terminated avg. cumulative reward: " + avg + " from "
+        + terminatedEpisodes.size());
 
     Visualizer v = LLVisualizer.getVisualizer(lld.getPhysParams());
     new EpisodeSequenceVisualizer(v, domain, episodes);

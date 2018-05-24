@@ -189,7 +189,7 @@ public class DecisionLearnerService implements IDecisionLearnerService {
 //              StateTransitionPair nextPair = stateTransitionPairs.get(i);
 //
 //              //add transition to episode. Do not add last transition if agent is committed. add positive reward only
-//              episode.transition(new SimpleAction(stateTransitionPair.nextActionEnumeration.name()),
+//              episode.transition(new SimpleAction(stateTransitionPair.nextActionEnumeration.NAME()),
 //                  nextPair.decisionState,
 //                  Math.abs(DecisionDomainGenerator.getRandomRewardInInterval(configuration)));
 //
@@ -233,7 +233,7 @@ public class DecisionLearnerService implements IDecisionLearnerService {
 //          .collect(Collectors.toSet());
 //      if (Arrays.stream(NextActionEnumerations.values())
 //          .anyMatch(nextActionEnumerations -> !actions.contains(nextActionEnumerations))) {
-//        log.error("Missing action in " + tuple.mapSize.name() + ", " + tuple.race.name() + ", "
+//        log.error("Missing action in " + tuple.mapSize.NAME() + ", " + tuple.race.NAME() + ", "
 //            + tuple.agentTypeID
 //            .getName() + ", " + tuple.desireKeyID.getName());
 //      }

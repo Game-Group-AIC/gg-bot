@@ -16,7 +16,7 @@ import io.jenetics.prog.op.MathOp;
 import io.jenetics.prog.op.Op;
 import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,7 +63,7 @@ public class GPMLIRL {
         .build();
 
     return engine.stream()
-        .limit(50)
+        .limit(100)
         .peek(programGeneDoubleEvolutionResult -> log.info("Best solution in generation: "
             + programGeneDoubleEvolutionResult.getBestFitness()))
         .peek(programGeneDoubleEvolutionResult -> batchIterator.next())
@@ -72,19 +72,42 @@ public class GPMLIRL {
   }
 
   /**
-   * Computes and returns the log-likelihood of all expert trajectories under the current reward function parameters.
+   * Computes and returns the log-likelihood of all expert trajectories under the current reward
+   * function parameters.
    *
-   * @return the log-likelihood of all expert trajectories under the current reward function parameters.
+   * @return the log-likelihood of all expert trajectories under the current reward function
+   * parameters.
    */
   private static double logLikelihood(KFoldBatchIterator batchIterator,
       ProgramGene<Double> program, IPlanerInitializerStrategy planerInitializerStrategy) {
 
     GPRewardFunction rf = new GPRewardFunction(program);
-    OurGradientDescentSarsaLam planner = planerInitializerStrategy.initPlanner();
+    OurGradientDescentSARSA planner = planerInitializerStrategy.initPlanner();
 
-    //learn policy
-    batchIterator.trainingData()
-        .forEach(episode -> planner.learnFromEpisode(episode, rf));
+    KFoldBatchIterator newBatchIterator = new KFoldBatchIterator(5,
+        batchIterator.trainingData().collect(Collectors.toList()));
+
+    double logLikelihoodTraining = newBatchIterator.trainingData()
+        .mapToDouble(episode -> logLikelihoodOfTrajectory(episode, planner.getCurrentPolicy()))
+        .sum();
+
+    for (int i = 0; i < 20; i++) {
+
+      //learn policy
+      newBatchIterator.trainingData()
+          .forEach(episode -> planner.learnFromEpisode(episode, rf));
+
+      double newLogLikelihoodTraining = newBatchIterator.testingData()
+          .mapToDouble(episode -> logLikelihoodOfTrajectory(episode, planner.getCurrentPolicy()))
+          .sum();
+
+      if (Math.abs(logLikelihoodTraining - newLogLikelihoodTraining)  / logLikelihoodTraining
+          <= 0.05) {
+        break;
+      }
+
+      logLikelihoodTraining = newLogLikelihoodTraining;
+    }
 
     return batchIterator.testingData()
         .mapToDouble(episode -> logLikelihoodOfTrajectory(episode, planner.getCurrentPolicy()))
@@ -96,15 +119,10 @@ public class GPMLIRL {
     for (int i = 0; i < ep.numTimeSteps() - 1; i++) {
 
       //prevent by playing action with small ppt
-      double actProb = Math.max(policy.getProbabilityOfActionInState(ep.state(i), ep.action(i))
-          + getNoise(), Math.exp(-100));
+      double actProb = policy.getProbabilityOfActionInState(ep.state(i), ep.action(i));
       logLike += Math.log(actProb);
     }
     return logLike;
-  }
-
-  private static double getNoise() {
-    return ThreadLocalRandom.current().nextDouble(-0.05, 0.05);
   }
 
 }
