@@ -36,7 +36,6 @@
     <burlap.version>3.0.1</burlap.version>
     <mapdb.version>3.0.5</mapdb.version>
     <rabbitmq.version>5.0.0</rabbitmq.version>
-    <neuroph.version>2.94</neuroph.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -152,13 +151,6 @@
         <artifactId>jenetics.prog</artifactId>
         <version>${jenetics.version}</version>
       </dependency>
-
-      <dependency>
-        <groupId>org.neuroph</groupId>
-        <artifactId>neuroph-core</artifactId>
-        <version>${neuroph.version}</version>
-      </dependency>
-
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
@@ -224,10 +216,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.neuroph</groupId>
-      <artifactId>neuroph-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>uk.com.robust-it</groupId>
       <artifactId>cloning</artifactId>
     </dependency>
@@ -272,12 +260,5 @@
       <artifactId>burlap</artifactId>
     </dependency>
   </dependencies>
-
-  <repositories>
-    <repository>
-      <id>neuroph.sourceforge.net</id>
-      <url>http://neuroph.sourceforge.net/maven2/</url>
-    </repository>
-  </repositories>
 
 </project>

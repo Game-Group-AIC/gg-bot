@@ -39,15 +39,8 @@ public class OurGradientDescentSARSA extends GradientDescentSarsaLam {
     this.maxRelativeQValueChange = 0;
   }
 
-  public void learnFromEpisode(Episode episode, RewardFunction rewardFunction,
-      IStateMapper stateMapper) {
-    Episode newEpisode = new Episode();
-    episode.rewardSequence.forEach(newEpisode::addReward);
-    episode.actionSequence.forEach(newEpisode::addAction);
-    episode.stateSequence.stream()
-        .map(stateMapper::map)
-        .forEach(newEpisode::addState);
-    learnFromEpisode(newEpisode, rewardFunction);
+  public FunctionGradient gradient(State state, Action action) {
+    return this.vfa.gradient(state, action);
   }
 
   public void learnFromEpisode(Episode episode, RewardFunction rewardFunction) {
@@ -170,6 +163,5 @@ public class OurGradientDescentSARSA extends GradientDescentSarsaLam {
       this.totalNumberOfSteps++;
     }
   }
-
 
 }

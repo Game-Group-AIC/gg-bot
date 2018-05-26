@@ -75,9 +75,9 @@ public class IRLLunar {
     ProgramGene<Double> reward = GPMLIRL.learnReward(configuration, batchIterator, 5,
         initializerStrategy);
     log.info(Tree.toString(reward));
+    GPRewardFunction ourRewardFunction = new GPRewardFunction(reward);
 
     //learn policy from demonstrations
-    GPRewardFunction ourRewardFunction = new GPRewardFunction(reward);
     DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
     OurGradientDescentSARSA agent = new OurGradientDescentSARSA(0.99, vfa, 0.02,
         0.5, actions, 0.1);
