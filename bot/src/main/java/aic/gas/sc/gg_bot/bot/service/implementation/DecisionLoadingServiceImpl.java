@@ -2,20 +2,16 @@ package aic.gas.sc.gg_bot.bot.service.implementation;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DecisionConfiguration;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.MetaPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.Policy;
-import aic.gas.sc.gg_bot.abstract_bot.model.decision.NextActionEnumerations;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.abstract_bot.service.DecisionLoadingService;
 import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKeyID;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,36 +57,20 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
       String fileName =
           "/" + mapSize.name() + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID
               .getName() + ".db";
-      Policy policy = SerializationUtil.deserialize(
-          DecisionLoadingServiceImpl.class.getResourceAsStream(fileName));
-
-      //set cache
-      policy.init();
-
-      //are all actions present
-      Set<NextActionEnumerations> actions = policy.getStates().stream()
-          .flatMap(stateWithPolicy -> stateWithPolicy.getNextActions().entrySet().stream()
-              .filter(entry -> entry.getValue() > 0)
-              .map(Entry::getKey))
-          .distinct()
-          .collect(Collectors.toSet());
-      if (Arrays.stream(NextActionEnumerations.values())
-          .anyMatch(nextActionEnumerations -> !actions.contains(nextActionEnumerations))) {
-        log.error("Missing action in " + mapSize.name() + ", " + race.name() + ", " + agentTypeID
-            .getName() + ", " + desireKeyID.getName());
-      }
+      MetaPolicy metaPolicy = SerializationUtil.deserialize(DecisionLoadingServiceImpl.class
+          .getResourceAsStream(fileName));
 
       cache.computeIfAbsent(mapSize, id -> new HashMap<>())
           .computeIfAbsent(race, id -> new HashMap<>())
           .computeIfAbsent(agentTypeID, id -> new HashMap<>())
-          .put(desireKeyID, policy);
+          .put(desireKeyID, new Policy(metaPolicy));
       if (!loaded.containsKey(agentTypeID)) {
         Map<DesireKeyID, Policy> toAdd = new HashMap<>();
-        toAdd.put(desireKeyID, policy);
+        toAdd.put(desireKeyID, new Policy(metaPolicy));
         loaded.put(agentTypeID, toAdd);
       } else {
         if (!loaded.get(agentTypeID).containsKey(desireKeyID)) {
-          loaded.get(agentTypeID).put(desireKeyID, policy);
+          loaded.get(agentTypeID).put(desireKeyID, new Policy(metaPolicy));
         }
       }
 
@@ -126,10 +106,9 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
         return loaded.get(agentTypeID).get(desireKeyID);
       }
 
-      log.error(
-          "No models of decision for combination " + DecisionConfiguration.getMapSize().name()
-              + ", " + DecisionConfiguration.getRace().name() + ", " + agentTypeID.getName()
-              + ", " + desireKeyID.getName());
+      log.error("No models of decision for combination " + DecisionConfiguration.getMapSize().name()
+          + ", " + DecisionConfiguration.getRace().name() + ", " + agentTypeID.getName()
+          + ", " + desireKeyID.getName());
       return null;
     }
   }

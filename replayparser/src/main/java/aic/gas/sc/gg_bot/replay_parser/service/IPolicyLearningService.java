@@ -1,9 +1,9 @@
 package aic.gas.sc.gg_bot.replay_parser.service;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.MetaPolicy;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.StateBuilder;
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
-import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
-import burlap.mdp.singleagent.SADomain;
 import java.util.List;
 
 /**
@@ -12,9 +12,9 @@ import java.util.List;
 public interface IPolicyLearningService {
 
   /**
-   * Learn policy for given domain using episodes
+   * Learn policy using episodes
    */
-  Policy learnPolicy(SADomain domain, List<Episode> episodes, Configuration configuration,
-      int numberOfClusters);
+  MetaPolicy learnPolicy(List<Episode> episodes, StateBuilder stateBuilder,
+      Configuration configuration, int numberOfFeatures);
 
 }

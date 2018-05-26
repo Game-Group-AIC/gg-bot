@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
@@ -34,12 +32,15 @@ public class OurProbabilisticPolicy {
 
   private Map<Action, Double> getActionProbabilitiesInState(State s) {
     Map<Action, Double> actionsValuesInState;
+
     try {
       actionsValuesInState = actions.stream()
           .collect(Collectors.toMap(action -> action, action -> evaluate(s, action)));
-    } catch (Exception e){
+    } catch (Exception e) {
       actionsValuesInState = new HashMap<>();
-      log.info(e.getMessage());
+      int count = actionsValuesInState.size();
+      return actionsValuesInState.entrySet().stream()
+          .collect(Collectors.toMap(Entry::getKey, o -> (1.0 / count)));
     }
 
     //uniform ppt

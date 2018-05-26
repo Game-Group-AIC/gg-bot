@@ -1,6 +1,7 @@
 package aic.gas.sc.gg_bot.replay_parser.service;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.MapSizeEnums;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.MetaPolicy;
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.Policy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeID;
@@ -39,7 +40,7 @@ public interface IStorageService {
   /**
    * Store learnt Policy
    */
-  void storeLearntDecision(Policy structure, AgentTypeID agentTypeID,
+  void storeLearntDecision(MetaPolicy structure, AgentTypeID agentTypeID,
       DesireKeyID desireKeyID, MapSizeEnums mapSize, ARace race) throws Exception;
 
   String getLearntDecisionPath(AgentTypeID agentTypeID, DesireKeyID desireKeyID,

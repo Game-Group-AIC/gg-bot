@@ -111,12 +111,12 @@ public class IRLLunar {
         trials++;
         if (trials > 500 || env.isInTerminalState()) {
           if (env.isInTerminalState()) {
-            if (i >= 90) {
-              episodes.add(episode);
-            }
             log.info("Reached terminal state in it.:" + i);
           }
           episode.addState(env.currentObservation());
+          if (i >= 90) {
+            episodes.add(episode);
+          }
           break;
         }
       }

@@ -1,9 +1,7 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.decision;
 
 import burlap.mdp.core.action.Action;
-import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  * Enumeration of all possible commitments based on policy
@@ -41,14 +39,6 @@ public enum NextActionEnumerations implements Serializable, NextActionStrategy, 
       return YES;
     }
     return NO;
-  }
-
-  public static Map<NextActionEnumerations, Double> getActionMap(String commitment, double prob) {
-    NextActionEnumerations nextAction = returnNextAction(commitment);
-    if (prob == 1.0) {
-      return ImmutableMap.of(nextAction, prob);
-    }
-    return ImmutableMap.of(nextAction, prob, nextAction.equals(YES) ? NO : YES, 1.0 - prob);
   }
 
   @Override
