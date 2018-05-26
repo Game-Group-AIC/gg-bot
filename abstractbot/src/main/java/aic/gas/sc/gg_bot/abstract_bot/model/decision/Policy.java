@@ -1,40 +1,18 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.decision;
 
 import burlap.mdp.core.action.Action;
-import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import lombok.Getter;
-import lombok.Setter;
 
-/**
- * Serializable data structure containing data of decision point
- */
-@Getter
-public class Policy implements Serializable {
+public class Policy {
 
-  private static final transient List<Action> ACTIONS = Arrays
-      .stream(NextActionEnumerations.values())
-      .collect(Collectors.toList());
-//  private static final transient IVFInitializer INITIALIZER = () -> {
-//
-//  };
+  private final MetaPolicy metaPolicy;
+  private final Map<Integer, DecisionInState> cache = new HashMap<>();
+  private final OurProbabilisticPolicy policy;
 
-  @Setter
-  private transient Map<Integer, DecisionInState> cache = new HashMap<>();
-  @Setter
-  private transient OurProbabilisticPolicy policy;
-
-  /**
-   * A map from feature identifiers to function weights
-   */
-  private final Map<Integer, Double> weights;
-
-  public Policy(Map<Integer, Double> weights) {
-    this.weights = weights;
+  public Policy(MetaPolicy metaPolicy) {
+    this.metaPolicy = metaPolicy;
+    this.policy = metaPolicy.createPolicy();
   }
 
   /**
@@ -43,19 +21,15 @@ public class Policy implements Serializable {
   public boolean nextAction(double[] featureVector, int frame, int agentId,
       int forHowLongToCacheDecision) {
     DecisionInState decisionInState = cache.get(agentId);
-    if (decisionInState == null || decisionInState
-        .canChangeDecision(featureVector, frame, forHowLongToCacheDecision)) {
-//      decisionInState = new DecisionInState(featureVector, frame,
-//          getState(featureVector).sampleNextActionAccordingToPolicy()
-//              .orElse(RANDOM.nextBoolean() ? NextActionEnumerations.NO : NextActionEnumerations.YES)
-//              .commit());
-//      cache.put(agentId, decisionInState);
+    if (decisionInState == null || decisionInState.canChangeDecision(featureVector, frame,
+        forHowLongToCacheDecision)) {
+      OurState state = metaPolicy.buildState(featureVector);
+      Action action = policy.selectActionInState(state);
+      decisionInState = new DecisionInState(featureVector, frame,
+          ((NextActionEnumerations) action).commit());
+      cache.put(agentId, decisionInState);
     }
     return decisionInState.isCommit();
-  }
-
-  public void init() {
-    this.cache = new HashMap<>();
   }
 
 }

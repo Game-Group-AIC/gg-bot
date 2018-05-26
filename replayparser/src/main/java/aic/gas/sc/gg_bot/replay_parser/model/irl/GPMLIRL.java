@@ -1,31 +1,30 @@
-package aic.gas.sc.gg_bot.replay_parser.model.irl_rl;
+package aic.gas.sc.gg_bot.replay_parser.model.irl;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.OurProbabilisticPolicy;
 import aic.gas.sc.gg_bot.replay_parser.configuration.Configuration;
-import aic.gas.sc.gg_bot.replay_parser.model.irl.KFoldBatchIterator;
 import burlap.behavior.singleagent.Episode;
 import io.jenetics.Genotype;
-import io.jenetics.MultiPointCrossover;
 import io.jenetics.Mutator;
+import io.jenetics.SwapMutator;
 import io.jenetics.engine.Codec;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
+import io.jenetics.ext.SingleNodeCrossover;
+import io.jenetics.prog.MathTreePruneAlterer;
 import io.jenetics.prog.ProgramChromosome;
 import io.jenetics.prog.ProgramGene;
 import io.jenetics.prog.op.MathOp;
 import io.jenetics.prog.op.Op;
 import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GPMLIRL {
 
-  //TODO refactor configuration
   public static ProgramGene<Double> learnReward(Configuration configuration,
-      KFoldBatchIterator batchIterator, int numberOfFeatures, int depth,
+      KFoldBatchIterator batchIterator, int numberOfFeatures,
       IPlanerInitializerStrategy planerInitializerStrategy) {
 
     // Definition of the terminals.
@@ -43,30 +42,25 @@ public class GPMLIRL {
 
     // Codec
     final Codec<ProgramGene<Double>, ProgramGene<Double>> CODEC =
-        Codec.of(
-            Genotype.of(ProgramChromosome.of(
-                depth,
-                ch -> ch.getRoot().size() <= 40,
-                OPERATIONS,
-                TERMINALS
-            )),
-            Genotype::getGene
-        );
+        Codec.of(Genotype.of(ProgramChromosome.of(configuration.getHeightOfTree(),
+            ch -> ch.getRoot().size() <= configuration.getTreeSize(), OPERATIONS, TERMINALS)),
+            Genotype::getGene);
 
     final Engine<ProgramGene<Double>, Double> engine = Engine
-        .builder(doubleProgramGene -> logLikelihood(batchIterator, doubleProgramGene,
-            planerInitializerStrategy), CODEC)
+        .builder(doubleProgramGene -> logLikelihoodCrossValidated(batchIterator.copy(),
+            doubleProgramGene, planerInitializerStrategy, configuration), CODEC)
         .maximizing()
         .alterers(
-            new MultiPointCrossover<>(),
+            new SingleNodeCrossover<>(),
+            new SwapMutator<>(),
+            new MathTreePruneAlterer<>(),
             new Mutator<>())
         .build();
 
     return engine.stream()
-        .limit(100)
+        .limit(configuration.getNumberOfIterations())
         .peek(programGeneDoubleEvolutionResult -> log.info("Best solution in generation: "
             + programGeneDoubleEvolutionResult.getBestFitness()))
-        .peek(programGeneDoubleEvolutionResult -> batchIterator.next())
         .collect(EvolutionResult.toBestGenotype())
         .getGene();
   }
@@ -78,37 +72,37 @@ public class GPMLIRL {
    * @return the log-likelihood of all expert trajectories under the current reward function
    * parameters.
    */
-  private static double logLikelihood(KFoldBatchIterator batchIterator,
-      ProgramGene<Double> program, IPlanerInitializerStrategy planerInitializerStrategy) {
+  private static double logLikelihoodCrossValidated(KFoldBatchIterator batchIterator,
+      ProgramGene<Double> program, IPlanerInitializerStrategy planerInitializerStrategy,
+      Configuration configuration) {
 
+    double sumTrainingError = 0;
+    for (int i = 0; i < configuration.getFolds(); i++) {
+      sumTrainingError = sumTrainingError + logLikelihood(batchIterator, program,
+          planerInitializerStrategy);
+      batchIterator.next();
+    }
+
+    //avg testing error for cross-validation
+    return sumTrainingError / configuration.getFolds();
+  }
+
+  private static double logLikelihood(KFoldBatchIterator batchIterator, ProgramGene<Double> program,
+      IPlanerInitializerStrategy planerInitializerStrategy) {
     GPRewardFunction rf = new GPRewardFunction(program);
     OurGradientDescentSARSA planner = planerInitializerStrategy.initPlanner();
 
-    KFoldBatchIterator newBatchIterator = new KFoldBatchIterator(5,
-        batchIterator.trainingData().collect(Collectors.toList()));
-
-    double logLikelihoodTraining = newBatchIterator.trainingData()
-        .mapToDouble(episode -> logLikelihoodOfTrajectory(episode, planner.getCurrentPolicy()))
-        .sum();
-
-    for (int i = 0; i < 20; i++) {
-
-      //learn policy
-      newBatchIterator.trainingData()
-          .forEach(episode -> planner.learnFromEpisode(episode, rf));
-
-      double newLogLikelihoodTraining = newBatchIterator.testingData()
-          .mapToDouble(episode -> logLikelihoodOfTrajectory(episode, planner.getCurrentPolicy()))
-          .sum();
-
-      if (Math.abs(logLikelihoodTraining - newLogLikelihoodTraining)  / logLikelihoodTraining
-          <= 0.05) {
+    //train
+    batchIterator.trainingData().forEach(episode -> planner.learnFromEpisode(episode, rf));
+    for (int i = 0; i < 10; i++) {
+      if (planner.getMaxRelativeQValueChange() <= 0.1) {
         break;
       }
-
-      logLikelihoodTraining = newLogLikelihoodTraining;
+      planner.resetMaxRelativeQValueChange();
+      batchIterator.trainingData().forEach(episode -> planner.learnFromEpisode(episode, rf));
     }
 
+    //test
     return batchIterator.testingData()
         .mapToDouble(episode -> logLikelihoodOfTrajectory(episode, planner.getCurrentPolicy()))
         .sum();

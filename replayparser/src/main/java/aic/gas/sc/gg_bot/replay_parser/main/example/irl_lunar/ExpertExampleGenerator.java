@@ -1,8 +1,6 @@
 package aic.gas.sc.gg_bot.replay_parser.main.example.irl_lunar;
 
-import aic.gas.sc.gg_bot.abstract_bot.model.features.OurState;
-import aic.gas.sc.gg_bot.abstract_bot.utils.SerializationUtil;
-import aic.gas.sc.gg_bot.replay_parser.model.irl_rl.OurEpisode;
+import aic.gas.sc.gg_bot.abstract_bot.model.decision.OurState;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
 import burlap.behavior.functionapproximation.dense.NumericVariableFeatures;
@@ -20,8 +18,6 @@ import burlap.mdp.singleagent.environment.SimulatedEnvironment;
 import burlap.mdp.singleagent.oo.OOSADomain;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -31,38 +27,38 @@ public class ExpertExampleGenerator {
   private static final String FOLDER = "lunar_demonstrations";
 
   public static List<Episode> getExpertsDemonstrations(int countOfDemonstrations) {
-    List<Episode> demonstrations = new ArrayList<>();
-//    List<Episode> demonstrations = SerializationUtil.getAllFilesInFolder(FOLDER, EXTENSION).stream()
-//        .map(file -> {
-//          try {
-//            return (Episode) SerializationUtil.deserialize(file.getAbsolutePath());
-//          } catch (Exception e) {
-//            return null;
-//          }
-//        })
-//        .filter(Objects::nonNull)
-//        .collect(Collectors.toList());
-    if (demonstrations.size() < countOfDemonstrations) {
-      int missingEpisodes = countOfDemonstrations - demonstrations.size();
-      List<OurEpisode> newEpisodes = generateEpisodes(missingEpisodes, 5000);
-
-//      //TODO hack, just increase count...
-//      try {
-//        int bound = newEpisodes.size();
-//        for (int i = 0; i < bound; i++) {
-//          SerializationUtil.serialize(newEpisodes.get(i), FOLDER + "/" +
-//              +(demonstrations.size() + i) + "." + EXTENSION);
-//        }
-//      } catch (Exception e) {
-//        log.info("Failed to serialize episode: " + e.getLocalizedMessage());
-//      }
-
-      demonstrations.addAll(newEpisodes);
-    }
-    return demonstrations.subList(0, countOfDemonstrations);
+//    List<Episode> demonstrations = new ArrayList<>();
+////    List<Episode> demonstrations = SerializationUtil.getAllFilesInFolder(FOLDER, EXTENSION).stream()
+////        .map(file -> {
+////          try {
+////            return (Episode) SerializationUtil.deserialize(file.getAbsolutePath());
+////          } catch (Exception e) {
+////            return null;
+////          }
+////        })
+////        .filter(Objects::nonNull)
+////        .collect(Collectors.toList());
+//    if (demonstrations.size() < countOfDemonstrations) {
+//      int missingEpisodes = countOfDemonstrations - demonstrations.size();
+//      List<Episode> newEpisodes = generateEpisodes(missingEpisodes, 5000);
+//
+////      //TODO hack, just increase count...
+////      try {
+////        int bound = newEpisodes.size();
+////        for (int i = 0; i < bound; i++) {
+////          SerializationUtil.serialize(newEpisodes.get(i), FOLDER + "/" +
+////              +(demonstrations.size() + i) + "." + EXTENSION);
+////        }
+////      } catch (Exception e) {
+////        log.info("Failed to serialize episode: " + e.getLocalizedMessage());
+////      }
+//
+//      demonstrations.addAll(newEpisodes);
+//    }
+    return generateEpisodes(countOfDemonstrations, 5000);
   }
 
-  public static List<OurEpisode> generateEpisodes(int countOfEpisodesToGenerate, int trials) {
+  public static List<Episode> generateEpisodes(int countOfEpisodesToGenerate, int trials) {
 
     LunarLanderDomain lld = new LunarLanderDomain();
     OOSADomain domain = lld.generateDomain();
@@ -98,10 +94,10 @@ public class ExpertExampleGenerator {
     }
 
     //run agent in environment
-    List<OurEpisode> episodes = new ArrayList<>();
+    List<Episode> episodes = new ArrayList<>();
 
     for (int i = 0; i < countOfEpisodesToGenerate; i++) {
-      OurEpisode episode = new OurEpisode();
+      Episode episode = new Episode();
       env.resetEnvironment();
       GreedyQPolicy greedyQPolicy = agent.planFromState(env.currentObservation());
       env.resetEnvironment();

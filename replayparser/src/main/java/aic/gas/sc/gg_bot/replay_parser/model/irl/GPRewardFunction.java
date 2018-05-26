@@ -1,4 +1,4 @@
-package aic.gas.sc.gg_bot.replay_parser.model.irl_rl;
+package aic.gas.sc.gg_bot.replay_parser.model.irl;
 
 import burlap.mdp.core.action.Action;
 import burlap.mdp.core.oo.state.ObjectInstance;
@@ -14,7 +14,6 @@ public class GPRewardFunction implements RewardFunction {
     this.program = program;
   }
 
-  //TODO change
   @Override
   public double reward(State state, Action action, State sprime) {
     if (sprime instanceof ObjectInstance && state instanceof ObjectInstance) {

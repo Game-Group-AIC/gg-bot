@@ -1,4 +1,4 @@
-package aic.gas.sc.gg_bot.replay_parser.model.irl_rl;
+package aic.gas.sc.gg_bot.replay_parser.model.irl;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.decision.OurProbabilisticPolicy;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
@@ -13,14 +13,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.Getter;
 
 public class OurGradientDescentSARSA extends GradientDescentSarsaLam {
 
   private final List<Action> actions;
   private final double exploration;
 
-  public OurGradientDescentSARSA(double gamma, DifferentiableStateActionValue vfa, double learningRate, double lambda,
-      List<Action> actions, double exploration) {
+  @Getter
+  private double maxRelativeQValueChange = 0;
+
+  public OurGradientDescentSARSA(double gamma, DifferentiableStateActionValue vfa,
+      double learningRate, double lambda, List<Action> actions, double exploration) {
     //null domain - we don ot need it for our use case
     super(null, gamma, vfa, learningRate, lambda);
     this.actions = actions;
@@ -29,6 +33,21 @@ public class OurGradientDescentSARSA extends GradientDescentSarsaLam {
 
   public OurProbabilisticPolicy getCurrentPolicy() {
     return new OurProbabilisticPolicy(vfa, exploration, actions);
+  }
+
+  public void resetMaxRelativeQValueChange() {
+    this.maxRelativeQValueChange = 0;
+  }
+
+  public void learnFromEpisode(Episode episode, RewardFunction rewardFunction,
+      IStateMapper stateMapper) {
+    Episode newEpisode = new Episode();
+    episode.rewardSequence.forEach(newEpisode::addReward);
+    episode.actionSequence.forEach(newEpisode::addAction);
+    episode.stateSequence.stream()
+        .map(stateMapper::map)
+        .forEach(newEpisode::addState);
+    learnFromEpisode(newEpisode, rewardFunction);
   }
 
   public void learnFromEpisode(Episode episode, RewardFunction rewardFunction) {
@@ -135,6 +154,13 @@ public class OurGradientDescentSARSA extends GradientDescentSarsaLam {
       //delete traces marked for deletion
       for (Integer t : deletedSet) {
         traces.remove(t);
+      }
+
+      //track Q-value max change
+      double relativeChangeQ =
+          Math.abs(this.vfa.evaluate(curState, action) - curQ) / (Math.abs(curQ));
+      if (relativeChangeQ > maxRelativeQValueChange) {
+        this.maxRelativeQValueChange = relativeChangeQ;
       }
 
       //move on

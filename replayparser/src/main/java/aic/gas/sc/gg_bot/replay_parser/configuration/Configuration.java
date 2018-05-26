@@ -10,88 +10,36 @@ import lombok.Getter;
 public class Configuration {
 
   @Builder.Default
-  private int batchSize = 100;
+  private int nTilings = 5;
 
   @Builder.Default
-  private int iterations = 20;
+  private double resolution = 10;
 
   @Builder.Default
-  private int clusters = 300;
-
-  //set last "dummy state" to large negative number as we do not want to go there
-  @Builder.Default
-  private int minReward = -1;
+  private int heightOfTree = 3;
 
   @Builder.Default
-  private int maxReward = 1;
+  private int treeSize = 100;
 
   @Builder.Default
-  private int irlNoChangeStopCondition = 10;
+  private double defaultQ = 0.5;
 
   @Builder.Default
-  private double initialLearningRate = 0.1;
-
-  @Builder.Default
-  private boolean staticLearningRate = false;
-
-  @Builder.Default
-  private double dropLearningRate = 0.5;
-
-  @Builder.Default
-  private int dropAfterIterations = 100;
-
-  @Builder.Default
-  private double noiseForLearningReward = 0.001;
-
-  @Builder.Default
-  private double maxLikelihoodChange = 0.01;
+  private int folds = 5;
 
   @Builder.Default
   private double gamma = 0.99;
 
   @Builder.Default
-  private double beta = 10;
+  private double learningRate = 0.02;
 
   @Builder.Default
-  private int steps = 50;
+  private double lambda = 0.5;
 
   @Builder.Default
-  private long timeBudget = 1000 * 60 * 5;
+  private double exploration = 0.05;
 
   @Builder.Default
-  private int countOfTrajectoriesPerIRLBatch = 20;
+  private int numberOfIterations = 100;
 
-  @Builder.Default
-  private int multiplierOfRewardForDeadEnd = 4;
-
-  @Builder.Default
-  private PSOParameters psoParameters = PSOParameters.builder().build();
-
-  @Builder.Default
-  private boolean usePSOForClustering = true;
-
-  @Override
-  public String toString() {
-    return "Utils{" +
-        "batchSize=" + batchSize +
-        ", iterations=" + iterations +
-        ", clusters=" + clusters +
-        ", minReward=" + minReward +
-        ", maxReward=" + maxReward +
-        ", initialLearningRate=" + initialLearningRate +
-        ", staticLearningRate=" + staticLearningRate +
-        ", dropLearningRate=" + dropLearningRate +
-        ", dropAfterIterations=" + dropAfterIterations +
-        ", noiseForLearningReward=" + noiseForLearningReward +
-        ", maxLikelihoodChange=" + maxLikelihoodChange +
-        ", gamma=" + gamma +
-        ", beta=" + beta +
-        ", steps=" + steps +
-        ", timeBudget=" + timeBudget +
-        ", countOfTrajectoriesPerIRLBatch=" + countOfTrajectoriesPerIRLBatch +
-        ", multiplierOfRewardForDeadEnd=" + multiplierOfRewardForDeadEnd +
-        ", psoParameters=" + psoParameters +
-        ", usePSOForClustering=" + usePSOForClustering +
-        '}';
-  }
 }
