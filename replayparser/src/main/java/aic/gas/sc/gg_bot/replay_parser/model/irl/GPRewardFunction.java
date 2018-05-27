@@ -17,11 +17,19 @@ public class GPRewardFunction implements RewardFunction {
   @Override
   public double reward(State state, Action action, State sprime) {
     if (sprime instanceof ObjectInstance && state instanceof ObjectInstance) {
-      ObjectInstance agentBefore = (ObjectInstance) state;
+//      ObjectInstance agentBefore = (ObjectInstance) state;
       ObjectInstance agentNow = (ObjectInstance) sprime;
-      return program.eval(differences(agentBefore, agentNow));
+//      return program.eval(differences(agentBefore, agentNow));
+      return program.eval(currentState(agentNow));
     }
     throw new IllegalArgumentException("The state is not instance of our state type.");
+  }
+
+  private static Double[] currentState(ObjectInstance agentNow) {
+    return agentNow.variableKeys().stream()
+        .mapToDouble(k -> (double) agentNow.get(k))
+        .boxed()
+        .toArray(Double[]::new);
   }
 
   private static Double[] differences(ObjectInstance agentBefore, ObjectInstance agentNow) {

@@ -19,7 +19,10 @@ public class Configuration {
   private int heightOfTree = 3;
 
   @Builder.Default
-  private int treeSize = 100;
+  private int treeMaximalSize = 50;
+
+  @Builder.Default
+  private int treeMinimalSize = 5;
 
   @Builder.Default
   private double defaultQ = 0.5;

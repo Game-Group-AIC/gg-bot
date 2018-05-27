@@ -7,6 +7,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.irl.GPRewardFunction;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.IPlanerInitializerStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.KFoldBatchIterator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.OurGradientDescentSARSA;
+import aic.gas.sc.gg_bot.replay_parser.model.irl.PolicyTrainer;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
 import burlap.behavior.functionapproximation.dense.NumericVariableFeatures;
@@ -78,17 +79,10 @@ public class IRLLunar {
     GPRewardFunction ourRewardFunction = new GPRewardFunction(reward);
 
     //learn policy from demonstrations
-    DifferentiableStateActionValue vfa = tilecoding.generateVFA(defaultQ / nTilings);
+    DifferentiableStateActionValue vfa = PolicyTrainer
+        .learnValueFunction(batchIterator, initializerStrategy, ourRewardFunction);
     OurGradientDescentSARSA agent = new OurGradientDescentSARSA(0.99, vfa, 0.02,
         0.5, actions, 0.1);
-    batchIterator.getAll().forEach(episode -> agent.learnFromEpisode(episode, ourRewardFunction));
-    for (int i = 0; i < 100; i++) {
-      if (agent.getMaxRelativeQValueChange() <= 0.1) {
-        break;
-      }
-      agent.resetMaxRelativeQValueChange();
-      batchIterator.getAll().forEach(episode -> agent.learnFromEpisode(episode, ourRewardFunction));
-    }
 
     //run agent in environment
     LLState s = new LLState(new LLAgent(5, 0, 0), new LLBlock.LLPad(75, 95, 0, 10, "pad"));
@@ -111,7 +105,7 @@ public class IRLLunar {
         trials++;
         if (trials > 500 || env.isInTerminalState()) {
           if (env.isInTerminalState()) {
-            log.info("Reached terminal state in it.:" + i);
+            log.info("Reached terminal state in it.:{}", i);
           }
           episode.addState(env.currentObservation());
           if (i >= 90) {

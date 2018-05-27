@@ -229,7 +229,7 @@ public class BaseLocationAgentType {
                             && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
                             //hack
                             && dataForDecision
-                            .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) < 2)
+                            .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) < 1)
                 .beliefSetTypes(Stream.of(BASE_IS_COMPLETED, COUNT_OF_CREEP_COLONIES_AT_BASE)
                     .collect(Collectors.toSet()))
                 .desiresToConsider(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY))
@@ -284,7 +284,7 @@ public class BaseLocationAgentType {
             COUNT_OF_SPORE_COLONIES_AT_BASE, FactKeys.SPORE_COLONY_COUNT,
             DesiresKeys.BUILD_SPORE_COLONY,
             AUnitTypeWrapper.SPORE_COLONY_TYPE, DEFENSE, Stream.of(DesiresKeys.BUILD_SPORE_COLONY),
-            Stream.of(DesiresKeys.BUILD_CREEP_COLONY), value -> value <= 3);
+            Stream.of(DesiresKeys.BUILD_CREEP_COLONY), value -> value <= 1);
         type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, buildSporeColonyAbstract, true);
 
         //to meet dependencies

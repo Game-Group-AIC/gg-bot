@@ -8,6 +8,7 @@ import aic.gas.sc.gg_bot.replay_parser.model.irl.GPRewardFunction;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.IPlanerInitializerStrategy;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.KFoldBatchIterator;
 import aic.gas.sc.gg_bot.replay_parser.model.irl.OurGradientDescentSARSA;
+import aic.gas.sc.gg_bot.replay_parser.model.irl.PolicyTrainer;
 import aic.gas.sc.gg_bot.replay_parser.service.IPolicyLearningService;
 import burlap.behavior.functionapproximation.DifferentiableStateActionValue;
 import burlap.behavior.singleagent.Episode;
@@ -50,20 +51,8 @@ public class PolicyLearningService implements IPolicyLearningService {
 
     //learn policy from demonstrations
     GPRewardFunction ourRewardFunction = new GPRewardFunction(reward);
-    DifferentiableStateActionValue vfa = MetaPolicy.initializeVFA(stateBuilder,
-        configuration.getNTilings(), configuration.getResolution(), configuration.getDefaultQ());
-    OurGradientDescentSARSA agent = new OurGradientDescentSARSA(configuration.getGamma(), vfa,
-        configuration.getLearningRate(), configuration.getLambda(), MetaPolicy.ACTIONS,
-        configuration.getExploration());
-
-    batchIterator.getAll().forEach(episode -> agent.learnFromEpisode(episode, ourRewardFunction));
-    for (int i = 0; i < 100; i++) {
-      if (agent.getMaxRelativeQValueChange() <= 0.1){
-        break;
-      }
-      agent.resetMaxRelativeQValueChange();
-      batchIterator.getAll().forEach(episode -> agent.learnFromEpisode(episode, ourRewardFunction));
-    }
+    DifferentiableStateActionValue vfa = PolicyTrainer.learnValueFunction(batchIterator,
+        initializerStrategy, ourRewardFunction);
 
     //get weights
     Map<Integer, Double> weights = IntStream.range(0, vfa.numParameters())

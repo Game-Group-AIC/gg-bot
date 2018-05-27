@@ -31,6 +31,10 @@ public class OurGradientDescentSARSA extends GradientDescentSarsaLam {
     this.exploration = exploration;
   }
 
+  public DifferentiableStateActionValue getCopyOfValueFunction() {
+    return (DifferentiableStateActionValue) vfa.copy();
+  }
+
   public OurProbabilisticPolicy getCurrentPolicy() {
     return new OurProbabilisticPolicy(vfa, exploration, actions);
   }
