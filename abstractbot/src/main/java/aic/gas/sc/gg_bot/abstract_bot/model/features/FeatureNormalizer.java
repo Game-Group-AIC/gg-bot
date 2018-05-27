@@ -15,11 +15,11 @@ public class FeatureNormalizer implements IFeatureNormalizer, Serializable {
 
   @Override
   public double normalize(double value) {
-    return (value > max ? max : value < min ? min : value);
+    return ((value > max ? max : value < min ? min : value) - min) / (max - min);
   }
 
   @Override
   public double range() {
-    return max - min;
+    return 1;
   }
 }

@@ -27,9 +27,8 @@ public class Decider {
     Policy policy = DECISION_LOADING_SERVICE
         .getDecisionPoint(agentTypeID, desireKeyID);
     if (policy == null) {
-      log.error(
-          "No policy loaded: " + desireKeyID.getName() + ", for agent " + agentTypeID.getName()
-              + " with ID: " + agentId);
+      log.error("No policy loaded: " + desireKeyID.getName() + ", for agent "
+          + agentTypeID.getName() + " with ID: " + agentId);
       return false;
     }
     return policy.nextAction(featureContainerHeader.formVector(dataForDecision), frame, agentId,
