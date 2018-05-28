@@ -66,7 +66,6 @@ import aic.gas.sc.gg_bot.abstract_bot.model.UnitTypeStatus;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
-import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys;
 import aic.gas.sc.gg_bot.abstract_bot.model.features.FeatureContainerHeader;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Utils;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
@@ -110,51 +109,36 @@ public class BaseLocationAgentType {
   }
 
   /**
-   * Template to create desire initiated by learnt decision.
-   * Initialize abstract build plan top - make reservation + check conditions (for building).
-   * It is unlocked only when building is built
+   * Template to create desire initiated by learnt decision. Initialize abstract build plan top -
+   * make reservation + check conditions (for building). It is unlocked only when building is built
    */
   private static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-      FactWithOptionalValueSet<T> completedCount, FactKey<Integer> factCountToTrackPreviousCount,
-      DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper,
-      FeatureContainerHeader featureContainerHeader,
+      FactWithOptionalValueSet<T> completedCount, DesireKey desireKey,
+      AUnitTypeWrapper unitTypeWrapper, FeatureContainerHeader featureContainerHeader,
       Stream<DesireKey> desireKeysWithSharedIntentionStream,
       Stream<DesireKey> desireKeysWithAbstractIntentionStream,
       SimpleDecisionStrategy forCommitment) {
     return ConfigurationWithAbstractPlan.builder()
-        .reactionOnChangeStrategy((memory, desireParameters) -> {
-              BotFacade.RESOURCE_MANAGER
-                  .makeReservation(unitTypeWrapper, memory.getAgentId());
-              memory.updateFact(factCountToTrackPreviousCount,
-                  (int) memory.returnFactSetValueForGivenKey(STATIC_DEFENSE).orElse(Stream.empty())
-                      .map(AUnit::getType)
-                      .filter(typeWrapper -> typeWrapper.equals(unitTypeWrapper))
-                      .count());
-            }
-        )
-        .reactionOnChangeStrategyInIntention(
-            (memory, desireParameters) -> {
-              BotFacade.RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId());
-              memory.eraseFactValueForGivenKey(factCountToTrackPreviousCount);
-            })
+        .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
+            .makeReservation(unitTypeWrapper, memory.getAgentId()))
+        .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+            BotFacade.RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId()))
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    !BotFacade.RESOURCE_MANAGER
-                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
-                        && !dataForDecision.madeDecisionToAny()
-                        && !BuildLockerService.getInstance()
-                        .isLocked(unitTypeWrapper)
-                        //is base
-                        && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
-                        //we have base completed
-                        && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                        //there is/will be no creep colony available
-                        && forCommitment
-                        .isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
-                        && Decider
-                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
-                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
+            .decisionStrategy((dataForDecision, memory) ->
+                !BotFacade.RESOURCE_MANAGER
+                    .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                    && !dataForDecision.madeDecisionToAny()
+                    && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                    //is base
+                    && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
+                    //we have base completed
+                    && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                    //there is/will be no creep colony available
+                    && forCommitment.isTrue(dataForDecision
+                    .getFeatureValueBeliefSets(completedCount))
+                    && Decider.getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(),
+                    dataForDecision, featureContainerHeader, memory.getCurrentClock(),
+                    memory.getAgentId()))
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .globalBeliefTypesByAgentType(
@@ -162,24 +146,21 @@ public class BaseLocationAgentType {
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
             .beliefTypes(featureContainerHeader.getConvertersForFacts())
-            .beliefSetTypes(
-                Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
-                    Stream.of(BASE_IS_COMPLETED, completedCount))
-                    .collect(Collectors.toSet()))
+            .beliefSetTypes(Stream.concat(featureContainerHeader.getConvertersForFactSets()
+                .stream(), Stream.of(BASE_IS_COMPLETED, completedCount))
+                .collect(Collectors.toSet()))
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    (!Decider
-                        .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
-                            featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
-                        && !BotFacade.RESOURCE_MANAGER
-                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId()))
-                        || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
-                        || memory.returnFactValueForGivenKey(factCountToTrackPreviousCount)
-                        .orElse(0) != dataForDecision.getFeatureValueBeliefSets(completedCount))
+            .decisionStrategy((dataForDecision, memory) ->
+                !forCommitment.isTrue(dataForDecision
+                    .getFeatureValueBeliefSets(completedCount))
+                    || !Decider.getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(),
+                    dataForDecision, featureContainerHeader, memory.getCurrentClock(),
+                    memory.getAgentId()) || !BotFacade.RESOURCE_MANAGER
+                    .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                    || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                    || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get())
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .globalBeliefTypesByAgentType(
@@ -187,13 +168,12 @@ public class BaseLocationAgentType {
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
             .beliefTypes(featureContainerHeader.getConvertersForFacts())
-            .beliefSetTypes(
-                Stream.concat(featureContainerHeader.getConvertersForFactSets().stream(),
-                    Stream.of(BASE_IS_COMPLETED, completedCount))
-                    .collect(Collectors.toSet()))
+            .beliefSetTypes(Stream.concat(featureContainerHeader.getConvertersForFactSets()
+                .stream(), Stream.of(BASE_IS_COMPLETED, completedCount))
+                .collect(Collectors.toSet()))
             .build())
-        .desiresWithAbstractIntention(
-            desireKeysWithAbstractIntentionStream.collect(Collectors.toSet()))
+        .desiresWithAbstractIntention(desireKeysWithAbstractIntentionStream
+            .collect(Collectors.toSet()))
         .desiresForOthers(desireKeysWithSharedIntentionStream.collect(Collectors.toSet()))
         .build();
   }
@@ -203,8 +183,7 @@ public class BaseLocationAgentType {
 
         //build creep colony
         ConfigurationWithAbstractPlan buildCreepColonyAbstractPlan = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_CREEP_COLONIES_AT_BASE, FactKeys.CREEP_COLONY_COUNT,
-            DesiresKeys.BUILD_CREEP_COLONY,
+            COUNT_OF_CREEP_COLONIES_AT_BASE, DesiresKeys.BUILD_CREEP_COLONY,
             AUnitTypeWrapper.CREEP_COLONY_TYPE, DEFENSE, Stream.of(DesiresKeys.BUILD_CREEP_COLONY),
             Stream.empty(), value -> value == 0);
         type.addConfiguration(DesiresKeys.BUILD_CREEP_COLONY, buildCreepColonyAbstractPlan, true);
@@ -214,35 +193,35 @@ public class BaseLocationAgentType {
             .builder()
             .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
                 .makeReservation(AUnitTypeWrapper.CREEP_COLONY_TYPE, memory.getAgentId()))
-            .reactionOnChangeStrategyInIntention(
-                (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
-                    .removeReservation(AUnitTypeWrapper.CREEP_COLONY_TYPE, memory.getAgentId()))
+            .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+                BotFacade.RESOURCE_MANAGER.removeReservation(AUnitTypeWrapper.CREEP_COLONY_TYPE,
+                    memory.getAgentId()))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        !dataForDecision.madeDecisionToAny()
-                            && !BuildLockerService.getInstance()
-                            .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
-                            //is base
-                            && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
-                            //we have base completed
-                            && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                            //hack
-                            && dataForDecision
-                            .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) < 1)
+                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                    && !BuildLockerService.getInstance()
+                    .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
+                    && !BotFacade.RESOURCE_MANAGER
+                    .hasMadeReservationOn(AUnitTypeWrapper.CREEP_COLONY_TYPE,
+                        memory.getAgentId())
+                    //is base
+                    && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
+                    //we have base completed
+                    && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                    //hack
+                    && dataForDecision
+                    .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) < 1)
                 .beliefSetTypes(Stream.of(BASE_IS_COMPLETED, COUNT_OF_CREEP_COLONIES_AT_BASE)
                     .collect(Collectors.toSet()))
                 .desiresToConsider(Collections.singleton(DesiresKeys.BUILD_CREEP_COLONY))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        BuildLockerService.getInstance()
-                            .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
-                            || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
-                            || dataForDecision
-                            .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) > 0
-                )
+                .decisionStrategy((dataForDecision, memory) -> BuildLockerService.getInstance()
+                    .isLocked(AUnitTypeWrapper.CREEP_COLONY_TYPE)
+                    || !BotFacade.RESOURCE_MANAGER
+                    .hasMadeReservationOn(AUnitTypeWrapper.CREEP_COLONY_TYPE,
+                        memory.getAgentId()) || !memory.returnFactValueForGivenKey(IS_OUR_BASE)
+                    .get() || dataForDecision
+                    .getFeatureValueBeliefSets(COUNT_OF_CREEP_COLONIES_AT_BASE) > 0)
                 .beliefSetTypes(Collections.singleton(COUNT_OF_CREEP_COLONIES_AT_BASE))
                 .build())
             .desiresForOthers(Collections.singleton(DesiresKeys.MORPH_TO_CREEP_COLONY))
@@ -259,8 +238,7 @@ public class BaseLocationAgentType {
 
         //build sunken as abstract plan
         ConfigurationWithAbstractPlan buildSunkenAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_SUNKEN_COLONIES_AT_BASE, FactKeys.SUNKEN_COLONY_COUNT,
-            DesiresKeys.BUILD_SUNKEN_COLONY,
+            COUNT_OF_SUNKEN_COLONIES_AT_BASE, DesiresKeys.BUILD_SUNKEN_COLONY,
             AUnitTypeWrapper.SUNKEN_COLONY_TYPE, DEFENSE,
             Stream.of(DesiresKeys.BUILD_SUNKEN_COLONY),
             Stream.of(DesiresKeys.BUILD_CREEP_COLONY), value -> value <= 3);
@@ -281,8 +259,7 @@ public class BaseLocationAgentType {
 
         //spore colony as abstract plan
         ConfigurationWithAbstractPlan buildSporeColonyAbstract = createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
-            COUNT_OF_SPORE_COLONIES_AT_BASE, FactKeys.SPORE_COLONY_COUNT,
-            DesiresKeys.BUILD_SPORE_COLONY,
+            COUNT_OF_SPORE_COLONIES_AT_BASE, DesiresKeys.BUILD_SPORE_COLONY,
             AUnitTypeWrapper.SPORE_COLONY_TYPE, DEFENSE, Stream.of(DesiresKeys.BUILD_SPORE_COLONY),
             Stream.of(DesiresKeys.BUILD_CREEP_COLONY), value -> value <= 1);
         type.addConfiguration(DesiresKeys.BUILD_SPORE_COLONY, buildSporeColonyAbstract, true);

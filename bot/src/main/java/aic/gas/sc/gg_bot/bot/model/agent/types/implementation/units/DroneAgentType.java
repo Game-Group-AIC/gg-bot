@@ -163,9 +163,8 @@ public class DroneAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) -> dataForDecision.getFeatureValueBeliefs(
-                        IS_MINING_GAS) == 0
+                .decisionStrategy((dataForDecision, memory) ->
+                    dataForDecision.getFeatureValueBeliefs(IS_MINING_GAS) == 0
                         && dataForDecision.getFeatureValueBeliefs(IS_CARRYING_GAS) == 0)
                 .beliefTypes(new HashSet<>(Arrays.asList(IS_MINING_GAS, IS_CARRYING_GAS)))
                 .build()
@@ -222,13 +221,12 @@ public class DroneAgentType {
                     && dataForDecision.getNumberOfCommittedAgents() <= 2.5 * dataForDecision
                     .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE))
                     //is not gathering resources
-                    && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false))
-//                    && !memory.returnFactValueForGivenKey(IS_GATHERING_GAS).orElse(false))
+                    && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false)
+                    && !memory.returnFactValueForGivenKey(IS_GATHERING_GAS).orElse(false))
                 .parameterValueSetTypes(Collections.singleton(COUNT_OF_MINERALS_ON_BASE))
-                .desiresToConsider(Stream.concat(Stream
-                        .of(DesiresKeys.WORKER_SCOUT, DesiresKeys.MINE_MINERALS_IN_BASE,
-                            DesiresKeys.MINE_GAS_IN_BASE, DesiresKeys.GO_TO_BASE),
-                    BUILDING_DESIRES.stream())
+                .desiresToConsider(Stream.concat(Stream.of(DesiresKeys.WORKER_SCOUT,
+                    DesiresKeys.MINE_MINERALS_IN_BASE, DesiresKeys.MINE_GAS_IN_BASE,
+                    DesiresKeys.GO_TO_BASE), BUILDING_DESIRES.stream())
                     .collect(Collectors.toSet()))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -244,18 +242,17 @@ public class DroneAgentType {
                             .returnFactValueForGivenKey(IS_BASE_LOCATION)
                             .get().equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
                                 .getNearestBaseLocation().orElse(null)))
-                        .anyMatch(readOnlyMemory ->
-                            readOnlyMemory.returnFactSetValueForGivenKey(HAS_EXTRACTOR)
-                                .orElse(Stream.empty()).count() > 0 &&
-                                readOnlyMemory.returnFactSetValueForGivenKey(WORKER_MINING_GAS)
-                                    .orElse(Stream.empty()).count() == 0)))
+                        .anyMatch(readOnlyMemory -> readOnlyMemory
+                            .returnFactSetValueForGivenKey(HAS_EXTRACTOR).orElse(Stream.empty())
+                            .count() > 0 && readOnlyMemory
+                            .returnFactSetValueForGivenKey(WORKER_MINING_GAS)
+                            .orElse(Stream.empty()).count() == 0)))
                 .parameterValueSetTypes(Collections.singleton(COUNT_OF_MINERALS_ON_BASE))
                 .desiresToConsider(Stream.concat(Stream
                     .of(DesiresKeys.WORKER_SCOUT, DesiresKeys.GO_TO_BASE,
                         DesiresKeys.MINE_GAS_IN_BASE), BUILDING_DESIRES.stream())
                     .collect(Collectors.toSet()))
-                .build()
-            )
+                .build())
             .desiresWithIntentionToAct(Collections.singleton(DesiresKeys.MINE_MINERALS))
             .desiresWithIntentionToReason(
                 Stream.of(DesiresKeys.SELECT_MINERAL, DesiresKeys.UNSELECT_MINERAL)
@@ -324,15 +321,14 @@ public class DroneAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        //is waiting on minerals - try to find better one
-                        (memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get().getOrder()
-                            .isPresent()
-                            && memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get().getOrder()
-                            .get().equals(Order.WaitForMinerals))
-                            //release mineral when you gathered resources
-                            || dataForDecision.getFeatureValueBeliefs(IS_CARRYING_MINERAL) == 1)
+                .decisionStrategy((dataForDecision, memory) ->
+                    //is waiting on minerals - try to find better one
+                    (memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get().getOrder()
+                        .isPresent()
+                        && memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get().getOrder()
+                        .get().equals(Order.WaitForMinerals))
+                        //release mineral when you gathered resources
+                        || dataForDecision.getFeatureValueBeliefs(IS_CARRYING_MINERAL) == 1)
                 .beliefTypes(new HashSet<>(Collections.singletonList(IS_CARRYING_MINERAL)))
                 .build()
             )
@@ -368,19 +364,16 @@ public class DroneAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) ->
-                        //mineral is selected and we do not cary any
-                        memory.returnFactValueForGivenKey(MINERAL_TO_MINE).isPresent()
-                            && dataForDecision.getFeatureValueBeliefs(IS_CARRYING_MINERAL) == 0
-                            //mineral has changed or it is not set
-                            && (dataForDecision.getFeatureValueBeliefs(IS_MINING_MINERAL) == 0
-                            || !memory.returnFactValueForGivenKey(MINERAL_TO_MINE).get()
-                            .equals(memory.returnFactValueForGivenKey(MINING_MINERAL).get())))
+                .decisionStrategy((dataForDecision, memory) ->
+                    //mineral is selected and we do not cary any
+                    memory.returnFactValueForGivenKey(MINERAL_TO_MINE).isPresent()
+                        && dataForDecision.getFeatureValueBeliefs(IS_CARRYING_MINERAL) == 0
+                        //mineral has changed or it is not set
+                        && (dataForDecision.getFeatureValueBeliefs(IS_MINING_MINERAL) == 0
+                        || !memory.returnFactValueForGivenKey(MINERAL_TO_MINE).get()
+                        .equals(memory.returnFactValueForGivenKey(MINING_MINERAL).get())))
                 .beliefTypes(new HashSet<>(Arrays.asList(IS_MINING_MINERAL, IS_CARRYING_MINERAL)))
-                .useFactsInMemory(true)
-                .build()
-            )
+                .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> true)
                 .build())

@@ -24,9 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 public class AgentTypeUtils {
 
   /**
-   * Template to create desire initiated by learnt decision.
-   * Initialize abstract build plan top - make reservation + check conditions (for building).
-   * It is unlocked only when building is built
+   * Template to create desire initiated by learnt decision. Initialize abstract build plan top -
+   * make reservation + check conditions (for building). It is unlocked only when building is built
    */
   public static <T> ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToBuildFromTemplate(
       FactWithSetOfOptionalValuesForAgentType<T> currentCount, DesireKey desireKey,
@@ -57,11 +56,11 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    (!Decider.getDecision(agentTypeID, desireKey.getId(),
+                    !Decider.getDecision(agentTypeID, desireKey.getId(),
                         dataForDecision, featureContainerHeader, memory.getCurrentClock(),
                         memory.getAgentId())
-                        && !BotFacade.RESOURCE_MANAGER
-                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId()))
+                        || !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(unitTypeWrapper,
+                        memory.getAgentId())
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         //building exists
                         || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
@@ -85,8 +84,7 @@ public class AgentTypeUtils {
   }
 
   /**
-   * Template to create desire initiated by learnt decision.
-   * Initialize abstract training plan top
+   * Template to create desire initiated by learnt decision. Initialize abstract training plan top
    */
   public static ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToTrainFromTemplate(
       DesireKey desireKey, AUnitTypeWrapper unitTypeWrapper, AgentTypeID agentTypeID,
@@ -112,10 +110,10 @@ public class AgentTypeUtils {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
                 (dataForDecision, memory) ->
-                    (!Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
+                    !Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
                         featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
-                        && !BotFacade.RESOURCE_MANAGER
-                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId()))
+                        || !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(unitTypeWrapper,
+                        memory.getAgentId())
                         //has been just trained
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper))
             .globalBeliefTypesByAgentType(

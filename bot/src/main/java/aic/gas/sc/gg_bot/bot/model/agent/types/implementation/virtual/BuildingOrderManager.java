@@ -87,38 +87,36 @@ public class BuildingOrderManager {
   }
 
   /**
-   * Template to create desire initiated by desire to meet missing dependencies
-   * Initialize abstract build plan - make reservation + check conditions (for building).
-   * It is unlocked only when building is built
+   * Template to create desire initiated by desire to meet missing dependencies Initialize abstract
+   * build plan - make reservation + check conditions (for building). It is unlocked only when
+   * building is built
    */
   private static <T> ConfigurationWithAbstractPlan createConfigurationWithAbstractPlanIfBuildingIsMissingFromTemplate(
       FactWithSetOfOptionalValuesForAgentType<T> currentCount, DesireKey desireKey,
       AUnitTypeWrapper unitTypeWrapper, Stream<DesireKey> desireKeysWithAbstractIntentionStream) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    !BotFacade.RESOURCE_MANAGER
-                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
-                        && !dataForDecision.madeDecisionToAny()
-                        && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0)
+            .decisionStrategy((dataForDecision, memory) -> !BotFacade.RESOURCE_MANAGER
+                .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId()) &&
+                !dataForDecision.madeDecisionToAny() && !BuildLockerService.getInstance()
+                .isLocked(unitTypeWrapper) && dataForDecision
+                .getFeatureValueGlobalBeliefs(currentCount) == 0)
             .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        //building exists
-                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
+            .decisionStrategy((dataForDecision, memory) ->
+                BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                    || !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(unitTypeWrapper,
+                    memory.getAgentId())
+                    //building exists
+                    || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
             .globalBeliefTypesByAgentType(Collections.singleton(currentCount))
             .build())
-        .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
-            .makeReservation(unitTypeWrapper, memory.getAgentId()))
-        .reactionOnChangeStrategyInIntention(
-            (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
-                .removeReservation(unitTypeWrapper, memory.getAgentId()))
+        .reactionOnChangeStrategy((memory, desireParameters) ->
+            BotFacade.RESOURCE_MANAGER.makeReservation(unitTypeWrapper, memory.getAgentId()))
+        .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+            BotFacade.RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId()))
         .desiresForOthers(Collections.singleton(desireKey))
         .desiresWithAbstractIntention(
             desireKeysWithAbstractIntentionStream.collect(Collectors.toSet()))
@@ -158,8 +156,7 @@ public class BuildingOrderManager {
                     (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny() &&
                         !BotFacade.RESOURCE_MANAGER
                             .hasMadeReservationOn(AUnitTypeWrapper.EXTRACTOR_TYPE,
-                                memory.getAgentId())
-                        && !BuildLockerService.getInstance()
+                                memory.getAgentId()) && !BuildLockerService.getInstance()
                         .isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
                         && dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS)
                         == 0)
@@ -167,17 +164,17 @@ public class BuildingOrderManager {
                 .desiresToConsider(Collections.singleton(BUILD_EXTRACTOR))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) ->
+                .decisionStrategy((dataForDecision, memory) -> !BotFacade.RESOURCE_MANAGER
+                    .hasMadeReservationOn(AUnitTypeWrapper.EXTRACTOR_TYPE, memory.getAgentId()) ||
                     BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
-                        || dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS) > 0)
+                    || dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS) > 0)
                 .globalBeliefSetTypesByAgentType(Collections.singleton(COUNT_OF_EXTRACTORS))
                 .build())
-            .reactionOnChangeStrategy(
-                (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER.makeReservation(
-                    AUnitTypeWrapper.EXTRACTOR_TYPE, memory.getAgentId()))
-            .reactionOnChangeStrategyInIntention(
-                (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER.removeReservation(
-                    AUnitTypeWrapper.EXTRACTOR_TYPE, memory.getAgentId()))
+            .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
+                .makeReservation(AUnitTypeWrapper.EXTRACTOR_TYPE, memory.getAgentId()))
+            .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+                BotFacade.RESOURCE_MANAGER.removeReservation(AUnitTypeWrapper.EXTRACTOR_TYPE,
+                    memory.getAgentId()))
             .desiresForOthers(Collections.singleton(BUILD_EXTRACTOR))
             .build();
 
@@ -258,8 +255,8 @@ public class BuildingOrderManager {
         //build evolution chamber
         ConfigurationWithSharedDesire buildEvolutionChamber = createConfigurationWithSharedDesireToBuildFromTemplate(
             MORPH_TO_EVOLUTION_CHAMBER, AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE,
-            new FindBaseForBuilding(),
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
+            new FindBaseForBuilding(), (memory, desireParameters) ->
+                memory.eraseFactValueForGivenKey(BASE_TO_MOVE));
         type.addConfiguration(ENABLE_STATIC_ANTI_AIR, ENABLE_STATIC_ANTI_AIR,
             buildEvolutionChamber);
 

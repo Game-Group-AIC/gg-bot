@@ -454,7 +454,7 @@ public class FactConverters {
           .filter(unitTypeWrapper -> unitTypeWrapper.equals(AUnitTypeWrapper.HATCHERY_TYPE))
           .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_AIRS = new FactWithSetOfOptionalValues<>(
-      new FactConverterID<>(805, FactKeys.IS_MORPHING_TO, "COUNT_OF_INCOMPLETE_AIRS"),
+      new FactConverterID<>(806, FactKeys.IS_MORPHING_TO, "COUNT_OF_INCOMPLETE_AIRS"),
       optionalStream -> Math.min(optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -463,7 +463,7 @@ public class FactConverters {
                   && !unitTypeWrapper.equals(AUnitTypeWrapper.OVERLORD_TYPE))
           .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_RANGED = new FactWithSetOfOptionalValues<>(
-      new FactConverterID<>(806, FactKeys.IS_MORPHING_TO, "COUNT_OF_INCOMPLETE_RANGED"),
+      new FactConverterID<>(807, FactKeys.IS_MORPHING_TO, "COUNT_OF_INCOMPLETE_RANGED"),
       optionalStream -> Math.min(optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -473,13 +473,19 @@ public class FactConverters {
                   && !unitTypeWrapper.equals(AUnitTypeWrapper.ZERGLING_TYPE))
           .count(), 2.0));
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_MELEE = new FactWithSetOfOptionalValues<>(
-      new FactConverterID<>(807, FactKeys.IS_MORPHING_TO, "COUNT_OF_INCOMPLETE_MELEE"),
+      new FactConverterID<>(808, FactKeys.IS_MORPHING_TO, "COUNT_OF_INCOMPLETE_MELEE"),
       optionalStream -> Math.min(optionalStream
           .filter(Optional::isPresent)
           .map(Optional::get)
           .filter(
               unitTypeWrapper -> unitTypeWrapper.equals(AUnitTypeWrapper.ZERGLING_TYPE))
           .count(), 2.0));
+  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_HATCHERIES = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(809, FactKeys.REPRESENTS_UNIT, "COUNT_OF_HATCHERIES"),
+      optionalStream -> optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .count(), AgentTypes.HATCHERY);
 
 
 }

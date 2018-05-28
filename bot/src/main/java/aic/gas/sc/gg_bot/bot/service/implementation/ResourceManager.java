@@ -32,7 +32,7 @@ public class ResourceManager implements IResourceManager {
 
   //keep track of last frame
   private int currentFrame = 0;
-  private static final int purgeFromQueue = 2000;
+  private static final int purgeFromQueue = 1000;
 
   @Getter
   private List<String> reservationStatuses = new ArrayList<>();
@@ -58,7 +58,8 @@ public class ResourceManager implements IResourceManager {
         boolean skippedGasRequest = false;
 
         //remove too old request
-        reservationQueue.removeIf(tuple -> tuple.madeInFrame + purgeFromQueue <= currentFrame);
+        reservationQueue.removeIf(tuple -> tuple.madeInFrame + purgeFromQueue <= currentFrame
+            && (!tuple.reservationMadeOn.equals(AUnitTypeWrapper.SPAWNING_POOL_TYPE)));
 
         //check if we still have extractor
         if (!extractor.isPresent() || !extractor.get().exists()) {
