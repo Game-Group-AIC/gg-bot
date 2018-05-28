@@ -13,6 +13,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +30,11 @@ public class CreepColonyAgentType {
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent upgradeToSunken = ConfigurationWithCommand.
             WithActingCommandDesiredByOtherAgent.builder()
             .commandCreationStrategy(intention -> new ActCommand.DesiredByAnotherAgent(intention) {
+              @Override
+              public int getHash(WorkingMemory memory) {
+                return Objects.hash("MORPH", SUNKEN_COLONY_TYPE);
+              }
+
               @Override
               public boolean act(WorkingMemory memory) {
                 return intention.returnFactValueForGivenKey(IS_UNIT).get()
@@ -52,6 +58,11 @@ public class CreepColonyAgentType {
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent upgradeToSporeColony = ConfigurationWithCommand.
             WithActingCommandDesiredByOtherAgent.builder()
             .commandCreationStrategy(intention -> new ActCommand.DesiredByAnotherAgent(intention) {
+              @Override
+              public int getHash(WorkingMemory memory) {
+                return Objects.hash("MORPH", SPORE_COLONY_TYPE);
+              }
+
               @Override
               public boolean act(WorkingMemory memory) {
                 return intention.returnFactValueForGivenKey(IS_UNIT).get().morph(SPORE_COLONY_TYPE);

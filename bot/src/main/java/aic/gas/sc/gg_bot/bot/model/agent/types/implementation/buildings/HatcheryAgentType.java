@@ -12,6 +12,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import java.util.Collections;
+import java.util.Objects;
 
 public class HatcheryAgentType {
 
@@ -25,6 +26,11 @@ public class HatcheryAgentType {
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent upgradeToLair = ConfigurationWithCommand.
             WithActingCommandDesiredByOtherAgent.builder()
             .commandCreationStrategy(intention -> new ActCommand.DesiredByAnotherAgent(intention) {
+              @Override
+              public int getHash(WorkingMemory memory) {
+                return Objects.hash("MORPH", LAIR_TYPE);
+              }
+
               @Override
               public boolean act(WorkingMemory memory) {
                 return intention.returnFactValueForGivenKey(IS_UNIT).get().morph(LAIR_TYPE);

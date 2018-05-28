@@ -1,6 +1,8 @@
 package aic.gas.sc.gg_bot.mas.model.planing.command;
 
+import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.planing.IntentionCommand;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
@@ -17,6 +19,8 @@ public abstract class ActCommand<T extends IntentionCommand<?, ? extends ActComm
     super(intention);
     this.desireName = intention.getDesireKey().getName();
   }
+
+  public abstract int getHash(WorkingMemory memory);
 
   /**
    * Template for command initiated by another agent's desire

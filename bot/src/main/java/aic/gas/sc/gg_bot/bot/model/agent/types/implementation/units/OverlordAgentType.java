@@ -19,6 +19,7 @@ import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -69,13 +70,24 @@ public class OverlordAgentType {
                 .build())
             .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
               @Override
+              public int getHash(WorkingMemory memory) {
+                AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
+                Optional<AUnit.Enemy> enemyAntiAir = me.getEnemyUnitsInRadiusOfSight().stream()
+                    .filter(enemy -> enemy.getType().canAttackAirUnits())
+                    .min(Comparator.comparingDouble(
+                        value -> value.getPosition().distanceTo(me.getPosition())));
+                return enemyAntiAir.map(enemy -> Objects.hash("MOVE",
+                    moveFromPosition(me.getPosition(), enemy.getPosition())))
+                    .orElseGet(() -> Objects.hash("NON"));
+              }
+
+              @Override
               public boolean act(WorkingMemory memory) {
                 AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
                 Optional<AUnit.Enemy> enemyAntiAir = me.getEnemyUnitsInRadiusOfSight().stream()
                     .filter(enemy -> enemy.getType().canAttackAirUnits())
                     .min(Comparator.comparingDouble(
                         value -> value.getPosition().distanceTo(me.getPosition())));
-
                 enemyAntiAir.ifPresent(
                     enemy -> me.move(moveFromPosition(me.getPosition(), enemy.getPosition())));
                 return true;
@@ -97,6 +109,12 @@ public class OverlordAgentType {
                 .decisionStrategy((dataForDecision, memory) -> true)
                 .build())
             .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+              @Override
+              public int getHash(WorkingMemory memory) {
+                return Objects.hash("MOVE", memory
+                    .returnFactValueForGivenKey(PLACE_TO_REACH).get());
+              }
+
               @Override
               public boolean act(WorkingMemory memory) {
                 return memory.returnFactValueForGivenKey(IS_UNIT).get()

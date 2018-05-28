@@ -30,6 +30,10 @@ public class ResourceManager implements IResourceManager {
   private final List<Tuple<?>> resourcesAvailableFor = new ArrayList<>();
   private final List<Tuple<?>> reservationQueue = new ArrayList<>();
 
+  //keep track of last frame
+  private int currentFrame = 0;
+  private static final int purgeFromQueue = 2000;
+
   @Getter
   private List<String> reservationStatuses = new ArrayList<>();
 
@@ -41,8 +45,7 @@ public class ResourceManager implements IResourceManager {
   }
 
   public void processReservations(int minedMinerals, int minedGas, int supplyAvailable,
-      Player player) {
-
+      Player player, int frame) {
     updatingResources = true;
     synchronized (MONITOR) {
       try {
@@ -51,7 +54,11 @@ public class ResourceManager implements IResourceManager {
         }
         resourcesAvailableFor.clear();
         int sumOfMinerals = 0, sumOfGas = 0, sumOfSupply = 0;
+        currentFrame = frame;
         boolean skippedGasRequest = false;
+
+        //remove too old request
+        reservationQueue.removeIf(tuple -> tuple.madeInFrame + purgeFromQueue <= currentFrame);
 
         //check if we still have extractor
         if (!extractor.isPresent() || !extractor.get().exists()) {
@@ -203,7 +210,7 @@ public class ResourceManager implements IResourceManager {
           MONITOR.wait();
         }
         readingResources = true;
-        Tuple<T> tuple = new Tuple<>(agentId, t);
+        Tuple<T> tuple = new Tuple<>(agentId, t, currentFrame);
         reservationQueue.add(tuple);
       } catch (InterruptedException e) {
         log.error(e.getMessage());
@@ -275,6 +282,7 @@ public class ResourceManager implements IResourceManager {
 
     private final int reservationMadeBy;
     private final T reservationMadeOn;
+    private final int madeInFrame;
   }
 
 }

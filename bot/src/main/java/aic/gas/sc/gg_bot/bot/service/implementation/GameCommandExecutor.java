@@ -198,6 +198,7 @@ public class GameCommandExecutor implements CommandManager<ActCommand<?>>,
    */
   public boolean addCommandToAct(ActCommand<?> command, WorkingMemory memory,
       ResponseReceiverInterface<Boolean> responseReceiver) {
+
     return addToQueue(new QueuedItemInterfaceWithResponseWithCommandClassGetter() {
 
       @Override

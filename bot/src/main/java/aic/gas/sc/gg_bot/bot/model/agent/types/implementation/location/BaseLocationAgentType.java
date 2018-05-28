@@ -175,7 +175,7 @@ public class BaseLocationAgentType {
                         .getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(), dataForDecision,
                             featureContainerHeader, memory.getCurrentClock(), memory.getAgentId())
                         && !BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
+                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId()))
                         || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
                         || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
                         || memory.returnFactValueForGivenKey(factCountToTrackPreviousCount)

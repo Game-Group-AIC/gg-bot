@@ -11,7 +11,8 @@ import bwapi.Player;
  */
 public interface IResourceManager {
 
-  void processReservations(int minedMinerals, int minedGas, int supplyAvailable, Player player);
+  void processReservations(int minedMinerals, int minedGas, int supplyAvailable, Player player,
+      int frame);
 
   <T extends AbstractWrapper<?> & TypeToBuy> boolean canSpendResourcesOn(T t, int agentId);
 

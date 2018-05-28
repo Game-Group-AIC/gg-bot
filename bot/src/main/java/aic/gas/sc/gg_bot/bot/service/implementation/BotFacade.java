@@ -333,9 +333,8 @@ public class BotFacade extends DefaultBWListener {
     }
 
     //manage resources
-    RESOURCE_MANAGER
-        .processReservations(self.minerals(), self.gas(), self.supplyTotal() - self.supplyUsed(),
-            self);
+    RESOURCE_MANAGER.processReservations(self.minerals(), self.gas(),
+        self.supplyTotal() - self.supplyUsed(), self, game.getFrameCount());
 
     //TODO hack to ensure frame sync
     masFacade.notifyAgentsAboutNextCycle();

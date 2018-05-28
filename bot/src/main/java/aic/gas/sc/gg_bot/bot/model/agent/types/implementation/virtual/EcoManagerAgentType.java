@@ -172,7 +172,7 @@ public class EcoManagerAgentType {
                     !Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
                         dataForDecision, EXPANDING, memory.getCurrentClock(), memory.getAgentId())
                         || !BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(HATCHERY_TYPE, memory.getAgentId())
+                        .hasMadeReservationOn(HATCHERY_TYPE, memory.getAgentId())
                         || BuildLockerService.getInstance()
                         .isLocked(AUnitTypeWrapper.HATCHERY_TYPE))
                 .globalBeliefTypes(EXPANDING.getConvertersForFactsForGlobalBeliefs())
@@ -277,7 +277,7 @@ public class EcoManagerAgentType {
                         (!Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.BUILD_EXTRACTOR,
                             dataForDecision, BUILDING_EXTRACTOR, memory.getCurrentClock(),
                             memory.getAgentId()) && !BotFacade.RESOURCE_MANAGER
-                            .canSpendResourcesOn(EXTRACTOR_TYPE, memory.getAgentId()))
+                            .hasMadeReservationOn(EXTRACTOR_TYPE, memory.getAgentId()))
                             || BuildLockerService.getInstance()
                             .isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
                             || !getOurBaseWithoutExtractor(memory).isPresent())
@@ -336,7 +336,7 @@ public class EcoManagerAgentType {
                     (!Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
                         dataForDecision, INCREASING_CAPACITY, memory.getCurrentClock(),
                         memory.getAgentId()) && !BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(OVERLORD_TYPE, memory.getAgentId()))
+                        .hasMadeReservationOn(OVERLORD_TYPE, memory.getAgentId()))
                     || dataForDecision
                     .getFeatureValueGlobalBeliefs(COUNT_OF_INCOMPLETE_OVERLORDS) > 0.0
                 )

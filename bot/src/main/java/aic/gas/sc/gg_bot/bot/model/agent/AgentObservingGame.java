@@ -8,13 +8,14 @@ import aic.gas.sc.gg_bot.mas.model.metadata.AgentTypeMakingObservations;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ActCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ObservingCommand;
 import bwapi.Game;
+import lombok.extern.log4j.Log4j;
 
 /**
  * AgentObservingGame is agent which makes observations of BW game
  */
+@Log4j
 class AgentObservingGame<K extends AgentTypeMakingObservations<Game>> extends
     Agent.MakingObservation<Game> {
-
   private final GameCommandExecutor gameCommandExecutor;
 
   AgentObservingGame(K agentType, BotFacade botFacade) {

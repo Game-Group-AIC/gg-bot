@@ -64,6 +64,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -150,6 +151,12 @@ public class DroneAgentType {
             WithActingCommandDesiredBySelf.builder()
             .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
               @Override
+              public int getHash(WorkingMemory memory) {
+                return Objects.hash("GATHER", intention
+                    .returnFactValueForGivenKey(MINING_IN_EXTRACTOR).get());
+              }
+
+              @Override
               public boolean act(WorkingMemory memory) {
                 return intention.returnFactValueForGivenKey(IS_UNIT).get().gather(
                     intention.returnFactValueForGivenKey(MINING_IN_EXTRACTOR).get());
@@ -212,7 +219,7 @@ public class DroneAgentType {
                     .equals(memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
                         .getNearestBaseLocation().orElse(null))
                     //resources are under saturated
-                    && dataForDecision.getNumberOfCommittedAgents() <= 1.5 * dataForDecision
+                    && dataForDecision.getNumberOfCommittedAgents() <= 2.5 * dataForDecision
                     .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE))
                     //is not gathering resources
                     && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false))
@@ -228,7 +235,7 @@ public class DroneAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) -> dataForDecision.madeDecisionToAny() ||
                         //minerals are over saturated
-                        dataForDecision.getNumberOfCommittedAgents() >= 2 * dataForDecision
+                        dataForDecision.getNumberOfCommittedAgents() >= 3 * dataForDecision
                             .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE)
                         //nobody is mining gas at same location and at least somebody is mining minerals
                         || (dataForDecision.getNumberOfCommittedAgents() > 1 && memory
@@ -342,6 +349,12 @@ public class DroneAgentType {
             WithActingCommandDesiredBySelf.builder()
             .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
               @Override
+              public int getHash(WorkingMemory memory) {
+                return Objects.hash("GATHER", intention
+                    .returnFactValueForGivenKeyInDesireParameters(MINERAL_TO_MINE).get());
+              }
+
+              @Override
               public boolean act(WorkingMemory memory) {
                 boolean hasStartedMining = intention.returnFactValueForGivenKey(IS_UNIT).get()
                     .gather(intention.returnFactValueForGivenKeyInDesireParameters(MINERAL_TO_MINE)
@@ -386,6 +399,20 @@ public class DroneAgentType {
         ConfigurationWithCommand.WithActingCommandDesiredBySelf goToNearestBase = ConfigurationWithCommand.
             WithActingCommandDesiredBySelf.builder()
             .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+              @Override
+              public int getHash(WorkingMemory memory) {
+                AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
+                if (me.isCarryingGas() || me.isCarryingMinerals()) {
+                  return Objects.hash("RETURN_CARGO");
+                } else {
+                  if (intention.returnFactValueForGivenKey(PLACE_TO_GO).isPresent()) {
+                    return Objects.hash("MOVE", intention
+                        .returnFactValueForGivenKey(PLACE_TO_GO).get());
+                  }
+                }
+                return Objects.hash("NON");
+              }
+
               @Override
               public boolean act(WorkingMemory memory) {
                 AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
@@ -594,6 +621,15 @@ public class DroneAgentType {
             WithActingCommandDesiredBySelf.builder()
             .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
               @Override
+              public int getHash(WorkingMemory memory) {
+                if (intention.returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER).isPresent()) {
+                  return Objects.hash("MOVE",
+                      intention.returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER).get());
+                }
+                return Objects.hash("NON");
+              }
+
+              @Override
               public boolean act(WorkingMemory memory) {
                 AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
                 intention.returnFactValueForGivenKey(BASE_TO_SCOUT_BY_WORKER).ifPresent(me::move);
@@ -641,7 +677,7 @@ public class DroneAgentType {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
                 && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).isPresent()
-                //is idle or no one is idle
+//                //is idle or no one is idle
 //                && (memory.returnFactValueForGivenKey(IS_UNIT).get().isIdle()
 //                || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_IDLE_DRONES) == 0)
                 //is on location or no one is on location
@@ -672,6 +708,12 @@ public class DroneAgentType {
     ConfigurationWithCommand.WithActingCommandDesiredBySelf moveToBase = ConfigurationWithCommand.
         WithActingCommandDesiredBySelf.builder()
         .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+          @Override
+          public int getHash(WorkingMemory memory) {
+            return Objects.hash("MOVE", intention.returnFactValueForGivenKey(BASE_TO_MOVE)
+                .get().getPosition());
+          }
+
           @Override
           public boolean act(WorkingMemory memory) {
             AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
@@ -725,6 +767,13 @@ public class DroneAgentType {
           }
         })
         .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+          @Override
+          public int getHash(WorkingMemory memory) {
+            Optional<APosition> aPlaceToGo = memory.returnFactValueForGivenKey(PLACE_TO_GO);
+            return aPlaceToGo.map(aPosition -> Objects.hash("MOVE", aPosition))
+                .orElseGet(() -> Objects.hash("NON"));
+          }
+
           @Override
           public boolean act(WorkingMemory memory) {
             AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
@@ -783,6 +832,14 @@ public class DroneAgentType {
     ConfigurationWithCommand.WithActingCommandDesiredBySelf build = ConfigurationWithCommand.
         WithActingCommandDesiredBySelf.builder()
         .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
+          @Override
+          public int getHash(WorkingMemory memory) {
+            Optional<ATilePosition> buildPlace = intention
+                .returnFactValueForGivenKey(placeForBuilding);
+            return buildPlace.map(aTilePosition -> Objects.hash("BUILD", aTilePosition,
+                typeOfBuilding)).orElseGet(() -> Objects.hash("NON"));
+          }
+
           @Override
           public boolean act(WorkingMemory memory) {
             if (intention.returnFactValueForGivenKey(placeForBuilding).isPresent()) {
