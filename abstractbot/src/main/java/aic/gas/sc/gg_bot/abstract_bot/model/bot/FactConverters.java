@@ -417,6 +417,12 @@ public class FactConverters {
           .map(Optional::get)
           .filter(AUnit::isIdle)
           .count(), AgentTypes.DRONE);
+  public static final FactWithSetOfOptionalValuesForAgentType<AUnitOfPlayer> COUNT_OF_DRONES = new FactWithSetOfOptionalValuesForAgentType<>(
+      new FactConverterID<>(711, FactKeys.REPRESENTS_UNIT, "COUNT_OF_DRONES"),
+      optionalStream -> optionalStream
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .count(), AgentTypes.DRONE);
 
   //morphing to - count has cap 2
   public static final FactWithSetOfOptionalValues<AUnitTypeWrapper> COUNT_OF_INCOMPLETE_EXTRACTORS = new FactWithSetOfOptionalValues<>(

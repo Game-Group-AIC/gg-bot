@@ -33,8 +33,8 @@ public class RequirementsChecker implements IRequirementsChecker {
             .filter(aTechTypeWrapper -> player.hasResearched(aTechTypeWrapper.getType())),
         researchedTechs.stream())
         .collect(Collectors.toSet());
-    builtUnitTypes = Stream
-        .concat(AUnitTypeWrapper.BUILDING_TYPES.stream(), AUnitTypeWrapper.UNITS_TYPES.stream())
+    builtUnitTypes = Stream.concat(AUnitTypeWrapper.BUILDING_TYPES.stream(),
+        AUnitTypeWrapper.UNITS_TYPES.stream())
         .filter(unitTypeWrapper -> player.getUnits().stream()
             .anyMatch(unit -> unit.getType() == unitTypeWrapper.getType()))
         .collect(Collectors.toSet());

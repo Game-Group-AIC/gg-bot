@@ -30,9 +30,6 @@ public class ResourceManager implements IResourceManager {
   private final List<Tuple<?>> resourcesAvailableFor = new ArrayList<>();
   private final List<Tuple<?>> reservationQueue = new ArrayList<>();
 
-  //track resources
-  private int sumOfMinerals = 0, sumOfGas = 0, sumOfSupply = 0;
-
   @Getter
   private List<String> reservationStatuses = new ArrayList<>();
 
@@ -45,9 +42,6 @@ public class ResourceManager implements IResourceManager {
 
   public void processReservations(int minedMinerals, int minedGas, int supplyAvailable,
       Player player) {
-//    sumOfMinerals = minedMinerals;
-//    sumOfGas = minedGas;
-//    sumOfSupply = supplyAvailable;
 
     updatingResources = true;
     synchronized (MONITOR) {
@@ -78,9 +72,8 @@ public class ResourceManager implements IResourceManager {
                 && unit.getTrainingQueue().get(0) == UnitType.Zerg_Overlord)) {
 
           //add overlord at the start of queue
-          if (!(reservationQueue.get(0).reservationMadeOn instanceof AUnitTypeWrapper)
-              || !reservationQueue.get(0).reservationMadeOn
-              .equals(AUnitTypeWrapper.OVERLORD_TYPE)) {
+          if (!(reservationQueue.get(0).reservationMadeOn instanceof AUnitTypeWrapper &&
+              reservationQueue.get(0).reservationMadeOn.equals(AUnitTypeWrapper.OVERLORD_TYPE))) {
             for (int i = 0; i < reservationQueue.size(); i++) {
               Tuple<?> tuple = reservationQueue.get(i);
               if (tuple.reservationMadeOn instanceof AUnitTypeWrapper
@@ -154,7 +147,11 @@ public class ResourceManager implements IResourceManager {
 
         //check rest
         for (int i = lastIndex + 1; i < reservationQueue.size(); i++) {
-          reservationStatuses.add(formMessage(reservationQueue.get(i), "W"));
+          if (!requirementsChecker.areDependenciesMeet(reservationQueue.get(i).reservationMadeOn)) {
+            reservationStatuses.add(formMessage(reservationQueue.get(i), "UD"));
+          } else {
+            reservationStatuses.add(formMessage(reservationQueue.get(i), "W"));
+          }
         }
 
       } catch (InterruptedException e) {
@@ -194,9 +191,6 @@ public class ResourceManager implements IResourceManager {
 
   @Override
   public <T extends AbstractWrapper<?> & TypeToBuy> boolean canSpendResourcesOn(T t, int agentId) {
-//    return (t.mineralCost() <= sumOfMinerals && t.supplyRequired() <= sumOfSupply
-//        && t.gasCost() <= sumOfGas) || (t instanceof AUnitTypeWrapper &&
-//        t.getType() == UnitType.Zerg_Overlord && sumOfSupply <= 0);
     return checkQueue(t, agentId, resourcesAvailableFor);
   }
 
@@ -268,7 +262,6 @@ public class ResourceManager implements IResourceManager {
 
   @Override
   public <T extends AbstractWrapper<?> & TypeToBuy> boolean hasMadeReservationOn(T t, int agentId) {
-//    return false;
     return checkQueue(t, agentId, reservationQueue);
   }
 

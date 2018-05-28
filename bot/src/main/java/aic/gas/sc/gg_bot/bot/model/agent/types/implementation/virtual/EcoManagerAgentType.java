@@ -1,5 +1,7 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.virtual;
 
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_DRONES;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.COUNT_OF_INCOMPLETE_OVERLORDS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.CURRENT_POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters.MAX_POPULATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
@@ -26,7 +28,6 @@ import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_EXTRACTOR;
 import static aic.gas.sc.gg_bot.bot.model.DesiresKeys.MORPH_TO_OVERLORD;
 import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.AgentTypeUtils.createConfigurationWithSharedDesireToBuildFromTemplate;
 import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.AgentTypeUtils.createConfigurationWithSharedDesireToTrainFromTemplate;
-import static aic.gas.sc.gg_bot.bot.model.agent.types.implementation.AgentTypeUtils.createOwnConfigurationWithAbstractPlanToTrainFromTemplate;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.DesireKeys;
@@ -76,6 +77,53 @@ public class EcoManagerAgentType {
         .findAny();
   }
 
+  /**
+   * Create desire - build worker
+   */
+  private static ConfigurationWithAbstractPlan createOwnConfigurationWithAbstractPlanToTrainWorker() {
+    return ConfigurationWithAbstractPlan.builder()
+        .decisionInDesire(CommitmentDeciderInitializer.builder()
+            .decisionStrategy(
+                (dataForDecision, memory) ->
+                    !BotFacade.RESOURCE_MANAGER
+                        .hasMadeReservationOn(AUnitTypeWrapper.DRONE_TYPE, memory.getAgentId())
+                        && !dataForDecision.madeDecisionToAny()
+                        //learnt decision or it has less then six drones
+                        && (Decider.getDecision(AgentTypes.ECO_MANAGER, BUILD_WORKER.getId(),
+                        dataForDecision, TRAINING_WORKER, memory.getCurrentClock(),
+                        memory.getAgentId())
+                        || dataForDecision.getFeatureValueGlobalBeliefs(COUNT_OF_DRONES) <= 6))
+            .globalBeliefTypesByAgentType(
+                Stream.concat(TRAINING_WORKER.getConvertersForFactsForGlobalBeliefsByAgentType()
+                    .stream(), Stream.of(COUNT_OF_DRONES))
+                    .collect(Collectors.toSet()))
+            .globalBeliefSetTypesByAgentType(
+                TRAINING_WORKER.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .globalBeliefTypes(TRAINING_WORKER.getConvertersForFactsForGlobalBeliefs())
+            .desiresToConsider(Collections.singleton(BUILD_WORKER))
+            .build())
+        .decisionInIntention(CommitmentDeciderInitializer.builder()
+            .decisionStrategy(
+                (dataForDecision, memory) -> (!Decider.getDecision(AgentTypes.ECO_MANAGER,
+                    BUILD_WORKER.getId(), dataForDecision, TRAINING_WORKER,
+                    memory.getCurrentClock(),
+                    memory.getAgentId()) && !BotFacade.RESOURCE_MANAGER
+                    .canSpendResourcesOn(AUnitTypeWrapper.DRONE_TYPE, memory.getAgentId())))
+            .globalBeliefTypesByAgentType(
+                TRAINING_WORKER.getConvertersForFactsForGlobalBeliefsByAgentType())
+            .globalBeliefSetTypesByAgentType(
+                TRAINING_WORKER.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+            .globalBeliefTypes(TRAINING_WORKER.getConvertersForFactsForGlobalBeliefs())
+            .build())
+        .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
+            .makeReservation(AUnitTypeWrapper.DRONE_TYPE, memory.getAgentId()))
+        .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+            BotFacade.RESOURCE_MANAGER
+                .removeReservation(AUnitTypeWrapper.DRONE_TYPE, memory.getAgentId()))
+        .desiresForOthers(Collections.singleton(BUILD_WORKER))
+        .build();
+  }
+
   public static final ConfigurationWithSharedDesire BUILD_EXTRACTOR_SHARED = createConfigurationWithSharedDesireToBuildFromTemplate(
       MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, (memory, desireParameters) -> {
         Optional<ABaseLocationWrapper> baseWithoutExtractor = getOurBaseWithoutExtractor(
@@ -94,8 +142,7 @@ public class EcoManagerAgentType {
       .initializationStrategy((AgentType type) -> {
 
         //train drone
-        ConfigurationWithAbstractPlan trainDroneAbstractPlan = createOwnConfigurationWithAbstractPlanToTrainFromTemplate(
-            BUILD_WORKER, AUnitTypeWrapper.DRONE_TYPE, AgentTypes.ECO_MANAGER, TRAINING_WORKER);
+        ConfigurationWithAbstractPlan trainDroneAbstractPlan = createOwnConfigurationWithAbstractPlanToTrainWorker();
         type.addConfiguration(BUILD_WORKER, trainDroneAbstractPlan, true);
         ConfigurationWithSharedDesire trainDroneShared = createConfigurationWithSharedDesireToTrainFromTemplate(
             MORPH_TO_DRONE, AUnitTypeWrapper.DRONE_TYPE);
@@ -261,36 +308,45 @@ public class EcoManagerAgentType {
                         .hasMadeReservationOn(AUnitTypeWrapper.OVERLORD_TYPE, memory.getAgentId())
                         && !BuildLockerService.getInstance()
                         .isLocked(AUnitTypeWrapper.OVERLORD_TYPE)
-                        && (dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION) >=
-                        dataForDecision.getFeatureValueGlobalBeliefs(MAX_POPULATION)
-                        || (
-                        Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
+                        && ((dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION) >=
+                        dataForDecision.getFeatureValueGlobalBeliefs(MAX_POPULATION) &&
+                        //do not build overlord if one is in construction
+                        dataForDecision
+                            .getFeatureValueGlobalBeliefs(COUNT_OF_INCOMPLETE_OVERLORDS) == 0.0) ||
+                        (Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
                             dataForDecision, INCREASING_CAPACITY, memory.getCurrentClock(),
-                            memory.getAgentId()) &&
+                            memory.getAgentId())
                             //do not build overlord when there is gap
-                            dataForDecision.getFeatureValueGlobalBeliefs(MAX_POPULATION)
-                                - dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION)
-                                < AUnitTypeWrapper.OVERLORD_TYPE.getSupplyProvided())))
+                            && dataForDecision.getFeatureValueGlobalBeliefs(MAX_POPULATION)
+                            - dataForDecision.getFeatureValueGlobalBeliefs(CURRENT_POPULATION)
+                            < AUnitTypeWrapper.OVERLORD_TYPE.getSupplyProvided())))
                 .globalBeliefTypesByAgentType(Stream.concat(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                     Stream.of(CURRENT_POPULATION, MAX_POPULATION))
                     .collect(Collectors.toSet()))
                 .globalBeliefSetTypesByAgentType(
                     INCREASING_CAPACITY.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .globalBeliefTypes(INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypes(Stream.concat(INCREASING_CAPACITY
+                    .getConvertersForFactsForGlobalBeliefs().stream(), Stream
+                    .of(COUNT_OF_INCOMPLETE_OVERLORDS)).collect(Collectors.toSet()))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> BuildLockerService.getInstance()
-                    .isLocked(AUnitTypeWrapper.OVERLORD_TYPE)
-                    || (!Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
-                    dataForDecision, INCREASING_CAPACITY, memory.getCurrentClock(),
-                    memory.getAgentId()) && !BotFacade.RESOURCE_MANAGER
-                    .canSpendResourcesOn(OVERLORD_TYPE, memory.getAgentId())))
+                    .isLocked(AUnitTypeWrapper.OVERLORD_TYPE) ||
+                    (!Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.INCREASE_CAPACITY,
+                        dataForDecision, INCREASING_CAPACITY, memory.getCurrentClock(),
+                        memory.getAgentId()) && !BotFacade.RESOURCE_MANAGER
+                        .canSpendResourcesOn(OVERLORD_TYPE, memory.getAgentId()))
+                    || dataForDecision
+                    .getFeatureValueGlobalBeliefs(COUNT_OF_INCOMPLETE_OVERLORDS) > 0.0
+                )
                 .globalBeliefTypesByAgentType(
                     INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefsByAgentType())
                 .globalBeliefSetTypesByAgentType(
                     INCREASING_CAPACITY.getConvertersForFactSetsForGlobalBeliefsByAgentType())
-                .globalBeliefTypes(INCREASING_CAPACITY.getConvertersForFactsForGlobalBeliefs())
+                .globalBeliefTypes(Stream.concat(INCREASING_CAPACITY
+                    .getConvertersForFactsForGlobalBeliefs().stream(), Stream
+                    .of(COUNT_OF_INCOMPLETE_OVERLORDS)).collect(Collectors.toSet()))
                 .build())
             .desiresForOthers(Collections.singleton(INCREASE_CAPACITY))
             .build();
