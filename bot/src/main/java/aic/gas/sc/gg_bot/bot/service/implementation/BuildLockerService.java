@@ -31,7 +31,7 @@ public class BuildLockerService implements IBuildLockerService {
 
   @Override
   public void lock(AUnitTypeWrapper unitType) {
-    if (!unitType.isLarvaOrEgg()) {
+    if (!unitType.isLarvaOrEgg() || !unitType.isWorker()) {
       try {
         lock.writeLock().lock();
         lockRegister.put(unitType, 0);

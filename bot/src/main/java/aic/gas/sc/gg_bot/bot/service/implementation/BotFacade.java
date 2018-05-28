@@ -275,8 +275,7 @@ public class BotFacade extends DefaultBWListener {
         agent.ifPresent(agentUnit -> masFacade.removeAgentFromSystem(agentUnit, true));
 
 //        log.info("Morphing from " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
-//            .orElse("null")
-//            + " to " + unit.getType().toString());
+//            .orElse("null") + " to " + unit.getType().toString());
 
         //put it under lock
         buildLockerService.lock(WrapperTypeFactory.createFrom(unit.getType()));
