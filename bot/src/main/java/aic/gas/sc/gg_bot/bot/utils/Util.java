@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.bot.utils;
 
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATilePosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
@@ -7,6 +8,7 @@ import bwapi.Game;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
+import bwta.BWTA;
 import java.util.Comparator;
 import java.util.Optional;
 
@@ -34,6 +36,19 @@ public class Util {
           .map(ATilePosition::wrap);
     }
 
+    //find better place for defensive buildings...
+    if (buildingType.isMilitaryBuilding()) {
+      ATilePosition position = APosition
+          .wrap(BWTA.getNearestChokepoint(currentTile.getWrappedPosition()).getCenter())
+          .getATilePosition();
+      if (!position.equals(currentTile) && position.distanceTo(currentTile) <= 10) {
+        Optional<ATilePosition> toReturn = getBuildTile(buildingType, position, worker, game);
+        if (toReturn.isPresent()) {
+          return toReturn;
+        }
+      }
+    }
+
     while (maxDist < stopDist) {
       for (int i = currentTile.getX() - maxDist; i <= currentTile.getX() + maxDist; i++) {
         for (int j = currentTile.getY() - maxDist; j <= currentTile.getY() + maxDist; j++) {
@@ -59,9 +74,8 @@ public class Util {
       return game.neutral().getUnits().stream()
           .filter(unit -> unit.getType() == UnitType.Resource_Vespene_Geyser)
           .map(Unit::getTilePosition)
-          .anyMatch(
-              position -> position.getX() == currentTile.getX() && position.getY() == currentTile
-                  .getY());
+          .anyMatch(position -> position.getX() == currentTile.getX()
+              && position.getY() == currentTile.getY());
     }
 
     return canBuildHere(buildingType, currentTile, worker, game);
@@ -75,8 +89,8 @@ public class Util {
       if (u.getID() == worker.getUnitId()) {
         continue;
       }
-      if ((Math.abs(u.getTilePosition().getX() - currentTile.getX()) < 4) && (
-          Math.abs(u.getTilePosition().getY() - currentTile.getY()) < 4)) {
+      if ((Math.abs(u.getTilePosition().getX() - currentTile.getX()) < 3) && (
+          Math.abs(u.getTilePosition().getY() - currentTile.getY()) < 3)) {
         return false;
       }
     }

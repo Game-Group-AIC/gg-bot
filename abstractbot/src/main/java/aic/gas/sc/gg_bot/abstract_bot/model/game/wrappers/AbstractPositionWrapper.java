@@ -57,7 +57,7 @@ public abstract class AbstractPositionWrapper<T> {
   private double distanceTo(int oneX, int oneY, int otherX, int otherY) {
     int dx = oneX - otherX;
     int dy = oneY - otherY;
-    return Math.sqrt(dx * dx + dy * dy) / ATilePosition.SIZE_IN_PIXELS;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
   @Override

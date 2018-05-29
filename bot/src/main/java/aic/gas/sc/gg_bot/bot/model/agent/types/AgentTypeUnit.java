@@ -16,6 +16,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.REPRESENTS_UNIT;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
@@ -86,8 +87,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
               .filter(own -> !own.getType().isBuilding() && own.getType().isFlyer())
               .collect(Collectors.toSet()));
 
-          memory
-              .updateFact(LOCATION, unit.getNearestBaseLocation().orElse(LOCATION.getInitValue()));
+          memory.updateFact(LOCATION, unit.getNearestBaseLocation()
+              .orElse(LOCATION.getInitValue()));
 
           return true;
         }
@@ -192,8 +193,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
     ConfigurationWithAbstractPlan attackPlan = ConfigurationWithAbstractPlan.builder()
         .reactionOnChangeStrategy((memory, desireParameters) -> memory.updateFact(PLACE_TO_REACH,
             desireParameters.returnFactValueForGivenKey(IS_BASE_LOCATION).get()))
-        .reactionOnChangeStrategyInIntention(
-            (memory, desireParameters) -> memory.eraseFactValueForGivenKey(PLACE_TO_REACH))
+        .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+            memory.eraseFactValueForGivenKey(PLACE_TO_REACH))
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
             .desiresToConsider(Collections.singleton(desireKey))
@@ -273,7 +274,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
                 && memory.returnFactValueForGivenKey(PLACE_TO_REACH).isPresent()
                 && !memory.returnFactValueForGivenKey(IS_UNIT).get().isUnderAttack()
                 && memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().distanceTo(memory
-                .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getPosition()) > 10)
+                .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getPosition()) > 2)
             .desiresToConsider(new HashSet<>(Collections.singleton(DesiresKeys.ATTACK)))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -288,19 +289,9 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
           @Override
           public boolean act(WorkingMemory memory) {
-
-            //TODO take into account other units... special method for flayers
-
-//            Optional<ATilePosition> toGo = memory.returnFactValueForGivenKey(PLACE_TO_REACH).get()
-//                .getNextTileOnPathToBase(memory.returnFactValueForGivenKey(IS_UNIT).get()
-//                    .getPosition().getATilePosition());
-//            if (toGo.isPresent()) {
-//              return memory.returnFactValueForGivenKey(IS_UNIT).get()
-//                  .attack(new Position(toGo.get().getX(), toGo.get().getY()));
-//            }
-            return memory.returnFactValueForGivenKey(IS_UNIT).get()
-                .attack(memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().getPosition());
-//            return true;
+            Optional<ABaseLocationWrapper> toGo = memory.returnFactValueForGivenKey(PLACE_TO_REACH);
+            return toGo.map(aBaseLocationWrapper -> memory.returnFactValueForGivenKey(IS_UNIT).get()
+                .attack(aBaseLocationWrapper.getPosition())).orElse(true);
           }
         })
         .build();

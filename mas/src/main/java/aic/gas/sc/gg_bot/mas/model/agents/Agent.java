@@ -65,7 +65,7 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
   private final InternalClockObtainingStrategy clockObtainingStrategy;
   private final CycleSynchronizationObtainingStrategy cycleSynchronizationObtainingStrategy;
   //sync cycle lock
-//  private final Object cycleMonitor = new Object();
+  private final Object cycleMonitor = new Object();
 
   protected Agent(E agentType, MASFacade masFacade) {
     this.id = masFacade.getAgentsRegister().getFreeId();
@@ -86,9 +86,9 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
 
   //TODO remove
   public void notifyOnNextCycle() {
-//    synchronized (cycleMonitor) {
-//      cycleMonitor.notifyAll();
-//    }
+    synchronized (cycleMonitor) {
+      cycleMonitor.notifyAll();
+    }
   }
 
   @Override
@@ -321,10 +321,10 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
       doRoutine(this);
       heapOfTrees.initTopLevelDesires(desireMediator.getReadOnlyRegister());
 
-//      int cycleStarted;
+      int cycleStarted;
 
       while (true) {
-//        cycleStarted = clockObtainingStrategy.internalClockCounter();
+        cycleStarted = clockObtainingStrategy.internalClockCounter();
 
         //check if agent is still alive
         synchronized (isAliveLockMonitor) {
@@ -339,19 +339,19 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
         doRoutine(this);
         heapOfTrees.updateDesires(desireMediator.getReadOnlyRegister());
 
-//        if (cycleSynchronizationObtainingStrategy.areCyclesSynchronized()
-//            && cycleStarted <= clockObtainingStrategy.internalClockCounter()) {
-//          while (cycleStarted >= clockObtainingStrategy.internalClockCounter()) {
-//            synchronized (cycleMonitor) {
-//              try {
-//                cycleMonitor.wait();
-////                log.info(this.getName() + " unlocked.");
-//              } catch (InterruptedException e) {
-//                log.error(e.getLocalizedMessage());
-//              }
-//            }
-//          }
-//        }
+        if (cycleSynchronizationObtainingStrategy.areCyclesSynchronized()
+            && cycleStarted <= clockObtainingStrategy.internalClockCounter()) {
+          while (cycleStarted >= clockObtainingStrategy.internalClockCounter()) {
+            synchronized (cycleMonitor) {
+              try {
+                cycleMonitor.wait();
+//                log.info(this.getName() + " unlocked.");
+              } catch (InterruptedException e) {
+                log.error(e.getLocalizedMessage());
+              }
+            }
+          }
+        }
       }
 
       removeAgent(removeAgentFromGlobalBeliefs);

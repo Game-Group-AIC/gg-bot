@@ -20,13 +20,13 @@ public class RequirementsChecker implements IRequirementsChecker {
 
   @Override
   public <T extends AbstractWrapper<?> & TypeToBuy> boolean areDependenciesMeet(T t) {
-    return (t instanceof AUnitTypeWrapper && t
-        .equals(AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE) && builtUnitTypes
-        .contains(AUnitTypeWrapper.SPAWNING_POOL_TYPE)) ||
-        ((!(t instanceof AUnitTypeWrapper) || !t.equals(AUnitTypeWrapper.EVOLUTION_CHAMBER_TYPE)) &&
+    return ((t instanceof AUnitTypeWrapper && !((AUnitTypeWrapper) t).isBuilding())
+        || t.equals(AUnitTypeWrapper.SPAWNING_POOL_TYPE)
+        || t.equals(AUnitTypeWrapper.EXTRACTOR_TYPE)
+        || builtUnitTypes.contains(AUnitTypeWrapper.SPAWNING_POOL_TYPE)) &&
         t.unitTypeDependencies().allMatch(unitTypeWrapper -> builtUnitTypes
             .contains(unitTypeWrapper)) && (!t.techTypeDependency().isPresent()
-        || researchedTechs.contains(t.techTypeDependency().get())));
+        || researchedTechs.contains(t.techTypeDependency().get()));
   }
 
   @Override
