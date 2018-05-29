@@ -56,8 +56,8 @@ public class WorkingMemory extends Memory<HeapOfTrees> {
     if (fact != null) {
       fact.addFact(value);
     } else {
-      log.error(
-          factKey.getName() + " is not present in " + agentType.getName() + " type definition.");
+      log.error(factKey.getName() + " is not present in " + agentType.getName()
+          + " type definition.");
     }
   }
 

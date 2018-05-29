@@ -51,7 +51,7 @@ public class Fact<V> {
    * Returns copy of fact. Content is cloned so using the content is thread safe
    */
   public Fact<V> copyFact() {
-    return new Fact<>(MASFacade.CLONER.deepClone(content), type);
+    return new Fact<>(content, type);
   }
 
   @Override

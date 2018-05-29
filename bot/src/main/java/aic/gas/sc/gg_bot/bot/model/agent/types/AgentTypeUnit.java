@@ -163,12 +163,11 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         desiresWithIntentionToReason,
 
         //add facts related to agent - IS_UNIT, REPRESENTS_UNIT
-        Stream.concat(usingTypesForFacts.stream(),
-            Stream.of(IS_UNIT, REPRESENTS_UNIT, LOCATION, PLACE_TO_REACH))
+        Stream.concat(usingTypesForFacts.stream(), Stream.of(IS_UNIT, REPRESENTS_UNIT, LOCATION,
+            PLACE_TO_REACH)).collect(Collectors.toSet()),
+        Stream.concat(usingTypesForFactSets.stream(), Stream.of(ENEMY_BUILDING, ENEMY_AIR,
+            ENEMY_GROUND, OWN_BUILDING, OWN_AIR, OWN_GROUND))
             .collect(Collectors.toSet()),
-        Stream.concat(usingTypesForFactSets.stream(),
-            Arrays.stream(new FactKey<?>[]{ENEMY_BUILDING, ENEMY_AIR,
-                ENEMY_GROUND, OWN_BUILDING, OWN_AIR, OWN_GROUND})).collect(Collectors.toSet()),
         initializationStrategy, OBSERVING_COMMAND, skipTurnsToMakeObservation);
   }
 
@@ -192,20 +191,18 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
     //attack
     ConfigurationWithAbstractPlan attackPlan = ConfigurationWithAbstractPlan.builder()
         .reactionOnChangeStrategy((memory, desireParameters) -> memory.updateFact(PLACE_TO_REACH,
-            desireParameters.returnFactValueForGivenKey(IS_BASE_LOCATION).get().getPosition()))
+            desireParameters.returnFactValueForGivenKey(IS_BASE_LOCATION).get()))
         .reactionOnChangeStrategyInIntention(
             (memory, desireParameters) -> memory.eraseFactValueForGivenKey(PLACE_TO_REACH))
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
             .desiresToConsider(Collections.singleton(desireKey))
-            .build()
-        )
+            .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> false)
-            .build()
-        )
-        .desiresWithIntentionToAct(new HashSet<>(Arrays.asList(
-            DesiresKeys.MOVE_AWAY_FROM_DANGER, DesiresKeys.MOVE_TO_POSITION, DesiresKeys.ATTACK)))
+            .build())
+        .desiresWithIntentionToAct(new HashSet<>(Arrays.asList(DesiresKeys.MOVE_AWAY_FROM_DANGER,
+            DesiresKeys.MOVE_TO_POSITION, DesiresKeys.ATTACK)))
         .build();
     type.addConfiguration(desireKey, attackPlan, false);
 
@@ -217,8 +214,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
               AUnitOfPlayer me = memory.returnFactValueForGivenKey(IS_UNIT).get();
               return me.isUnderAttack() && me.getHPPercent() < 0.4;
             })
-            .build()
-        )
+            .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> true)
             .build())
@@ -276,26 +272,35 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
                 && memory.returnFactValueForGivenKey(IS_UNIT).isPresent()
                 && memory.returnFactValueForGivenKey(PLACE_TO_REACH).isPresent()
                 && !memory.returnFactValueForGivenKey(IS_UNIT).get().isUnderAttack()
-                && memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().distanceTo(
-                memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get().getPosition()) > 10
-            )
+                && memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().distanceTo(memory
+                .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getPosition()) > 10)
             .desiresToConsider(new HashSet<>(Collections.singleton(DesiresKeys.ATTACK)))
-            .build()
-        )
+            .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> true)
             .build())
         .commandCreationStrategy(intention -> new ActCommand.Own(intention) {
           @Override
           public int getHash(WorkingMemory memory) {
-            return Objects.hash("ATTACK",
-                memory.returnFactValueForGivenKey(PLACE_TO_REACH).get());
+            return Objects.hash("ATTACK", memory
+                .returnFactValueForGivenKey(PLACE_TO_REACH).get());
           }
 
           @Override
           public boolean act(WorkingMemory memory) {
-            return memory.returnFactValueForGivenKey(IS_UNIT).get().attack(
-                memory.returnFactValueForGivenKey(PLACE_TO_REACH).get());
+
+            //TODO take into account other units... special method for flayers
+
+//            Optional<ATilePosition> toGo = memory.returnFactValueForGivenKey(PLACE_TO_REACH).get()
+//                .getNextTileOnPathToBase(memory.returnFactValueForGivenKey(IS_UNIT).get()
+//                    .getPosition().getATilePosition());
+//            if (toGo.isPresent()) {
+//              return memory.returnFactValueForGivenKey(IS_UNIT).get()
+//                  .attack(new Position(toGo.get().getX(), toGo.get().getY()));
+//            }
+            return memory.returnFactValueForGivenKey(IS_UNIT).get()
+                .attack(memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().getPosition());
+//            return true;
           }
         })
         .build();
@@ -305,12 +310,10 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
     ConfigurationWithCommand.WithActingCommandDesiredBySelf attack = ConfigurationWithCommand.WithActingCommandDesiredBySelf
         .builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy((dataForDecision, memory) ->
-                memory.returnFactValueForGivenKey(IS_UNIT).isPresent()
-                    && !memory.returnFactValueForGivenKey(IS_UNIT).get().isUnderAttack()
-            )
-            .build()
-        )
+            .decisionStrategy((dataForDecision, memory) -> memory
+                .returnFactValueForGivenKey(IS_UNIT).isPresent() && !memory
+                .returnFactValueForGivenKey(IS_UNIT).get().isUnderAttack())
+            .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> true)
             .build())

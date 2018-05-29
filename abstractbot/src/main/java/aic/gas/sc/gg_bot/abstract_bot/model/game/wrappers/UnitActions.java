@@ -30,6 +30,18 @@ public interface UnitActions {
 
   }
 
+  //TODO hack
+  default boolean attack(Position target) {
+
+    // Do NOT issue double orders
+    if (unit().unit.isAttacking() && unit().unit.getTargetPosition() != null && unit().unit
+        .getTargetPosition().equals(target)) {
+      return false;
+    } else {
+      return unit().unit.attack(target);
+    }
+  }
+
   default boolean attack(APosition target) {
 
     // Do NOT issue double orders

@@ -1,10 +1,11 @@
 package aic.gas.sc.gg_bot.mas.model.knowledge;
 
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
-import aic.gas.sc.gg_bot.mas.service.MASFacade;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 /**
@@ -19,7 +20,7 @@ public class FactSet<V> {
   @Getter
   private final FactKey<V> type;
 
-  public FactSet(Map<V, Integer> decayMap, FactKey<V> type) {
+  private FactSet(Map<V, Integer> decayMap, FactKey<V> type) {
     this.decayMap = decayMap;
     this.type = type;
   }
@@ -48,14 +49,15 @@ public class FactSet<V> {
   /**
    * Returns copy of fact set. Content is cloned so using the content is thread safe
    */
-  public FactSet<V> copyFact() {
-    return new FactSet<>(MASFacade.CLONER.deepClone(decayMap), type);
+  FactSet<V> copyFact() {
+    return new FactSet<>(decayMap.entrySet().stream()
+        .collect(Collectors.toMap(Entry::getKey, Entry::getValue)), type);
   }
 
   /**
    * Method erases no longer relevant information
    */
-  public void forget() {
+  void forget() {
     if (type.isFading()) {
       decayMap.forEach((v, integer) -> decayMap.put(v, integer + 1));
       decayMap.keySet()

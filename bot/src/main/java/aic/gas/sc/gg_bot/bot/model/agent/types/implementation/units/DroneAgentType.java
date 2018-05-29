@@ -218,7 +218,7 @@ public class DroneAgentType {
                     .equals(memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
                         .getNearestBaseLocation().orElse(null))
                     //resources are under saturated
-                    && dataForDecision.getNumberOfCommittedAgents() <= 2.5 * dataForDecision
+                    && dataForDecision.getNumberOfCommittedAgents() <= 2 * dataForDecision
                     .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE))
                     //is not gathering resources
                     && !memory.returnFactValueForGivenKey(IS_GATHERING_MINERALS).orElse(false)
@@ -233,7 +233,7 @@ public class DroneAgentType {
                 .decisionStrategy(
                     (dataForDecision, memory) -> dataForDecision.madeDecisionToAny() ||
                         //minerals are over saturated
-                        dataForDecision.getNumberOfCommittedAgents() >= 3 * dataForDecision
+                        dataForDecision.getNumberOfCommittedAgents() >= 2.5 * dataForDecision
                             .getFeatureValueDesireBeliefSets(COUNT_OF_MINERALS_ON_BASE)
                         //nobody is mining gas at same location and at least somebody is mining minerals
                         || (dataForDecision.getNumberOfCommittedAgents() > 1 && memory

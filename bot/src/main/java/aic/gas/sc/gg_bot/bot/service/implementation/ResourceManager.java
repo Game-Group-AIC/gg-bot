@@ -45,7 +45,7 @@ public class ResourceManager implements IResourceManager {
   }
 
   public void processReservations(int minedMinerals, int minedGas, int supplyAvailable,
-      Player player, int frame) {
+      Player player, int frame, int workersCount) {
     updatingResources = true;
     synchronized (MONITOR) {
       try {
@@ -94,7 +94,7 @@ public class ResourceManager implements IResourceManager {
               }
             }
           }
-        } else {
+        } else if (workersCount <= 15) {
 
           //add worker at the start of queue
           if (!(reservationQueue.get(0).reservationMadeOn instanceof AUnitTypeWrapper)

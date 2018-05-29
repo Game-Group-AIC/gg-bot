@@ -36,10 +36,9 @@ public class OverlordAgentType {
 
         //scouting - move to base scouted for last time. at start prefer unvisited base locations
         ConfigurationWithAbstractPlan goScouting = ConfigurationWithAbstractPlan.builder()
-            .reactionOnChangeStrategy(
-                (memory, desireParameters) -> memory.updateFact(PLACE_TO_REACH,
-                    desireParameters.returnFactValueForGivenKey(IS_BASE_LOCATION).get()
-                        .getPosition()))
+            .reactionOnChangeStrategy((memory, desireParameters) -> memory
+                .updateFact(PLACE_TO_REACH, desireParameters
+                    .returnFactValueForGivenKey(IS_BASE_LOCATION).get()))
             .reactionOnChangeStrategyInIntention(
                 (memory, desireParameters) -> memory.eraseFactValueForGivenKey(PLACE_TO_REACH))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
@@ -49,9 +48,8 @@ public class OverlordAgentType {
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> false)
                 .build())
-            .desiresWithIntentionToAct(
-                Stream.of(DesiresKeys.MOVE_AWAY_FROM_DANGER, DesiresKeys.MOVE_TO_POSITION)
-                    .collect(Collectors.toSet()))
+            .desiresWithIntentionToAct(Stream.of(DesiresKeys.MOVE_AWAY_FROM_DANGER,
+                DesiresKeys.MOVE_TO_POSITION).collect(Collectors.toSet()))
             .build();
         type.addConfiguration(DesiresKeys.VISIT, goScouting, false);
 

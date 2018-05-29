@@ -7,6 +7,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.util.Annotator;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APlayer;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ARace;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.UnitWrapperFactory;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.WrapperTypeFactory;
 import aic.gas.sc.gg_bot.bot.model.agent.AbstractAgent;
@@ -193,8 +194,8 @@ public class BotFacade extends DefaultBWListener {
       List<ABaseLocationWrapper> baseLocations = BWTA.getBaseLocations().stream()
           .map(ABaseLocationWrapper::wrap).collect(Collectors.toList());
 
-      log.info(
-          "Data for agent initialization ready. It took " + (System.currentTimeMillis() - start));
+      log.info("Data for agent initialization ready. It took "
+          + (System.currentTimeMillis() - start));
 
       //start parallel thread
       Thread thread = new Thread(new InitializationThread(me.get(), baseLocations, this,
@@ -334,7 +335,12 @@ public class BotFacade extends DefaultBWListener {
 
     //manage resources
     RESOURCE_MANAGER.processReservations(self.minerals(), self.gas(),
-        self.supplyTotal() - self.supplyUsed(), self, game.getFrameCount());
+        self.supplyTotal() - self.supplyUsed(), self, game.getFrameCount(),
+        (int) agentsWithGameRepresentation.values().stream()
+            .map(AgentUnit::getUnit)
+            .filter(AUnit::isAlive)
+            .filter(aUnit -> aUnit.getType().isWorker())
+            .count());
 
     //TODO hack to ensure frame sync
     masFacade.notifyAgentsAboutNextCycle();

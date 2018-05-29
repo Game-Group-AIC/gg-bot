@@ -16,7 +16,7 @@ public class ZerglingAgentType {
         type.addConfiguration(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION,
             AgentTypeUnit.beliefsAboutSurroundingUnitsAndLocation);
       })
-      .desiresWithIntentionToReason(
-          Collections.singleton(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION))
+      .desiresWithIntentionToReason(Collections.singleton(DesiresKeys
+          .SURROUNDING_UNITS_AND_LOCATION))
       .build();
 }

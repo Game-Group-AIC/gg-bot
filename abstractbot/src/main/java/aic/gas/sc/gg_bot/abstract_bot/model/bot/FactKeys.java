@@ -617,10 +617,10 @@ public class FactKeys {
   };
 
   //units
-  public static final FactKey<APosition> PLACE_TO_REACH = new FactKey<APosition>("PLACE_TO_REACH",
-      false) {
+  public static final FactKey<ABaseLocationWrapper> PLACE_TO_REACH = new FactKey<ABaseLocationWrapper>(
+      "PLACE_TO_REACH", false) {
     @Override
-    public APosition getInitValue() {
+    public ABaseLocationWrapper getInitValue() {
       return null;
     }
   };
