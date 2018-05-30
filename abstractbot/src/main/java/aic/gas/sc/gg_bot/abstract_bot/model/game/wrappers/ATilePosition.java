@@ -1,9 +1,7 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers;
 
 import bwapi.TilePosition;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
 
 /**
@@ -25,11 +23,8 @@ public class ATilePosition extends AbstractPositionWrapper<TilePosition> {
    * Wrap position
    */
   public static ATilePosition wrap(TilePosition toWrap) {
-    Map<Coordinates, AbstractPositionWrapper<?>> positionsByCoordinates = cache
-        .computeIfAbsent(TilePosition.class, aClass -> new ConcurrentHashMap<>());
-    return (ATilePosition) positionsByCoordinates
-        .computeIfAbsent(new Coordinates(toWrap.getX(), toWrap.getY()),
-            integer -> new ATilePosition(toWrap));
+    return cacheForTilePositions.computeIfAbsent(new Coordinates(toWrap.getX(), toWrap.getY()),
+        integer -> new ATilePosition(toWrap));
   }
 
   static Optional<ATilePosition> creteOrEmpty(TilePosition tilePosition) {

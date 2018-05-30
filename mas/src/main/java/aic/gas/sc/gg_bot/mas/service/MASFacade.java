@@ -121,7 +121,7 @@ public class MASFacade implements TerminableService {
     synchronized (agentsInSystem) {
       agentsInSystem.forEach(agent -> agent.terminateAgent(true));
     }
-    notifyAgentsAboutNextCycle();
+//    notifyAgentsAboutNextCycle();
     desireMediator.terminate();
     beliefMediator.terminate();
   }

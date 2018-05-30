@@ -16,7 +16,7 @@ public class BuildLockerService implements IBuildLockerService {
 
   private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
   private final Map<AUnitTypeWrapper, Integer> lockRegister = new HashMap<>();
-  private static final int lockTypeForDuration = 100;
+  private static final int lockTypeForDuration = 200;
   private static final int lockForDroneDuration = 10;
 
   private static final BuildLockerService instance = new BuildLockerService();

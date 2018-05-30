@@ -1,8 +1,6 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers;
 
 import bwapi.Position;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
 
 /**
@@ -26,11 +24,8 @@ public class APosition extends AbstractPositionWrapper<Position> {
    * Wrap position
    */
   public static APosition wrap(Position toWrap) {
-    Map<Coordinates, AbstractPositionWrapper<?>> positionsByCoordinates = cache
-        .computeIfAbsent(Position.class, aClass -> new ConcurrentHashMap<>());
-    return (APosition) positionsByCoordinates
-        .computeIfAbsent(new Coordinates(toWrap.getX(), toWrap.getY()),
-            integer -> new APosition(toWrap));
+    return cacheForPositions.computeIfAbsent(new Coordinates(toWrap.getX(), toWrap.getY()),
+        integer -> new APosition(toWrap));
   }
 
   /**

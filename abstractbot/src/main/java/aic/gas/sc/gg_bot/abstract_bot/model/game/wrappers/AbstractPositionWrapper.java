@@ -12,7 +12,9 @@ import lombok.Getter;
 public abstract class AbstractPositionWrapper<T> {
 
   //cache to store position objects
-  static Map<Class<?>, Map<Coordinates, AbstractPositionWrapper<?>>> cache = new ConcurrentHashMap<>();
+  static Map<Coordinates, ABaseLocationWrapper> cacheForBases = new ConcurrentHashMap<>();
+  static Map<Coordinates, APosition> cacheForPositions = new ConcurrentHashMap<>();
+  static Map<Coordinates, ATilePosition> cacheForTilePositions = new ConcurrentHashMap<>();
 
   @Getter
   final T wrappedPosition;
@@ -28,17 +30,16 @@ public abstract class AbstractPositionWrapper<T> {
 
   @Override
   public String toString() {
-    return "Position{" +
-        "x=" + x +
-        ", y=" + y +
-        '}';
+    return "Position{" + "x=" + x + ", y=" + y + '}';
   }
 
   /**
    * Clear cache
    */
   public static void clearCache() {
-    cache.clear();
+    cacheForBases.clear();
+    cacheForPositions.clear();
+    cacheForTilePositions.clear();
   }
 
   /**
@@ -87,7 +88,7 @@ public abstract class AbstractPositionWrapper<T> {
   @EqualsAndHashCode
   @AllArgsConstructor
   @Getter
-  protected static class Coordinates {
+  static class Coordinates {
 
     private final int x, y;
   }

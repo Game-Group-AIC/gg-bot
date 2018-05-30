@@ -654,4 +654,29 @@ public class FactKeys {
       return null;
     }
   };
+
+  //base info about hold
+  public static final FactKey<Boolean> IS_HOLD_GROUND = new FactKey<Boolean>("IS_HOLD_GROUND",
+      false) {
+    @Override
+    public Boolean getInitValue() {
+      return false;
+    }
+  };
+  public static final FactKey<Boolean> IS_HOLD_AIR = new FactKey<Boolean>("IS_HOLD_AIR",
+      false) {
+    @Override
+    public Boolean getInitValue() {
+      return false;
+    }
+  };
+
+  //is under attack by enemy
+  public static final FactKey<Boolean> IS_UNDER_ATTACK = new FactKey<Boolean>("IS_UNDER_ATTACK",
+      false) {
+    @Override
+    public Boolean getInitValue() {
+      return false;
+    }
+  };
 }

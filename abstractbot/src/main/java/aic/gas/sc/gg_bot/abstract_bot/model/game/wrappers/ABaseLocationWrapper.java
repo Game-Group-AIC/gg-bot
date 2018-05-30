@@ -1,18 +1,10 @@
 package aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers;
 
-import bwta.BWTA;
 import bwta.BaseLocation;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.Getter;
 
@@ -68,20 +60,15 @@ public class ABaseLocationWrapper extends AbstractPositionWrapper<BaseLocation> 
   }
 
   private static Stream<ABaseLocationWrapper> getBaseLocationsInCache() {
-    return cache.computeIfAbsent(BaseLocation.class, aClass -> new HashMap<>())
-        .values().stream()
-        .map(base -> (ABaseLocationWrapper) base);
+    return cacheForBases.values().stream();
   }
 
   /**
    * Wrap location
    */
-  public synchronized static ABaseLocationWrapper wrap(BaseLocation toWrap) {
-    Map<Coordinates, AbstractPositionWrapper<?>> positionsByCoordinates = cache
-        .computeIfAbsent(BaseLocation.class, aClass -> new HashMap<>());
-    return (ABaseLocationWrapper) positionsByCoordinates
-        .computeIfAbsent(new Coordinates(toWrap.getX(), toWrap.getY()),
-            integer -> new ABaseLocationWrapper(toWrap));
+  public static ABaseLocationWrapper wrap(BaseLocation toWrap) {
+    return cacheForBases.computeIfAbsent(new Coordinates(toWrap.getX(), toWrap.getY()),
+        integer -> new ABaseLocationWrapper(toWrap));
   }
 
 }

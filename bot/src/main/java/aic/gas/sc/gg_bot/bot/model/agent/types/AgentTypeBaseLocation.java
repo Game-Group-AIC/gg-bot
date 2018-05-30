@@ -3,9 +3,12 @@ package aic.gas.sc.gg_bot.bot.model.agent.types;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.GEYSER;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_HOLD_AIR;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_HOLD_GROUND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MINERAL_ONLY;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_START_LOCATION;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNDER_ATTACK;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MINERAL;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.WAS_VISITED;
 
@@ -63,10 +66,9 @@ public class AgentTypeBaseLocation extends AgentTypeMakingObservations<Game> {
         desiresWithIntentionToAct, desiresWithIntentionToReason,
 
         //add facts related to agent
-        Stream.concat(usingTypesForFacts.stream(), Stream.of(IS_BASE_LOCATION,
-            IS_MINERAL_ONLY, IS_ISLAND, IS_START_LOCATION,
-            IS_BASE_LOCATION, WAS_VISITED, BASE_TO_MOVE))
-            .collect(Collectors.toSet()),
+        Stream.concat(usingTypesForFacts.stream(), Stream.of(IS_BASE_LOCATION, IS_MINERAL_ONLY,
+            IS_ISLAND, IS_START_LOCATION, IS_BASE_LOCATION, WAS_VISITED, BASE_TO_MOVE,
+            IS_HOLD_GROUND, IS_HOLD_AIR, IS_UNDER_ATTACK)).collect(Collectors.toSet()),
 
         //add fact set related to resources
         Stream.concat(usingTypesForFactSets.stream(),

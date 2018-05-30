@@ -33,7 +33,11 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_BASE_LOCATION
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ENEMY_BASE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_GAS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_GATHERING_MINERALS;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_HOLD_AIR;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_HOLD_GROUND;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_ISLAND;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_OUR_BASE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNDER_ATTACK;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCATION;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_BUILDINGS;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.LOCKED_UNITS;
@@ -81,6 +85,7 @@ import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeBaseLocation;
 import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.bot.service.implementation.BuildLockerService;
+import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
@@ -329,7 +334,7 @@ public class BaseLocationAgentType {
                       .mapToDouble(
                           aUnitOfPlayer -> aUnitOfPlayer.getPosition().distanceTo(aPosition))
                       .min().orElse(MAX_DISTANCE);
-                  if (closestDistance < 3) {
+                  if (closestDistance < 10) {
                     memory.updateFact(WAS_VISITED, true);
                   }
                 }
@@ -469,12 +474,18 @@ public class BaseLocationAgentType {
                         .filter(enemy -> enemy.getType().isBuilding())
                         .collect(Collectors.toSet()));
                     memory.updateFactSetByFacts(ENEMY_GROUND, enemies.stream()
-                        .filter(
-                            enemy -> !enemy.getType().isBuilding() && !enemy.getType().isFlyer())
+                        .filter(enemy -> !enemy.getType().isBuilding()
+                            && !enemy.getType().isFlyer())
                         .collect(Collectors.toSet()));
                     memory.updateFactSetByFacts(ENEMY_AIR, enemies.stream()
                         .filter(enemy -> !enemy.getType().isBuilding() && enemy.getType().isFlyer())
                         .collect(Collectors.toSet()));
+
+                    //is under attack?
+                    memory.updateFact(IS_UNDER_ATTACK, enemies.stream()
+                        .map(AUnit::getType)
+                        .anyMatch(aUnitTypeWrapper -> aUnitTypeWrapper.canAttackGroundUnits() ||
+                            aUnitTypeWrapper.canAttackAirUnits()));
 
                     return true;
                   }
@@ -926,11 +937,19 @@ public class BaseLocationAgentType {
         //hold ground
         ConfigurationWithSharedDesire holdGround = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(DesiresKeys.HOLD_GROUND)
+            .reactionOnChangeStrategy((memory, desireParameters) ->
+                memory.updateFact(IS_HOLD_GROUND, true))
+            .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+                memory.eraseFactValueForGivenKey(IS_HOLD_GROUND))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
                         dataForDecision, HOLDING_BY_GROUND_UNITS, memory.getCurrentClock(),
-                        memory.getAgentId()))
+                        memory.getAgentId())
+                    // is not island - cannot get there by ground units...
+                    && !memory.returnFactValueForGivenKey(IS_ISLAND).orElse(true)
+                    //higher priority base wants to be hold
+                    && !higherPriorityBaseWantsToHold(memory, IS_HOLD_AIR))
                 .globalBeliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
                     HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefs())
@@ -945,7 +964,11 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) -> !Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_GROUND,
                         dataForDecision, HOLDING_BY_GROUND_UNITS, memory.getCurrentClock(),
-                        memory.getAgentId()))
+                        memory.getAgentId())
+                    //is not island - cannot get there by ground units...
+                    || memory.returnFactValueForGivenKey(IS_ISLAND).orElse(true)
+                    //higher priority base wants to be hold
+                    || higherPriorityBaseWantsToHold(memory, IS_HOLD_GROUND))
                 .globalBeliefTypes(HOLDING_BY_GROUND_UNITS.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
                     HOLDING_BY_GROUND_UNITS.getConvertersForFactSetsForGlobalBeliefs())
@@ -962,11 +985,17 @@ public class BaseLocationAgentType {
         //hold air
         ConfigurationWithSharedDesire holdAir = ConfigurationWithSharedDesire.builder()
             .sharedDesireKey(DesiresKeys.HOLD_AIR)
+            .reactionOnChangeStrategy((memory, desireParameters) ->
+                memory.updateFact(IS_HOLD_AIR, true))
+            .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+                memory.eraseFactValueForGivenKey(IS_HOLD_AIR))
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
-                    Decider
-                        .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR, dataForDecision,
-                            HOLDING_BY_AIR_UNITS, memory.getCurrentClock(), memory.getAgentId()))
+                    Decider.getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
+                        dataForDecision, HOLDING_BY_AIR_UNITS, memory.getCurrentClock(),
+                        memory.getAgentId())
+                        //higher priority base wants to be hold
+                        && !higherPriorityBaseWantsToHold(memory, IS_HOLD_AIR))
                 .globalBeliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
                     HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefs())
@@ -981,7 +1010,9 @@ public class BaseLocationAgentType {
                 .decisionStrategy((dataForDecision, memory) -> !Decider
                     .getDecision(AgentTypes.BASE_LOCATION, DesireKeys.HOLD_AIR,
                         dataForDecision, HOLDING_BY_AIR_UNITS, memory.getCurrentClock(),
-                        memory.getAgentId()))
+                        memory.getAgentId())
+                    //higher priority base wants to be hold
+                    || higherPriorityBaseWantsToHold(memory, IS_HOLD_AIR))
                 .globalBeliefTypes(HOLDING_BY_AIR_UNITS.getConvertersForFactsForGlobalBeliefs())
                 .globalBeliefSetTypes(
                     HOLDING_BY_AIR_UNITS.getConvertersForFactSetsForGlobalBeliefs())
@@ -1088,6 +1119,43 @@ public class BaseLocationAgentType {
             .decisionStrategy((dataForDecision, memory) -> true)
             .build())
         .build();
+  }
+
+  private static boolean higherPriorityBaseWantsToHold(Memory<?> beliefs, FactKey<Boolean> ref) {
+
+    //keep priority for enemy base
+    boolean isEnemyBase = beliefs.returnFactValueForGivenKey(IS_ENEMY_BASE).orElse(false);
+    if (isEnemyBase) {
+      return false;
+    }
+
+    boolean isOurBase = beliefs.returnFactValueForGivenKey(IS_OUR_BASE).orElse(false);
+    boolean isUnderAttack = beliefs.returnFactValueForGivenKey(IS_UNDER_ATTACK).orElse(false);
+
+    //do not remove priority from our base under attack
+    if (isOurBase && isUnderAttack) {
+      return false;
+    }
+
+    //give priority to our base under attack
+    boolean isAnyOtherOfOurBasesWithHoldUnderAttack = beliefs
+        .getReadOnlyMemoriesForAgentType(BASE_LOCATION)
+        .filter(readOnlyMemory -> readOnlyMemory.getAgentId() != beliefs.getAgentId())
+        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
+            .orElse(false))
+        .anyMatch(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(ref)
+            .orElse(false));
+    if (isOurBase && isAnyOtherOfOurBasesWithHoldUnderAttack) {
+      return true;
+    }
+
+    //there is no enemy base with hold or it is our base - keep priority
+    return beliefs.getReadOnlyMemoriesForAgentType(BASE_LOCATION)
+        .filter(readOnlyMemory -> readOnlyMemory.getAgentId() != beliefs.getAgentId())
+        .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_ENEMY_BASE)
+            .orElse(false))
+        .anyMatch(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(ref)
+            .orElse(false));
   }
 
 }

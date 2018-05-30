@@ -69,8 +69,8 @@ public class WorkingMemory extends Memory<HeapOfTrees> {
     if (fact != null) {
       fact.removeFact();
     } else {
-      log.error(
-          factKey.getName() + " is not present in " + agentType.getName() + " type definition.");
+      log.error(factKey.getName() + " is not present in " + agentType.getName()
+          + " type definition.");
     }
   }
 

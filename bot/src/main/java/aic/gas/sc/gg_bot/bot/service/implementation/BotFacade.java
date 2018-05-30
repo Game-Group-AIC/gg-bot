@@ -342,8 +342,7 @@ public class BotFacade extends DefaultBWListener {
             .filter(aUnit -> aUnit.getType().isWorker())
             .count());
 
-    //TODO hack to ensure frame sync
-    masFacade.notifyAgentsAboutNextCycle();
+//    masFacade.notifyAgentsAboutNextCycle();
 
     //check types
     REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);

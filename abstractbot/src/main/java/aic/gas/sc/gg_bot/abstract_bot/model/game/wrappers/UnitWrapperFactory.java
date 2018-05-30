@@ -12,7 +12,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * UnitWrapperFactory wraps units and handles refreshment of fields in wrappers to keep them current
+ * UnitWrapperFactory wraps units and handles refreshment of fields in wrappers to keep them
+ * current
  */
 public class UnitWrapperFactory {
 
@@ -20,7 +21,7 @@ public class UnitWrapperFactory {
   private static final Map<Integer, AUnit> resourceUnits = new ConcurrentHashMap<>();
   private static final Map<Integer, AUnitWithCommands> playersUnits = new ConcurrentHashMap<>();
   private static final Set<Integer> idsOfDeadUnits = Collections
-      .newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+      .newSetFromMap(new ConcurrentHashMap<>());
 
   @Setter
   @Getter
@@ -157,8 +158,7 @@ public class UnitWrapperFactory {
       boolean isCreatingUnit) {
 
     //each enemy unit of enemy is player's in 1v1 game
-    Set<Unit> playersUnits = new HashSet<>();
-    playersUnits.addAll(unit.enemyUnitsInRadiusOfSight);
+    Set<Unit> playersUnits = new HashSet<>(unit.enemyUnitsInRadiusOfSight);
 //        playersUnits.addAll(unit.enemyUnitsInWeaponRange);
     playersUnits.forEach(u -> getCurrentWrappedUnitToCommand(u, frameCount, isCreatingUnit));
 
@@ -177,8 +177,7 @@ public class UnitWrapperFactory {
       boolean isCreatingUnit) {
 
     //wrap enemy units
-    Set<Unit> enemyUnits = new HashSet<>();
-    enemyUnits.addAll(unit.enemyUnitsInRadiusOfSight);
+    Set<Unit> enemyUnits = new HashSet<>(unit.enemyUnitsInRadiusOfSight);
 //        enemyUnits.addAll(unit.enemyUnitsInWeaponRange);
     enemyUnits.forEach(u -> wrapEnemyUnits(u, frameCount, isCreatingUnit));
 

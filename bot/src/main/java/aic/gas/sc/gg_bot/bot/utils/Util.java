@@ -11,10 +11,12 @@ import bwapi.UnitType;
 import bwta.BWTA;
 import java.util.Comparator;
 import java.util.Optional;
+import lombok.extern.log4j.Log4j;
 
 /**
  * Useful utils for bots
  */
+@Log4j
 public class Util {
 
   /**
@@ -41,7 +43,7 @@ public class Util {
       ATilePosition position = APosition
           .wrap(BWTA.getNearestChokepoint(currentTile.getWrappedPosition()).getCenter())
           .getATilePosition();
-      if (!position.equals(currentTile) && position.distanceTo(currentTile) <= 10) {
+      if (!position.equals(currentTile) && position.distanceTo(currentTile) <= 40) {
         Optional<ATilePosition> toReturn = getBuildTile(buildingType, position, worker, game);
         if (toReturn.isPresent()) {
           return toReturn;
@@ -61,7 +63,7 @@ public class Util {
           }
         }
       }
-      maxDist += 2;
+      maxDist += 3;
     }
     return Optional.empty();
   }
@@ -84,13 +86,15 @@ public class Util {
   private static boolean canBuildHere(AUnitTypeWrapper buildingType, ATilePosition currentTile,
       AUnit worker, Game game) {
 
+    int defenseOffset = buildingType.isMilitaryBuilding() ? 1 : 0;
+
     // units that are blocking the tile
     for (Unit u : game.getAllUnits()) {
       if (u.getID() == worker.getUnitId()) {
         continue;
       }
-      if ((Math.abs(u.getTilePosition().getX() - currentTile.getX()) < 3) && (
-          Math.abs(u.getTilePosition().getY() - currentTile.getY()) < 3)) {
+      if ((Math.abs(u.getTilePosition().getX() - currentTile.getX()) < 4 - defenseOffset) && (
+          Math.abs(u.getTilePosition().getY() - currentTile.getY()) < 4 - defenseOffset)) {
         return false;
       }
     }
