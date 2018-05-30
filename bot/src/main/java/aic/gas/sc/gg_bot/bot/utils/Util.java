@@ -19,12 +19,18 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 public class Util {
 
+  private static int offset = 3;
+  private static int offsetStatic = 3;
+
   /**
    * Returns a suitable TilePosition to build a given building type near specified TilePosition
    * aroundTile, or null if not found
    */
   public static Optional<ATilePosition> getBuildTile(AUnitTypeWrapper buildingType,
       ATilePosition currentTile, AUnit worker, Game game) {
+    long start = System.currentTimeMillis();
+
+    try {
       int maxDist = 3;
       int stopDist = 40;
 
@@ -63,9 +69,16 @@ public class Util {
             }
           }
         }
-        maxDist += 3;
+        maxDist += 2;
       }
       return Optional.empty();
+    } finally {
+      if (System.currentTimeMillis() - start >= 60) {
+        offset = Math.max(offset--, 0);
+      } else {
+        offset = offsetStatic;
+      }
+    }
   }
 
   public static boolean canBuildHereCheck(AUnitTypeWrapper buildingType, ATilePosition currentTile,
@@ -86,15 +99,13 @@ public class Util {
   private static boolean canBuildHere(AUnitTypeWrapper buildingType, ATilePosition currentTile,
       AUnit worker, Game game) {
 
-    int defenseOffset = buildingType.isMilitaryBuilding() ? 1 : 0;
-
     // units that are blocking the tile
     for (Unit u : game.getAllUnits()) {
       if (u.getID() == worker.getUnitId()) {
         continue;
       }
-      if ((Math.abs(u.getTilePosition().getX() - currentTile.getX()) < 4 - defenseOffset) && (
-          Math.abs(u.getTilePosition().getY() - currentTile.getY()) < 4 - defenseOffset)) {
+      if ((Math.abs(u.getTilePosition().getX() - currentTile.getX()) < offset)
+          && (Math.abs(u.getTilePosition().getY() - currentTile.getY()) < offset)) {
         return false;
       }
     }

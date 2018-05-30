@@ -1,5 +1,6 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings;
 
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SPORE_COLONY_TYPE;
@@ -42,10 +43,12 @@ public class CreepColonyAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
-                .desiresToConsider(
-                    Stream.of(DesiresKeys.MORPH_TO_SPORE_COLONY, DesiresKeys.MORPH_TO_SUNKEN_COLONY)
-                        .collect(Collectors.toSet()))
+                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                    && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get()
+                    .equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
+                        .getNearestBaseLocation().orElse(null)))
+                .desiresToConsider(Stream.of(DesiresKeys.MORPH_TO_SPORE_COLONY,
+                    DesiresKeys.MORPH_TO_SUNKEN_COLONY).collect(Collectors.toSet()))
                 .build()
             )
             .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -69,10 +72,12 @@ public class CreepColonyAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
-                .desiresToConsider(
-                    Stream.of(DesiresKeys.MORPH_TO_SPORE_COLONY, DesiresKeys.MORPH_TO_SUNKEN_COLONY)
-                        .collect(Collectors.toSet()))
+                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                    && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get()
+                    .equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
+                        .getNearestBaseLocation().orElse(null)))
+                .desiresToConsider(Stream.of(DesiresKeys.MORPH_TO_SPORE_COLONY,
+                    DesiresKeys.MORPH_TO_SUNKEN_COLONY).collect(Collectors.toSet()))
                 .build()
             )
             .decisionInIntention(CommitmentDeciderInitializer.builder()

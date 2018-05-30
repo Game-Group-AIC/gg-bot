@@ -29,10 +29,14 @@ import bwta.BWTA;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -67,6 +71,8 @@ public class BotFacade extends DefaultBWListener {
 
   //keep track of agent units
   private final Map<Integer, AgentUnit> agentsWithGameRepresentation = new HashMap<>();
+  private final Map<Integer, Unit> workersInSystem = new HashMap<>();
+
   //executor of game commands
   private GameCommandExecutor gameCommandExecutor;
   //facade for MAS
@@ -78,6 +84,13 @@ public class BotFacade extends DefaultBWListener {
   private ILocationInitializer locationInitializer;
   private List<AbstractAgent> abstractAgents = new ArrayList<>();
   private List<AgentBaseLocation> agentBaseLocations = new ArrayList<>();
+
+  //TODO hack - workers to stop
+  private static Map<Integer, Integer> stopWorkers = new ConcurrentHashMap<>();
+
+  public static void stopWorker(int workerID) {
+    stopWorkers.put(workerID, workerID);
+  }
 
   //game related fields
   private Mirror mirror = new Mirror();
@@ -242,6 +255,9 @@ public class BotFacade extends DefaultBWListener {
 //            .orElse("null"));
         agent.ifPresent(agentObservingGame -> {
           agentsWithGameRepresentation.put(unit.getID(), agentObservingGame);
+          if (agentObservingGame.getUnit().getType().isWorker()) {
+            workersInSystem.put(unit.getID(), unit);
+          }
           masFacade.addAgentToSystem(agentObservingGame);
         });
       }
@@ -254,12 +270,16 @@ public class BotFacade extends DefaultBWListener {
   public void onUnitDestroy(Unit unit) {
     try {
       if (self.getID() == unit.getPlayer().getID()) {
-        Optional<AgentUnit> agent = Optional
-            .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
+        Optional<AgentUnit> agent = Optional.ofNullable(agentsWithGameRepresentation
+            .remove(unit.getID()));
 //        log.info("Destroying " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
 //            .orElse("null"));
-        agent.ifPresent(
-            agentUnit -> masFacade.removeAgentFromSystem(agentUnit, unit.getType().isBuilding()));
+        agent.ifPresent(agentUnit -> {
+          masFacade.removeAgentFromSystem(agentUnit, unit.getType().isBuilding());
+          if (agentUnit.getUnit().getType().isWorker()) {
+            workersInSystem.remove(unit.getID());
+          }
+        });
       }
       UnitWrapperFactory.unitDied(unit);
     } catch (Exception e) {
@@ -273,7 +293,12 @@ public class BotFacade extends DefaultBWListener {
       if (self.getID() == unit.getPlayer().getID()) {
         Optional<AgentUnit> agent = Optional
             .ofNullable(agentsWithGameRepresentation.remove(unit.getID()));
-        agent.ifPresent(agentUnit -> masFacade.removeAgentFromSystem(agentUnit, true));
+        agent.ifPresent(agentUnit -> {
+          masFacade.removeAgentFromSystem(agentUnit, true);
+          if (agentUnit.getUnit().getType().isWorker()) {
+            workersInSystem.put(unit.getID(), unit);
+          }
+        });
 
 //        log.info("Morphing from " + agent.map(agentUnit -> agentUnit.getAgentType().getName())
 //            .orElse("null") + " to " + unit.getType().toString());
@@ -310,11 +335,9 @@ public class BotFacade extends DefaultBWListener {
     }
   }
 
-  //TODO throw exception to break from loop
   @Override
   public void onFrame() {
     time = System.currentTimeMillis();
-
     try {
       gameCommandExecutor.actOnFrame(maxFrameExecutionTime);
       buildLockerService.releaseLocksOnTypes();
@@ -334,6 +357,15 @@ public class BotFacade extends DefaultBWListener {
       drawDebug();
     }
 
+//    //TODO hack
+//    //stop workers
+//    Set<Integer> toStop = new HashSet<>(stopWorkers.keySet());
+//    toStop.forEach(integer -> stopWorkers.remove(integer));
+//    workersInSystem.entrySet().stream()
+//        .filter(entry -> toStop.contains(entry.getKey()))
+//        .map(Entry::getValue)
+//        .forEach(Unit::stop);
+
     //manage resources
     RESOURCE_MANAGER.processReservations(self.minerals(), self.gas(),
         self.supplyTotal() - self.supplyUsed(), self, game.getFrameCount(),
@@ -347,29 +379,6 @@ public class BotFacade extends DefaultBWListener {
 
     //check types
     REQUIREMENTS_CHECKER.updateBuildTreeByPlayersData(self);
-
-//    //TODO
-//    //print orders of workers + buildings
-//    String cOrders = self.getUnits().stream()
-//        .filter(Unit::exists)
-//        .filter(unit -> unit.getType().isWorker() || unit.getType().isBuilding() || Stream.of(
-//            UnitType.Zerg_Larva, UnitType.Zerg_Egg)
-//            .anyMatch(unitType -> unit.getType() == unitType))
-//        .filter(unit -> unit.getOrder() != null)
-//        .filter(unit -> Stream
-//            .of(Order.WaitForMinerals, Order.MiningMinerals, Order.HarvestGas, Order.MoveToMinerals,
-//                Order.MoveToGas, Order.ReturnGas, Order.ReturnMinerals, Order.WaitForGas,
-//                Order.Nothing, Order.PlayerGuard, Order.PlayerGuard, Order.Move,
-//                Order.ResetCollision,
-//                Order.ZergBirth, Order.Guard)
-//            .noneMatch(order -> unit.getOrder() == order))
-//        .map(unit -> (unit.getType().isWorker() ? "W" : "B") + " " + unit.getId() + ": " + unit
-//            .getOrder().toString())
-//        .collect(Collectors.joining(","));
-//    if (!cOrders.equals(orders)) {
-//      orders = cOrders;
-//      log.info(game.getFrameCount() + ": " + orders);
-//    }
 
     //hold frame for a small amount of time to give MAS time to handle new data
     {

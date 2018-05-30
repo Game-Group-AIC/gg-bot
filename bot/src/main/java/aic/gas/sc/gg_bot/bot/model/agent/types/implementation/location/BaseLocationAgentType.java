@@ -126,24 +126,22 @@ public class BaseLocationAgentType {
     return ConfigurationWithAbstractPlan.builder()
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
-        .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
-            BotFacade.RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId()))
+        .reactionOnChangeStrategyInIntention((memory, desireParameters) -> BotFacade
+            .RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId()))
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy((dataForDecision, memory) ->
-                !BotFacade.RESOURCE_MANAGER
-                    .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
-                    && !dataForDecision.madeDecisionToAny()
-                    && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                    //is base
-                    && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
-                    //we have base completed
-                    && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
-                    //there is/will be no creep colony available
-                    && forCommitment.isTrue(dataForDecision
-                    .getFeatureValueBeliefSets(completedCount))
-                    && Decider.getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(),
-                    dataForDecision, featureContainerHeader, memory.getCurrentClock(),
-                    memory.getAgentId()))
+            .decisionStrategy((dataForDecision, memory) -> !BotFacade.RESOURCE_MANAGER
+                .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                && !dataForDecision.madeDecisionToAny()
+                && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                //is base
+                && memory.returnFactValueForGivenKey(IS_OUR_BASE).get()
+                //we have base completed
+                && dataForDecision.getFeatureValueBeliefSets(BASE_IS_COMPLETED) == 1.0
+                //there is/will be no creep colony available
+                && forCommitment.isTrue(dataForDecision.getFeatureValueBeliefSets(completedCount))
+                && Decider.getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(),
+                dataForDecision, featureContainerHeader, memory.getCurrentClock(),
+                memory.getAgentId()))
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .globalBeliefTypesByAgentType(
@@ -157,15 +155,14 @@ public class BaseLocationAgentType {
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy((dataForDecision, memory) ->
-                !forCommitment.isTrue(dataForDecision
-                    .getFeatureValueBeliefSets(completedCount))
-                    || !Decider.getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(),
-                    dataForDecision, featureContainerHeader, memory.getCurrentClock(),
-                    memory.getAgentId()) || !BotFacade.RESOURCE_MANAGER
-                    .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
-                    || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                    || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get())
+            .decisionStrategy((dataForDecision, memory) -> !forCommitment.isTrue(dataForDecision
+                .getFeatureValueBeliefSets(completedCount))
+                || !Decider.getDecision(AgentTypes.BASE_LOCATION, desireKey.getId(),
+                dataForDecision, featureContainerHeader, memory.getCurrentClock(),
+                memory.getAgentId()) || !BotFacade.RESOURCE_MANAGER
+                .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                || !memory.returnFactValueForGivenKey(IS_OUR_BASE).get())
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .globalBeliefSetTypes(featureContainerHeader.getConvertersForFactSetsForGlobalBeliefs())
             .globalBeliefTypesByAgentType(

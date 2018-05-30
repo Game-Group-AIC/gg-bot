@@ -46,12 +46,13 @@ public class ResourceManager implements IResourceManager {
 
   public void processReservations(int minedMinerals, int minedGas, int supplyAvailable,
       Player player, int frame, int workersCount) {
-    updatingResources = true;
     synchronized (MONITOR) {
       try {
         if (readingResources) {
+          MONITOR.notify();
           MONITOR.wait();
         }
+        updatingResources = true;
         resourcesAvailableFor.clear();
         int sumOfMinerals = 0, sumOfGas = 0, sumOfSupply = 0;
         currentFrame = frame;

@@ -412,15 +412,6 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
   private static boolean hasEnoughForceToAttack(Memory<?> memory) {
     ABaseLocationWrapper toGo = memory.returnFactValueForGivenKey(PLACE_TO_REACH).get();
     AUnitWithCommands me = memory.returnFactValueForGivenKey(IS_UNIT).get();
-
-    //is any attack unit in its surrounding
-    if (me.getFriendlyUnitsInRadiusOfSight().stream()
-        .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker() &&
-            !aUnitOfPlayer.getType().equals(AUnitTypeWrapper.OVERLORD_TYPE))
-        .noneMatch(aUnitOfPlayer -> aUnitOfPlayer.isFlying() == me.isFlying())) {
-      return false;
-    }
-
     return memory.getReadOnlyMemories()
         .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(PLACE_TO_REACH))
         .filter(readOnlyMemory -> toGo.equals(readOnlyMemory

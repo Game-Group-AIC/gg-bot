@@ -423,12 +423,10 @@ public class DroneAgentType {
                 .decisionStrategy((dataForDecision, memory) ->
                     //is idle and has nothing to do
                     !dataForDecision.madeDecisionToAny() && memory
-                        .returnFactValueForGivenKey(REPRESENTS_UNIT).get().isIdle()
-                )
-                .desiresToConsider(Stream.concat(Stream
-                        .of(DesiresKeys.WORKER_SCOUT, DesiresKeys.MINE_MINERALS_IN_BASE,
-                            DesiresKeys.MINE_GAS_IN_BASE, DesiresKeys.GO_TO_BASE),
-                    BUILDING_DESIRES.stream())
+                        .returnFactValueForGivenKey(REPRESENTS_UNIT).get().isIdle())
+                .desiresToConsider(Stream.concat(Stream.of(DesiresKeys.WORKER_SCOUT,
+                    DesiresKeys.MINE_MINERALS_IN_BASE, DesiresKeys.MINE_GAS_IN_BASE,
+                    DesiresKeys.GO_TO_BASE), BUILDING_DESIRES.stream())
                     .collect(Collectors.toSet()))
                 .build()
             )
@@ -442,9 +440,8 @@ public class DroneAgentType {
                 Optional<ABaseLocationWrapper> basesToGo = memory.getReadOnlyMemoriesForAgentType(
                     AgentTypes.BASE_LOCATION)
                     //is base
-                    .filter(
-                        readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
-                            .get())
+                    .filter(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(IS_OUR_BASE)
+                        .get())
                     //is ready
                     .filter(readOnlyMemory -> readOnlyMemory.returnFactSetValueForGivenKey(HAS_BASE)
                         .orElse(Stream.empty())
@@ -473,12 +470,15 @@ public class DroneAgentType {
                     .min(Comparator.comparingDouble(value -> value.distanceTo(me.getPosition())));
 
                 //go there
-                basesToGo.ifPresent(aBaseLocationWrapper -> memory
-                    .updateFact(PLACE_TO_GO, aBaseLocationWrapper.getPosition()));
+                if (basesToGo.isPresent() && !basesToGo.get()
+                    .equals(me.getNearestBaseLocation().orElse(null))) {
+                  basesToGo.ifPresent(aBaseLocationWrapper -> memory
+                      .updateFact(PLACE_TO_GO, aBaseLocationWrapper.getPosition()));
+                }
               }
             })
-            .reactionOnChangeStrategyInIntention(
-                (memory, desireParameters) -> memory.eraseFactValueForGivenKey(PLACE_TO_GO))
+            .reactionOnChangeStrategyInIntention((memory, desireParameters) -> memory
+                .eraseFactValueForGivenKey(PLACE_TO_GO))
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> true)
                 .build())
@@ -661,11 +661,13 @@ public class DroneAgentType {
     //abstract plan for building
     ConfigurationWithAbstractPlan buildPlan = ConfigurationWithAbstractPlan
         .builder()
-        .reactionOnChangeStrategy((memory, desireParameters) -> memory.updateFact(BASE_TO_MOVE,
-            desireParameters.returnFactValueForGivenKey(BASE_TO_MOVE).get()))
+        .reactionOnChangeStrategy((memory, desireParameters) -> memory
+            .updateFact(BASE_TO_MOVE, desireParameters.returnFactValueForGivenKey(BASE_TO_MOVE)
+                .get()))
         .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
           memory.eraseFactValueForGivenKey(placeForBuilding);
           memory.eraseFactValueForGivenKey(BASE_TO_MOVE);
+//          BotFacade.stopWorker(memory.returnFactValueForGivenKey(IS_UNIT).get().getUnitId());
         })
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
@@ -712,23 +714,21 @@ public class DroneAgentType {
             AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
             APosition destination = intention.returnFactValueForGivenKey(BASE_TO_MOVE).get()
                 .getPosition();
-            me.move(destination);
-            return true;
+            return me.move(destination);
           }
         })
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) -> !memory.returnFactValueForGivenKey(BASE_TO_MOVE).get()
+            .decisionStrategy((dataForDecision, memory) ->
+                !memory.returnFactValueForGivenKey(BASE_TO_MOVE).get()
                     .equals(memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
                         .getNearestBaseLocation().orElse(null)))
-            .useFactsInMemory(true)
             .build()
         )
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy((dataForDecision, memory) ->
-                memory.returnFactValueForGivenKey(BASE_TO_MOVE).get()
-                    .equals(memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
-                        .getNearestBaseLocation().orElse(null)))
+            .decisionStrategy((dataForDecision, memory) -> memory
+                .returnFactValueForGivenKey(BASE_TO_MOVE).get()
+                .equals(memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
+                    .getNearestBaseLocation().orElse(null)))
             .build())
         .build();
     type.addConfiguration(DesiresKeys.GO_TO_BASE, reactOn, moveToBase);
@@ -810,9 +810,9 @@ public class DroneAgentType {
         })
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
-                && memory.returnFactValueForGivenKey(BASE_TO_MOVE).get().equals(
-                memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get().getNearestBaseLocation()
-                    .orElse(null)))
+                && memory.returnFactValueForGivenKey(BASE_TO_MOVE).get().equals(memory
+                .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getNearestBaseLocation()
+                .orElse(null)))
             .desiresToConsider(new HashSet<>(Collections.singleton(DesiresKeys.GO_TO_BASE)))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -843,17 +843,14 @@ public class DroneAgentType {
           }
         })
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) -> memory.returnFactValueForGivenKey(placeForBuilding)
-                    .isPresent())
+            .decisionStrategy((dataForDecision, memory) -> memory
+                .returnFactValueForGivenKey(placeForBuilding).isPresent())
             .build()
         )
-        .reactionOnChangeStrategyInIntention((memory, desireParameters) -> {
-          memory.eraseFactValueForGivenKey(placeForBuilding);
-        })
+        .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+            memory.eraseFactValueForGivenKey(placeForBuilding))
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) -> false)
+            .decisionStrategy((dataForDecision, memory) -> false)
             .build())
         .build();
     type.addConfiguration(DesiresKeys.BUILD, reactOn, build);
