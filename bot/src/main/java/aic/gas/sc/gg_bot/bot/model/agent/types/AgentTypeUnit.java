@@ -21,8 +21,10 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitWithCommands;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
+import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
@@ -42,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -185,7 +188,6 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
     private int skipTurnsToMakeObservation = 1;
   }
 
-  //TODO refactor - do not be so suicidal :). prefer our bases under attack. else move to to enemy
   public static void initAttackPlan(AgentType type, DesireKey desireKey,
       boolean isScaredOfAntiAir) {
 
@@ -213,7 +215,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> {
               AUnitOfPlayer me = memory.returnFactValueForGivenKey(IS_UNIT).get();
-              return me.isUnderAttack() && me.getHPPercent() < 0.4;
+              return me.isUnderAttack() && me.getHPPercent() < 0.2;
             })
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -274,7 +276,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
                 && memory.returnFactValueForGivenKey(PLACE_TO_REACH).isPresent()
                 && !memory.returnFactValueForGivenKey(IS_UNIT).get().isUnderAttack()
                 && memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().distanceTo(memory
-                .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getPosition()) > 2)
+                .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getPosition()) > 2
+                && hasEnoughForceToAttack(memory))
             .desiresToConsider(new HashSet<>(Collections.singleton(DesiresKeys.ATTACK)))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -289,9 +292,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
           @Override
           public boolean act(WorkingMemory memory) {
-            Optional<ABaseLocationWrapper> toGo = memory.returnFactValueForGivenKey(PLACE_TO_REACH);
-            return toGo.map(aBaseLocationWrapper -> memory.returnFactValueForGivenKey(IS_UNIT).get()
-                .attack(aBaseLocationWrapper.getPosition())).orElse(true);
+            return memory.returnFactValueForGivenKey(IS_UNIT).get().attack(positionToGroup(memory));
           }
         })
         .build();
@@ -379,7 +380,57 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         })
         .build();
     type.addConfiguration(DesiresKeys.ATTACK, desireKey, attack);
+  }
 
+  //TODO simple heuristic
+  private static APosition positionToGroup(Memory<?> memory) {
+    ABaseLocationWrapper toGo = memory.returnFactValueForGivenKey(PLACE_TO_REACH).get();
+    AUnitWithCommands me = memory.returnFactValueForGivenKey(IS_UNIT).get();
+
+    List<APosition> positions = memory.getReadOnlyMemories()
+        .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(PLACE_TO_REACH))
+        .filter(readOnlyMemory -> toGo.equals(readOnlyMemory
+            .returnFactValueForGivenKey(PLACE_TO_REACH).orElse(null)))
+        .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(REPRESENTS_UNIT))
+        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(REPRESENTS_UNIT).get())
+        .filter(aUnitOfPlayer -> aUnitOfPlayer.isFlying() == me.isFlying())
+        .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker()
+            && !aUnitOfPlayer.getType().equals(AUnitTypeWrapper.OVERLORD_TYPE))
+        .map(AUnit::getPosition)
+        .sorted(Comparator.comparingDouble(value -> toGo.getTilePosition().distanceTo(value)))
+        .collect(Collectors.toList());
+
+    //median
+    APosition position = positions.isEmpty() ? me.getPosition() :
+        positions.get(positions.size() / 2);
+
+    //is in center - continue...
+    return position.getATilePosition().distanceTo(me.getPosition().getATilePosition()) <= 5 ?
+        toGo.getPosition() : position;
+  }
+
+  private static boolean hasEnoughForceToAttack(Memory<?> memory) {
+    ABaseLocationWrapper toGo = memory.returnFactValueForGivenKey(PLACE_TO_REACH).get();
+    AUnitWithCommands me = memory.returnFactValueForGivenKey(IS_UNIT).get();
+
+    //is any attack unit in its surrounding
+    if (me.getFriendlyUnitsInRadiusOfSight().stream()
+        .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker() &&
+            !aUnitOfPlayer.getType().equals(AUnitTypeWrapper.OVERLORD_TYPE))
+        .noneMatch(aUnitOfPlayer -> aUnitOfPlayer.isFlying() == me.isFlying())) {
+      return false;
+    }
+
+    return memory.getReadOnlyMemories()
+        .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(PLACE_TO_REACH))
+        .filter(readOnlyMemory -> toGo.equals(readOnlyMemory
+            .returnFactValueForGivenKey(PLACE_TO_REACH).orElse(null)))
+        .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(REPRESENTS_UNIT))
+        .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(REPRESENTS_UNIT).get())
+        .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker()
+            && !aUnitOfPlayer.getType().equals(AUnitTypeWrapper.OVERLORD_TYPE))
+        .filter(aUnitOfPlayer -> aUnitOfPlayer.isFlying() == me.isFlying())
+        .count() >= (me.isFlying() ? 2 : 4);
   }
 
   //TODO refactor

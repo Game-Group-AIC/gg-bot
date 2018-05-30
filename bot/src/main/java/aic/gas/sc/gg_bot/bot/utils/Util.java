@@ -25,47 +25,47 @@ public class Util {
    */
   public static Optional<ATilePosition> getBuildTile(AUnitTypeWrapper buildingType,
       ATilePosition currentTile, AUnit worker, Game game) {
-    int maxDist = 3;
-    int stopDist = 40;
+      int maxDist = 3;
+      int stopDist = 40;
 
-    // Refinery, Assimilator, Extractor
-    if (buildingType.isRefinery()) {
-      return game.neutral().getUnits().stream()
-          .filter(unit -> unit.getType() == UnitType.Resource_Vespene_Geyser)
-          .map(Unit::getTilePosition)
-          .min(Comparator.comparing(tilePosition -> tilePosition
-              .getDistance(worker.getPosition().getATilePosition().getWrappedPosition())))
-          .map(ATilePosition::wrap);
-    }
-
-    //find better place for defensive buildings...
-    if (buildingType.isMilitaryBuilding()) {
-      ATilePosition position = APosition
-          .wrap(BWTA.getNearestChokepoint(currentTile.getWrappedPosition()).getCenter())
-          .getATilePosition();
-      if (!position.equals(currentTile) && position.distanceTo(currentTile) <= 40) {
-        Optional<ATilePosition> toReturn = getBuildTile(buildingType, position, worker, game);
-        if (toReturn.isPresent()) {
-          return toReturn;
-        }
+      // Refinery, Assimilator, Extractor
+      if (buildingType.isRefinery()) {
+        return game.neutral().getUnits().stream()
+            .filter(unit -> unit.getType() == UnitType.Resource_Vespene_Geyser)
+            .map(Unit::getTilePosition)
+            .min(Comparator.comparing(tilePosition -> tilePosition
+                .getDistance(worker.getPosition().getATilePosition().getWrappedPosition())))
+            .map(ATilePosition::wrap);
       }
-    }
 
-    while (maxDist < stopDist) {
-      for (int i = currentTile.getX() - maxDist; i <= currentTile.getX() + maxDist; i++) {
-        for (int j = currentTile.getY() - maxDist; j <= currentTile.getY() + maxDist; j++) {
-          if (game.canBuildHere(new TilePosition(i, j), buildingType.getType(), worker.getUnit(),
-              false)) {
-            ATilePosition position = ATilePosition.wrap(new TilePosition(i, j));
-            if (canBuildHere(buildingType, position, worker, game)) {
-              return Optional.ofNullable(position);
-            }
+      //find better place for defensive buildings...
+      if (buildingType.isMilitaryBuilding()) {
+        ATilePosition position = APosition
+            .wrap(BWTA.getNearestChokepoint(currentTile.getWrappedPosition()).getCenter())
+            .getATilePosition();
+        if (!position.equals(currentTile) && position.distanceTo(currentTile) <= 40) {
+          Optional<ATilePosition> toReturn = getBuildTile(buildingType, position, worker, game);
+          if (toReturn.isPresent()) {
+            return toReturn;
           }
         }
       }
-      maxDist += 3;
-    }
-    return Optional.empty();
+
+      while (maxDist < stopDist) {
+        for (int i = currentTile.getX() - maxDist; i <= currentTile.getX() + maxDist; i++) {
+          for (int j = currentTile.getY() - maxDist; j <= currentTile.getY() + maxDist; j++) {
+            if (game.canBuildHere(new TilePosition(i, j), buildingType.getType(), worker.getUnit(),
+                false)) {
+              ATilePosition position = ATilePosition.wrap(new TilePosition(i, j));
+              if (canBuildHere(buildingType, position, worker, game)) {
+                return Optional.ofNullable(position);
+              }
+            }
+          }
+        }
+        maxDist += 3;
+      }
+      return Optional.empty();
   }
 
   public static boolean canBuildHereCheck(AUnitTypeWrapper buildingType, ATilePosition currentTile,

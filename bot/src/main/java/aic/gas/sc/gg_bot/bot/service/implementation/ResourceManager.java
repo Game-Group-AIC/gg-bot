@@ -94,7 +94,7 @@ public class ResourceManager implements IResourceManager {
               }
             }
           }
-        } else if (workersCount <= 15) {
+        } else if (workersCount <= 10) {
 
           //add worker at the start of queue
           if (!(reservationQueue.get(0).reservationMadeOn instanceof AUnitTypeWrapper)

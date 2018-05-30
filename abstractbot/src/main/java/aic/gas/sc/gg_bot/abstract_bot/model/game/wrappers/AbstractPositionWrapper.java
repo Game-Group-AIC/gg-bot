@@ -51,6 +51,10 @@ public abstract class AbstractPositionWrapper<T> {
     return distanceTo(x, y, other.getX(), other.getY());
   }
 
+  public double distanceTo(int otherX, int otherY) {
+    return distanceTo(x, y, otherX, otherY);
+  }
+
   public boolean isOnSameCoordinates(AbstractPositionWrapper<?> other) {
     return x == other.x && y == other.y;
   }

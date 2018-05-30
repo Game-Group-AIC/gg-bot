@@ -310,6 +310,7 @@ public class BotFacade extends DefaultBWListener {
     }
   }
 
+  //TODO throw exception to break from loop
   @Override
   public void onFrame() {
     time = System.currentTimeMillis();
