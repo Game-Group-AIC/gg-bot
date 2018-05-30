@@ -31,8 +31,6 @@ public class Util {
     long start = System.currentTimeMillis();
 
     try {
-      int maxDist = 3;
-      int stopDist = 40;
 
       // Refinery, Assimilator, Extractor
       if (buildingType.isRefinery()) {
@@ -57,20 +55,47 @@ public class Util {
         }
       }
 
-      while (maxDist < stopDist) {
-        for (int i = currentTile.getX() - maxDist; i <= currentTile.getX() + maxDist; i++) {
-          for (int j = currentTile.getY() - maxDist; j <= currentTile.getY() + maxDist; j++) {
-            if (game.canBuildHere(new TilePosition(i, j), buildingType.getType(), worker.getUnit(),
-                false)) {
-              ATilePosition position = ATilePosition.wrap(new TilePosition(i, j));
-              if (canBuildHere(buildingType, position, worker, game)) {
-                return Optional.ofNullable(position);
+      if (!buildingType.isMilitaryBuilding() && !buildingType
+          .equals(AUnitTypeWrapper.HATCHERY_TYPE)) {
+        int radius = 40;
+        int minDistance = 3;
+        while (radius > minDistance) {
+          for (int i = Math.max(currentTile.getX() - radius, 0); i < currentTile.getX() + radius;
+              i++) {
+            for (int j = Math.max(currentTile.getY() - radius, 0); j < currentTile.getY() + radius;
+                j++) {
+              if (game
+                  .canBuildHere(new TilePosition(i, j), buildingType.getType(), worker.getUnit(),
+                      false)) {
+                ATilePosition position = ATilePosition.wrap(new TilePosition(i, j));
+                if (canBuildHere(buildingType, position, worker, game)) {
+                  return Optional.ofNullable(position);
+                }
               }
             }
           }
+          radius -= 2;
         }
-        maxDist += 2;
+      } else {
+        int maxDist = 3;
+        int stopDist = 40;
+        while (maxDist < stopDist) {
+          for (int i = currentTile.getX() - maxDist; i <= currentTile.getX() + maxDist; i++) {
+            for (int j = currentTile.getY() - maxDist; j <= currentTile.getY() + maxDist; j++) {
+              if (game
+                  .canBuildHere(new TilePosition(i, j), buildingType.getType(), worker.getUnit(),
+                      false)) {
+                ATilePosition position = ATilePosition.wrap(new TilePosition(i, j));
+                if (canBuildHere(buildingType, position, worker, game)) {
+                  return Optional.ofNullable(position);
+                }
+              }
+            }
+          }
+          maxDist += 2;
+        }
       }
+
       return Optional.empty();
     } finally {
       if (System.currentTimeMillis() - start >= 60) {
