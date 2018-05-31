@@ -172,19 +172,9 @@
         <version>${junit.version}</version>
       </dependency>
       <dependency>
-        <groupId>uk.com.robust-it</groupId>
-        <artifactId>cloning</artifactId>
-        <version>${cloning.version}</version>
-      </dependency>
-      <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.edwardraff</groupId>
-        <artifactId>JSAT</artifactId>
-        <version>${jsat.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -195,11 +185,6 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mapdb</groupId>
-        <artifactId>mapdb</artifactId>
-        <version>${mapdb.version}</version>
       </dependency>
       <dependency>
         <groupId>edu.brown.cs.burlap</groupId>
@@ -215,10 +200,6 @@
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <groupId>uk.com.robust-it</groupId>
-      <artifactId>cloning</artifactId>
-    </dependency>
     <dependency>
       <groupId>bwmirror</groupId>
       <artifactId>bwmirror</artifactId>
@@ -240,20 +221,12 @@
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.edwardraff</groupId>
-      <artifactId>JSAT</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.mapdb</groupId>
-      <artifactId>mapdb</artifactId>
     </dependency>
     <dependency>
       <groupId>edu.brown.cs.burlap</groupId>

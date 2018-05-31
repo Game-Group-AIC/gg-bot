@@ -8,7 +8,6 @@ import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import aic.gas.sc.gg_bot.mas.service.implementation.AgentsRegister;
 import aic.gas.sc.gg_bot.mas.service.implementation.BeliefMediator;
 import aic.gas.sc.gg_bot.mas.service.implementation.DesireMediator;
-import com.rits.cloning.Cloner;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,8 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MASFacade implements TerminableService {
 
-  //for cloning data
-  public static final Cloner CLONER = new Cloner();
   //instance of reasoning manager, it can be shared by agents as it is stateless
   public static final CommandManager<ReasoningCommand> REASONING_EXECUTOR = new CommandManager<ReasoningCommand>() {
   };

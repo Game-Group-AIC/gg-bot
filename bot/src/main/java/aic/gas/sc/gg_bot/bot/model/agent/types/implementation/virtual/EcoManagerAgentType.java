@@ -91,7 +91,7 @@ public class EcoManagerAgentType {
                 && (Decider.getDecision(AgentTypes.ECO_MANAGER, BUILD_WORKER.getId(),
                 dataForDecision, TRAINING_WORKER, memory.getCurrentClock(),
                 memory.getAgentId()) || dataForDecision
-                .getFeatureValueGlobalBeliefs(COUNT_OF_DRONES) <= 6))
+                .getFeatureValueGlobalBeliefs(COUNT_OF_DRONES) <= 7))
             .globalBeliefTypesByAgentType(
                 Stream.concat(TRAINING_WORKER.getConvertersForFactsForGlobalBeliefsByAgentType()
                     .stream(), Stream.of(COUNT_OF_DRONES))
@@ -103,8 +103,7 @@ public class EcoManagerAgentType {
         .decisionInIntention(CommitmentDeciderInitializer.builder()
             .decisionStrategy((dataForDecision, memory) -> !BotFacade.RESOURCE_MANAGER
                 .hasMadeReservationOn(AUnitTypeWrapper.DRONE_TYPE, memory.getAgentId())
-                || BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.DRONE_TYPE)
-            )
+                || BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.DRONE_TYPE))
             .globalBeliefTypesByAgentType(
                 TRAINING_WORKER.getConvertersForFactsForGlobalBeliefsByAgentType())
             .globalBeliefSetTypesByAgentType(
@@ -122,8 +121,8 @@ public class EcoManagerAgentType {
 
   private static final ConfigurationWithSharedDesire BUILD_EXTRACTOR_SHARED = createConfigurationWithSharedDesireToBuildFromTemplate(
       MORPH_TO_EXTRACTOR, AUnitTypeWrapper.EXTRACTOR_TYPE, (memory, desireParameters) -> {
-        Optional<ABaseLocationWrapper> baseWithoutExtractor = getOurBaseWithoutExtractor(
-            memory);
+        Optional<ABaseLocationWrapper> baseWithoutExtractor =
+            getOurBaseWithoutExtractor(memory);
         if (baseWithoutExtractor.isPresent()) {
           memory.updateFact(BASE_TO_MOVE, baseWithoutExtractor.get());
         } else {
@@ -155,13 +154,12 @@ public class EcoManagerAgentType {
                             // Hatchery has not been built recently
                             && Decider.getDecision(AgentTypes.ECO_MANAGER, DesireKeys.EXPAND,
                             dataForDecision, EXPANDING, memory.getCurrentClock(),
-                            memory.getAgentId())
-                )
+                            memory.getAgentId()))
                 .globalBeliefTypes(EXPANDING.getConvertersForFactsForGlobalBeliefs())
-                .globalBeliefTypesByAgentType(
-                    EXPANDING.getConvertersForFactsForGlobalBeliefsByAgentType())
-                .globalBeliefSetTypesByAgentType(
-                    EXPANDING.getConvertersForFactSetsForGlobalBeliefsByAgentType())
+                .globalBeliefTypesByAgentType(EXPANDING
+                    .getConvertersForFactsForGlobalBeliefsByAgentType())
+                .globalBeliefSetTypesByAgentType(EXPANDING
+                    .getConvertersForFactSetsForGlobalBeliefsByAgentType())
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) ->
@@ -334,8 +332,7 @@ public class EcoManagerAgentType {
             MORPH_TO_OVERLORD, AUnitTypeWrapper.OVERLORD_TYPE);
         type.addConfiguration(INCREASE_CAPACITY, INCREASE_CAPACITY, trainOverlordShared);
       })
-      .desiresWithAbstractIntention(
-          Stream.of(BUILD_WORKER, EXPAND, BUILD_EXTRACTOR, INCREASE_CAPACITY)
-              .collect(Collectors.toSet()))
+      .desiresWithAbstractIntention(Stream.of(BUILD_WORKER, EXPAND, BUILD_EXTRACTOR,
+          INCREASE_CAPACITY).collect(Collectors.toSet()))
       .build();
 }

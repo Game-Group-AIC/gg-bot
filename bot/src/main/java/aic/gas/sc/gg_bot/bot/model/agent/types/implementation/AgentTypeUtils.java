@@ -33,37 +33,30 @@ public class AgentTypeUtils {
       Stream<DesireKey> desireKeysWithAbstractIntentionStream, AgentTypeID agentTypeID) {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    !BotFacade.RESOURCE_MANAGER
-                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
-                        && !dataForDecision.madeDecisionToAny()
-                        && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
-                        //learnt decision
-                        && Decider.getDecision(agentTypeID, desireKey.getId(),
-                        dataForDecision, featureContainerHeader, memory.getCurrentClock(),
-                        memory.getAgentId()))
-            .globalBeliefTypesByAgentType(Stream.concat(
-                featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
-                Stream.of(currentCount))
-                .collect(Collectors.toSet()))
+            .decisionStrategy((dataForDecision, memory) -> !BotFacade.RESOURCE_MANAGER
+                .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                && !dataForDecision.madeDecisionToAny()
+                && !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                && dataForDecision.getFeatureValueGlobalBeliefs(currentCount) == 0
+                //learnt decision
+                && Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
+                featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
+            .globalBeliefTypesByAgentType(Stream.concat(featureContainerHeader
+                .getConvertersForFactsForGlobalBeliefsByAgentType().stream(), Stream
+                .of(currentCount)).collect(Collectors.toSet()))
             .globalBeliefSetTypesByAgentType(
                 featureContainerHeader.getConvertersForFactSetsForGlobalBeliefsByAgentType())
             .globalBeliefTypes(featureContainerHeader.getConvertersForFactsForGlobalBeliefs())
             .desiresToConsider(Collections.singleton(desireKey))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    !Decider.getDecision(agentTypeID, desireKey.getId(),
-                        dataForDecision, featureContainerHeader, memory.getCurrentClock(),
-                        memory.getAgentId())
-                        || !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(unitTypeWrapper,
-                        memory.getAgentId())
-                        || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        //building exists
-                        || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
+            .decisionStrategy((dataForDecision, memory) -> !Decider.getDecision(agentTypeID,
+                desireKey.getId(), dataForDecision, featureContainerHeader,
+                memory.getCurrentClock(), memory.getAgentId()) || !BotFacade.RESOURCE_MANAGER
+                .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                || BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                //building exists
+                || dataForDecision.getFeatureValueGlobalBeliefs(currentCount) > 0)
             .globalBeliefTypesByAgentType(Stream.concat(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType().stream(),
                 Stream.of(currentCount))
@@ -74,12 +67,11 @@ public class AgentTypeUtils {
             .build())
         .reactionOnChangeStrategy((memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
             .makeReservation(unitTypeWrapper, memory.getAgentId()))
-        .reactionOnChangeStrategyInIntention(
-            (memory, desireParameters) -> BotFacade.RESOURCE_MANAGER
-                .removeReservation(unitTypeWrapper, memory.getAgentId()))
+        .reactionOnChangeStrategyInIntention((memory, desireParameters) ->
+            BotFacade.RESOURCE_MANAGER.removeReservation(unitTypeWrapper, memory.getAgentId()))
         .desiresForOthers(Collections.singleton(desireKey))
-        .desiresWithAbstractIntention(
-            desireKeysWithAbstractIntentionStream.collect(Collectors.toSet()))
+        .desiresWithAbstractIntention(desireKeysWithAbstractIntentionStream
+            .collect(Collectors.toSet()))
         .build();
   }
 
@@ -145,19 +137,17 @@ public class AgentTypeUtils {
         .reactionOnChangeStrategy(findPlace)
         .reactionOnChangeStrategyInIntention(removePlace)
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    //resources are available
-                    BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
+            .decisionStrategy((dataForDecision, memory) ->
+                //resources are available
+                BotFacade.RESOURCE_MANAGER
+                    .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    //TODO check validity of the place
-                    //we do not have enough resources
-                    !BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
+            .decisionStrategy((dataForDecision, memory) ->
+                //TODO check validity of the place
+                //we do not have enough resources
+                !BotFacade.RESOURCE_MANAGER
+                    .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
             .build())
         .build();
   }

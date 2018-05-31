@@ -18,6 +18,7 @@ import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.FactConverters;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ABaseLocationWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.APosition;
+import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.ATilePosition;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnit.Enemy;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitOfPlayer;
@@ -229,11 +230,12 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
                 .filter(enemy -> isScaredOfAntiAir ? enemy.getType().canAttackAirUnits()
                     : enemy.getType().canAttackGroundUnits())
                 .min(Comparator.comparingDouble(
-                    value -> value.getPosition().distanceTo(me.getPosition())));
+                    value -> value.getPosition().getATilePosition()
+                        .distanceTo(me.getPosition().getATilePosition())));
             if (!enemyToFleeFrom.isPresent()) {
               enemyToFleeFrom = me.getEnemyUnitsInRadiusOfSight().stream()
-                  .min(Comparator.comparingDouble(value -> value.getPosition()
-                      .distanceTo(me.getPosition())));
+                  .min(Comparator.comparingDouble(value -> value.getPosition().getATilePosition()
+                      .distanceTo(me.getPosition().getATilePosition())));
             }
             APosition position = null;
             if (enemyToFleeFrom.isPresent()) {
@@ -249,14 +251,15 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
                 .filter(enemy -> isScaredOfAntiAir ? enemy.getType().canAttackAirUnits()
                     : enemy.getType().canAttackGroundUnits())
                 .min(Comparator.comparingDouble(
-                    value -> value.getPosition().distanceTo(me.getPosition())));
+                    value -> value.getPosition().getATilePosition().distanceTo(me
+                        .getPosition().getATilePosition())));
             if (enemyToFleeFrom.isPresent()) {
               return me.move(moveFromPosition(me.getPosition(),
                   enemyToFleeFrom.get().getPosition()));
             } else {
               Optional<AUnit.Enemy> enemy = me.getEnemyUnitsInRadiusOfSight().stream()
-                  .min(Comparator.comparingDouble(
-                      value -> value.getPosition().distanceTo(me.getPosition())));
+                  .min(Comparator.comparingDouble(value -> value.getPosition().getATilePosition()
+                      .distanceTo(me.getPosition().getATilePosition())));
               if (enemy.isPresent()) {
                 return me.move(moveFromPosition(me.getPosition(), enemy.get().getPosition()));
               }
@@ -275,9 +278,9 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
                 && memory.returnFactValueForGivenKey(IS_UNIT).isPresent()
                 && memory.returnFactValueForGivenKey(PLACE_TO_REACH).isPresent()
                 && !memory.returnFactValueForGivenKey(IS_UNIT).get().isUnderAttack()
-                && memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().distanceTo(memory
-                .returnFactValueForGivenKey(REPRESENTS_UNIT).get().getPosition()) > 2
-                && hasEnoughForceToAttack(memory))
+                && memory.returnFactValueForGivenKey(PLACE_TO_REACH).get().getTilePosition()
+                .distanceTo(memory.returnFactValueForGivenKey(REPRESENTS_UNIT).get()
+                    .getPosition().getATilePosition()) > 5 && hasEnoughForceToAttack(memory))
             .desiresToConsider(new HashSet<>(Collections.singleton(DesiresKeys.ATTACK)))
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
@@ -315,25 +318,27 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
             AUnitWithCommands unitOfPlayer = memory.returnFactValueForGivenKey(IS_UNIT).get();
             Optional<AUnit.Enemy> enemy = unitOfPlayer.getEnemyUnitsInRadiusOfSight().stream()
                 .filter(AUnit::isAttacking)
-                .min(Comparator.comparingDouble(
-                    value -> value.getPosition().distanceTo(unitOfPlayer.getPosition())));
+                .min(Comparator.comparingDouble(value -> value.getPosition().getATilePosition()
+                    .distanceTo(unitOfPlayer.getPosition().getATilePosition())));
             if (!enemy.isPresent()) {
 
               //attack units on position
               Optional<ReadOnlyMemory> base = memory
                   .getReadOnlyMemoriesForAgentType(AgentTypes.BASE_LOCATION)
                   .min(Comparator.comparingDouble(value -> value.returnFactValueForGivenKey(
-                      IS_BASE_LOCATION).get().distanceTo(unitOfPlayer.getPosition())));
+                      IS_BASE_LOCATION).get().getTilePosition().distanceTo(unitOfPlayer
+                      .getPosition().getATilePosition())));
               if (base.isPresent()) {
                 enemy = base.get().returnFactSetValueForGivenKey(ENEMY_UNIT).orElse(Stream.empty())
                     .filter(AUnit::isAttacking)
-                    .min(Comparator.comparingDouble(
-                        value -> value.getPosition().distanceTo(unitOfPlayer.getPosition())));
+                    .min(Comparator.comparingDouble(value -> value.getPosition().getATilePosition()
+                        .distanceTo(unitOfPlayer.getPosition().getATilePosition())));
                 if (!enemy.isPresent()) {
                   enemy = base.get().returnFactSetValueForGivenKey(ENEMY_UNIT)
                       .orElse(Stream.empty())
-                      .min(Comparator.comparingDouble(value -> value.getPosition().distanceTo(
-                          unitOfPlayer.getPosition())));
+                      .min(Comparator.comparingDouble(value -> value.getPosition()
+                          .getATilePosition().distanceTo(unitOfPlayer.getPosition()
+                              .getATilePosition())));
                   enemy.ifPresent(unitOfPlayer::attack);
                 }
               }
@@ -348,8 +353,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
 
             Optional<AUnit.Enemy> enemy = unitOfPlayer.getEnemyUnitsInRadiusOfSight().stream()
                 .filter(AUnit::isAttacking)
-                .min(Comparator.comparingDouble(
-                    value -> value.getPosition().distanceTo(unitOfPlayer.getPosition())));
+                .min(Comparator.comparingDouble(value -> value.getPosition().getATilePosition()
+                    .distanceTo(unitOfPlayer.getPosition().getATilePosition())));
             if (enemy.isPresent()) {
               unitOfPlayer.attack(enemy.get());
             } else {
@@ -358,19 +363,21 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
               Optional<ReadOnlyMemory> base = memory.getReadOnlyMemoriesForAgentType(
                   AgentTypes.BASE_LOCATION)
                   .min(Comparator.comparingDouble(value -> value.returnFactValueForGivenKey(
-                      IS_BASE_LOCATION).get().distanceTo(unitOfPlayer.getPosition())));
+                      IS_BASE_LOCATION).get().getTilePosition()
+                      .distanceTo(unitOfPlayer.getPosition().getATilePosition())));
               if (base.isPresent()) {
                 enemy = base.get().returnFactSetValueForGivenKey(ENEMY_UNIT).orElse(Stream.empty())
                     .filter(AUnit::isAttacking)
-                    .min(Comparator.comparingDouble(
-                        value -> value.getPosition().distanceTo(unitOfPlayer.getPosition())));
+                    .min(Comparator.comparingDouble(value -> value.getPosition().getATilePosition()
+                        .distanceTo(unitOfPlayer.getPosition().getATilePosition())));
                 if (enemy.isPresent()) {
                   unitOfPlayer.attack(enemy.get());
                 } else {
                   enemy = base.get().returnFactSetValueForGivenKey(ENEMY_UNIT)
                       .orElse(Stream.empty())
-                      .min(Comparator.comparingDouble(value -> value.getPosition().distanceTo(
-                          unitOfPlayer.getPosition())));
+                      .min(Comparator.comparingDouble(value -> value.getPosition()
+                          .getATilePosition().distanceTo(unitOfPlayer.getPosition()
+                              .getATilePosition())));
                   enemy.ifPresent(unitOfPlayer::attack);
                 }
               }
@@ -397,7 +404,8 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker()
             && !aUnitOfPlayer.getType().equals(AUnitTypeWrapper.OVERLORD_TYPE))
         .map(AUnit::getPosition)
-        .sorted(Comparator.comparingDouble(value -> toGo.getTilePosition().distanceTo(value)))
+        .sorted(Comparator.comparingDouble(value -> toGo.getTilePosition().distanceTo(value
+            .getATilePosition())))
         .collect(Collectors.toList());
 
     //median
@@ -424,10 +432,10 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
         .count() >= (me.isFlying() ? 2 : 4);
   }
 
-  //TODO refactor
   public static APosition moveFromPosition(APosition myPosition, APosition dangerPosition) {
-    int difX = (myPosition.getX() - dangerPosition.getY()) * 4, difY =
-        (myPosition.getY() - dangerPosition.getY()) * 4;
+    int difX = (myPosition.getATilePosition().getX() - dangerPosition.getATilePosition().getY()) * 4
+        * ATilePosition.SIZE_IN_PIXELS, difY = (myPosition.getATilePosition().getY() -
+        dangerPosition.getATilePosition().getY()) * 4 * ATilePosition.SIZE_IN_PIXELS;
     if (difX > 0) {
       if (difY > 0) {
         return APosition.wrap(new Position(myPosition.getX() - difX, myPosition.getY() - difY));

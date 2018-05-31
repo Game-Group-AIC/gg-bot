@@ -72,8 +72,8 @@ public class OverlordAgentType {
                 AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
                 Optional<AUnit.Enemy> enemyAntiAir = me.getEnemyUnitsInRadiusOfSight().stream()
                     .filter(enemy -> enemy.getType().canAttackAirUnits())
-                    .min(Comparator.comparingDouble(
-                        value -> value.getPosition().distanceTo(me.getPosition())));
+                    .min(Comparator.comparingDouble(value -> value.getPosition().getATilePosition()
+                        .distanceTo(me.getPosition().getATilePosition())));
                 return enemyAntiAir.map(enemy -> Objects.hash("MOVE",
                     moveFromPosition(me.getPosition(), enemy.getPosition())))
                     .orElseGet(() -> Objects.hash("NON"));
@@ -84,8 +84,8 @@ public class OverlordAgentType {
                 AUnitWithCommands me = intention.returnFactValueForGivenKey(IS_UNIT).get();
                 Optional<AUnit.Enemy> enemyAntiAir = me.getEnemyUnitsInRadiusOfSight().stream()
                     .filter(enemy -> enemy.getType().canAttackAirUnits())
-                    .min(Comparator.comparingDouble(
-                        value -> value.getPosition().distanceTo(me.getPosition())));
+                    .min(Comparator.comparingDouble(value -> value.getPosition().getATilePosition()
+                        .distanceTo(me.getPosition().getATilePosition())));
                 enemyAntiAir.ifPresent(
                     enemy -> me.move(moveFromPosition(me.getPosition(), enemy.getPosition())));
                 return true;
@@ -125,8 +125,7 @@ public class OverlordAgentType {
         //reason about morphing
         type.addConfiguration(DesiresKeys.MORPHING_TO, AgentTypeUnit.beliefsAboutMorphing);
       })
-      .desiresWithIntentionToReason(
-          Stream.of(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION, DesiresKeys.MORPHING_TO)
-              .collect(Collectors.toSet()))
+      .desiresWithIntentionToReason(Stream.of(DesiresKeys.SURROUNDING_UNITS_AND_LOCATION,
+          DesiresKeys.MORPHING_TO).collect(Collectors.toSet()))
       .build();
 }

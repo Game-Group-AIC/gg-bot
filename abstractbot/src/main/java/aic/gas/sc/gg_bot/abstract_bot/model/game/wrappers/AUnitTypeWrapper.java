@@ -84,6 +84,11 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
   public static final Set<AUnitTypeWrapper> UNITS_TYPES = new HashSet<>(
       Arrays.asList(ZERGLING_TYPE, DRONE_TYPE, LARVA_TYPE, EGG_TYPE, OVERLORD_TYPE,
           HYDRALISK_TYPE, MUTALISK_TYPE));
+
+  // TODO remove
+  public static final Set<AUnitTypeWrapper> UNITS_TYPES_WITH_PRIORITY = new HashSet<>(
+      Arrays.asList(ZERGLING_TYPE, DRONE_TYPE, HYDRALISK_TYPE, MUTALISK_TYPE));
+
   @Getter
   private final boolean isMechanical;
   @Getter
@@ -345,8 +350,8 @@ public class AUnitTypeWrapper extends AbstractWrapper<UnitType> implements TypeT
             UnitType.Zerg_Overlord});
     this.isMilitaryBuilding = type.isBuilding() && isType(type,
         new UnitType[]{UnitType.Terran_Bunker, UnitType.Terran_Missile_Turret,
-            UnitType.Protoss_Photon_Cannon,
-            UnitType.Zerg_Sunken_Colony, UnitType.Zerg_Spore_Colony, UnitType.Zerg_Creep_Colony}
+            UnitType.Protoss_Photon_Cannon, UnitType.Zerg_Sunken_Colony, UnitType.Zerg_Spore_Colony,
+            UnitType.Zerg_Creep_Colony}
     );
     this.isMilitaryBuildingAntiAir =
         isMilitaryBuilding && isType(type, new UnitType[]{UnitType.Terran_Bunker,

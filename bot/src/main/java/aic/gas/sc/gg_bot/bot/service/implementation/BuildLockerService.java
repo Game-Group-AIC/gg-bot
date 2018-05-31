@@ -16,8 +16,8 @@ public class BuildLockerService implements IBuildLockerService {
 
   private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
   private final Map<AUnitTypeWrapper, Integer> lockRegister = new HashMap<>();
-  private static final int lockTypeForDuration = 200;
-  private static final int lockForDroneDuration = 10;
+  private static final int lockTypeForDuration = 100;
+  private static final int lockForUnitsDuration = 10;
 
   private static final BuildLockerService instance = new BuildLockerService();
 
@@ -50,8 +50,8 @@ public class BuildLockerService implements IBuildLockerService {
       //handle locks
       while (entryIt.hasNext()) {
         Entry<AUnitTypeWrapper, Integer> entry = entryIt.next();
-        if (entry.getValue() + 1 >= (entry.getKey().isWorker() ? lockForDroneDuration
-            : lockTypeForDuration)) {
+        if (entry.getValue() + 1 >= (AUnitTypeWrapper.UNITS_TYPES_WITH_PRIORITY
+            .contains(entry.getKey()) ? lockForUnitsDuration : lockTypeForDuration)) {
           entryIt.remove();
         } else {
           entry.setValue(entry.getValue() + 1);

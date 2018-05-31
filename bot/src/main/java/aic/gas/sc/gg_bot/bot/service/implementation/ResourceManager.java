@@ -95,13 +95,16 @@ public class ResourceManager implements IResourceManager {
               }
             }
           }
-        } else if (workersCount <= 10) {
+        } else if (!reservationQueue.isEmpty() && workersCount <= 10) {
 
-          //add worker at the start of queue
-          if (!(reservationQueue.get(0).reservationMadeOn instanceof AUnitTypeWrapper)
-              || !reservationQueue.get(0).reservationMadeOn.equals(AUnitTypeWrapper.DRONE_TYPE)) {
+          Tuple<?> tuple = reservationQueue.get(0);
+
+          //add worker at the start of queue - onbly if there is not pool
+          if (!(tuple.reservationMadeOn instanceof AUnitTypeWrapper)
+              || (!tuple.reservationMadeOn.equals(AUnitTypeWrapper.DRONE_TYPE)
+              && !tuple.reservationMadeOn.equals(AUnitTypeWrapper.SPAWNING_POOL_TYPE))) {
             for (int i = 0; i < reservationQueue.size(); i++) {
-              Tuple<?> tuple = reservationQueue.get(i);
+              tuple = reservationQueue.get(i);
               if (tuple.reservationMadeOn instanceof AUnitTypeWrapper
                   && tuple.reservationMadeOn.equals(AUnitTypeWrapper.DRONE_TYPE)) {
                 if (i != 0) {

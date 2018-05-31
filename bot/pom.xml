@@ -57,7 +57,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>aic.gas.sc.gg_bot.bot.main.SimpleBot</mainClass>
+              <mainClass>aic.gas.sc.gg_bot.bot.main.Bot</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

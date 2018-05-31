@@ -190,7 +190,7 @@ public class FeatureContainerHeader {
     private Set<FactWithOptionalValueSetsForAgentType<?>> convertersForFactSetsForGlobalBeliefsByAgentType = new HashSet<>();
     private Set<DesireKeyID> interestedInCommitments = new HashSet<>();
     private boolean trackCommittedOtherAgents = false;
-    private int forHowLongToCacheDecision = 5;
+    private int forHowLongToCacheDecision = 1;
   }
 
   /**

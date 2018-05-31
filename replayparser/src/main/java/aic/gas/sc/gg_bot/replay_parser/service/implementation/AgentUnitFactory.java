@@ -110,7 +110,8 @@ public class AgentUnitFactory implements IAgentUnitHandler {
               .returnFactValueForGivenKey(IS_BASE_LOCATION))
           .filter(Optional::isPresent)
           .map(Optional::get)
-          .min(Comparator.comparingDouble(value -> value.distanceTo(targetPosition)));
+          .min(Comparator.comparingDouble(value -> value.getTilePosition()
+              .distanceTo(targetPosition.getATilePosition())));
       beliefs.updateFact(HOLD_LOCATION, holdInBaseLocation.get());
     } else {
       beliefs.updateFact(HOLD_LOCATION, HOLD_LOCATION.getInitValue());

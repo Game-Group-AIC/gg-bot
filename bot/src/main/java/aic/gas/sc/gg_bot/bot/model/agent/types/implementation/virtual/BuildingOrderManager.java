@@ -154,10 +154,10 @@ public class BuildingOrderManager {
             .decisionInDesire(CommitmentDeciderInitializer.builder()
                 .decisionStrategy(
                     (dataForDecision, memory) -> !dataForDecision.madeDecisionToAny() &&
-                        !BotFacade.RESOURCE_MANAGER
-                            .hasMadeReservationOn(AUnitTypeWrapper.EXTRACTOR_TYPE,
-                                memory.getAgentId()) && !BuildLockerService.getInstance()
-                        .isLocked(AUnitTypeWrapper.EXTRACTOR_TYPE)
+                        !BotFacade.RESOURCE_MANAGER.hasMadeReservationOn(AUnitTypeWrapper
+                            .EXTRACTOR_TYPE, memory.getAgentId())
+                        && !BuildLockerService.getInstance().isLocked(AUnitTypeWrapper.
+                        EXTRACTOR_TYPE)
                         && dataForDecision.getFeatureValueGlobalBeliefSets(COUNT_OF_EXTRACTORS)
                         == 0)
                 .globalBeliefSetTypesByAgentType(Collections.singleton(COUNT_OF_EXTRACTORS))
