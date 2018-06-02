@@ -13,9 +13,11 @@ import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValu
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithSetOfOptionalValuesForAgentType;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,17 +52,24 @@ public class DataForDecision {
   private final boolean useFactsInMemory;
   private final DesireParameters desireParameters;
   @Getter
-  private int numberOfCommittedAgents = 0;
+  private final Set<Integer> committedAgents = new HashSet<>();
+
   //****beliefs for decision point****
   @Setter
   @Getter
   private boolean beliefsChanged = true;
 
+  @Getter
+  private final int originatorID;
+
+  @Getter
+  private final DesireKey desireKey;
+
   /**
    * Constructor
    */
   public DataForDecision(DesireKey desireKey, DesireParameters desireParameters,
-      CommitmentDeciderInitializer initializer) {
+      CommitmentDeciderInitializer initializer, int originatorID) {
     this.useFactsInMemory = initializer.isUseFactsInMemory();
     this.desireParameters = desireParameters;
 
@@ -112,6 +121,13 @@ public class DataForDecision {
             globalBeliefsSetsByAgentType.put(factWithOptionalValueSetsForAgentType,
                 new FactConverter.GlobalBeliefSetForAgentType<>(this,
                     factWithOptionalValueSetsForAgentType)));
+
+    this.originatorID = originatorID;
+    this.desireKey = desireParameters.getDesireKey();
+  }
+
+  public int getNumberOfCommittedAgents() {
+    return committedAgents.size();
   }
 
   public <V> Optional<V> returnFactValueForGivenKey(FactKey<V> factKey) {
@@ -217,13 +233,14 @@ public class DataForDecision {
    * Update beliefs needed to make decision and set status of update - was any value changed?
    */
   public void updateBeliefs(List<DesireKey> madeCommitmentToTypes,
-      List<DesireKey> didNotMakeCommitmentToTypes,
-      List<DesireKey> typesAboutToMakeDecision, WorkingMemory memory, int numberOfCommittedAgents) {
+      List<DesireKey> didNotMakeCommitmentToTypes, List<DesireKey> typesAboutToMakeDecision,
+      WorkingMemory memory, Set<Integer> committedAgents) {
     updateBeliefs(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
         memory);
-    if (numberOfCommittedAgents != this.numberOfCommittedAgents) {
+    if (!committedAgents.equals(this.committedAgents)) {
       beliefsChanged = true;
-      this.numberOfCommittedAgents = numberOfCommittedAgents;
+      this.committedAgents.clear();
+      this.committedAgents.addAll(committedAgents);
     }
   }
 

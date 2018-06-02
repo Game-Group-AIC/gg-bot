@@ -1,12 +1,15 @@
 package aic.gas.sc.gg_bot.bot.model.agent.types.implementation.buildings;
 
+import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.BASE_TO_MOVE;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_MORPHING_TO;
 import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.IS_UNIT;
 import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.LAIR_TYPE;
+import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrapper.SUNKEN_COLONY_TYPE;
 
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeUnit;
+import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
@@ -37,7 +40,9 @@ public class HatcheryAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
+                .decisionStrategy((dataForDecision, memory) -> BotFacade.RESOURCE_MANAGER
+                    .canSpendResourcesOn(LAIR_TYPE, dataForDecision.getOriginatorID())
+                    && !dataForDecision.madeDecisionToAny())
                 .desiresToConsider(Collections.singleton(DesiresKeys.UPGRADE_TO_LAIR))
                 .build()
             )

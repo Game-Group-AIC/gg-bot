@@ -9,6 +9,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Getter;
 
@@ -28,8 +29,8 @@ public abstract class Intention<T extends InternalDesire<?>> implements FactCont
   Intention(T originalDesire, CommitmentDeciderInitializer removeCommitment,
       ReactionOnChangeStrategy reactionOnChangeStrategy) {
     this.originalDesire = originalDesire;
-    this.removeCommitment = removeCommitment
-        .initializeCommitmentDecider(originalDesire.desireParameters);
+    this.removeCommitment = removeCommitment.initializeCommitmentDecider(originalDesire
+        .desireParameters, originalDesire.originatorId);
     this.reactionOnChangeStrategy = Optional.ofNullable(reactionOnChangeStrategy);
   }
 
@@ -72,10 +73,9 @@ public abstract class Intention<T extends InternalDesire<?>> implements FactCont
 
   public boolean shouldRemoveCommitment(List<DesireKey> madeCommitmentToTypes,
       List<DesireKey> didNotMakeCommitmentToTypes,
-      List<DesireKey> typesAboutToMakeDecision, int numberOfCommittedAgents) {
-    return removeCommitment
-        .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
-            originalDesire.memory, numberOfCommittedAgents);
+      List<DesireKey> typesAboutToMakeDecision, Set<Integer> committedAgents) {
+    return removeCommitment.shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+        typesAboutToMakeDecision, originalDesire.memory, committedAgents);
   }
 
   /**

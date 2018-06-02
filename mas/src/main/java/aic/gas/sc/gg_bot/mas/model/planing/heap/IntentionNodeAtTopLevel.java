@@ -103,11 +103,8 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
       public boolean removeCommitment(List<DesireKey> madeCommitmentToTypes,
           List<DesireKey> didNotMakeCommitmentToTypes,
           List<DesireKey> typesAboutToMakeDecision) {
-        if (intention.shouldRemoveCommitment(madeCommitmentToTypes,
-            didNotMakeCommitmentToTypes,
-            typesAboutToMakeDecision,
-            desire.countOfCommittedAgents()
-        )) {
+        if (intention.shouldRemoveCommitment(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+            typesAboutToMakeDecision, desire.committedAgents())) {
 
           //share desire and wait for response of registration
           SharedDesireForAgents sharedDesire = intention.getSharedDesireForAgents();
@@ -278,11 +275,8 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
     public boolean removeCommitment(List<DesireKey> madeCommitmentToTypes,
         List<DesireKey> didNotMakeCommitmentToTypes,
         List<DesireKey> typesAboutToMakeDecision) {
-      if (intention.shouldRemoveCommitment(madeCommitmentToTypes,
-          didNotMakeCommitmentToTypes,
-          typesAboutToMakeDecision,
-          intention.getSharedDesire().countOfCommittedAgents()
-      )) {
+      if (intention.shouldRemoveCommitment(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+          typesAboutToMakeDecision, intention.getSharedDesire().getIDsOfCommittedAgents())) {
 
         //share desire and wait for response of registration
         if (sharingDesireRemovalRoutine
@@ -508,11 +502,8 @@ public abstract class IntentionNodeAtTopLevel<V extends Intention<? extends Inte
       protected boolean shouldRemoveCommitment(List<DesireKey> madeCommitmentToTypes,
           List<DesireKey> didNotMakeCommitmentToTypes,
           List<DesireKey> typesAboutToMakeDecision) {
-        return intention.shouldRemoveCommitment(madeCommitmentToTypes,
-            didNotMakeCommitmentToTypes,
-            typesAboutToMakeDecision,
-            desire.countOfCommittedAgents()
-        );
+        return intention.shouldRemoveCommitment(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+            typesAboutToMakeDecision, desire.committedAgents());
       }
 
       @Override

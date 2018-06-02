@@ -19,19 +19,21 @@ public abstract class DesireFromAnotherAgent<T extends Intention<? extends Desir
   private final SharedDesireForAgents desireForAgents;
 
   DesireFromAnotherAgent(SharedDesireForAgents desireOriginatedFrom, WorkingMemory memory,
-      CommitmentDeciderInitializer commitmentDecider,
-      CommitmentDeciderInitializer removeCommitment, boolean isAbstract,
-      ReactionOnChangeStrategy reactionOnChangeStrategy,
+      CommitmentDeciderInitializer commitmentDecider, CommitmentDeciderInitializer removeCommitment,
+      boolean isAbstract, ReactionOnChangeStrategy reactionOnChangeStrategy,
       ReactionOnChangeStrategy reactionOnChangeStrategyInIntention) {
     super(desireOriginatedFrom.desireParameters, memory, commitmentDecider, removeCommitment,
-        isAbstract,
-        desireOriginatedFrom.originatorId, reactionOnChangeStrategy);
+        isAbstract, desireOriginatedFrom.originatorId, reactionOnChangeStrategy);
     this.desireForAgents = desireOriginatedFrom;
     this.reactionOnChangeStrategyInIntention = reactionOnChangeStrategyInIntention;
   }
 
   public int countOfCommittedAgents() {
     return desireForAgents.countOfCommittedAgents();
+  }
+
+  public Set<Integer> committedAgents() {
+    return desireForAgents.getIDsOfCommittedAgents();
   }
 
   /**

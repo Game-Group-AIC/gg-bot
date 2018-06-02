@@ -5,6 +5,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 /**
@@ -42,6 +43,12 @@ public abstract class SharedDesire extends Desire {
 
   public int countOfCommittedAgents() {
     return committedAgents.size();
+  }
+
+  public Set<Integer> getIDsOfCommittedAgents(){
+    return committedAgents.stream()
+        .map(Agent::getId)
+        .collect(Collectors.toSet());
   }
 
   /**

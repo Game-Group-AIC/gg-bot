@@ -84,14 +84,13 @@ public class AgentTypeUtils {
     return ConfigurationWithAbstractPlan.builder()
         .decisionInDesire(CommitmentDeciderInitializer.builder()
             .decisionStrategy(
-                (dataForDecision, memory) ->
-                    !BotFacade.RESOURCE_MANAGER
-                        .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
-                        && !dataForDecision.madeDecisionToAny() &&
-                        !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
-                        //learnt decision
-                        && Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
-                        featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
+                (dataForDecision, memory) -> !BotFacade.RESOURCE_MANAGER
+                    .hasMadeReservationOn(unitTypeWrapper, memory.getAgentId())
+                    && !dataForDecision.madeDecisionToAny() &&
+                    !BuildLockerService.getInstance().isLocked(unitTypeWrapper)
+                    //learnt decision
+                    && Decider.getDecision(agentTypeID, desireKey.getId(), dataForDecision,
+                    featureContainerHeader, memory.getCurrentClock(), memory.getAgentId()))
             .globalBeliefTypesByAgentType(
                 featureContainerHeader.getConvertersForFactsForGlobalBeliefsByAgentType())
             .globalBeliefSetTypesByAgentType(
@@ -128,26 +127,17 @@ public class AgentTypeUtils {
    */
   public static ConfigurationWithSharedDesire createConfigurationWithSharedDesireToBuildFromTemplate(
       DesireKey desireToShareKey, AUnitTypeWrapper unitTypeWrapper,
-      ReactionOnChangeStrategy findPlace,
-      ReactionOnChangeStrategy removePlace) {
+      ReactionOnChangeStrategy findPlace, ReactionOnChangeStrategy removePlace) {
     return ConfigurationWithSharedDesire.builder()
         .sharedDesireKey(desireToShareKey)
         .counts(1)
-        //TODO desires probably should not share same building place
         .reactionOnChangeStrategy(findPlace)
         .reactionOnChangeStrategyInIntention(removePlace)
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy((dataForDecision, memory) ->
-                //resources are available
-                BotFacade.RESOURCE_MANAGER
-                    .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
+            .decisionStrategy((dataForDecision, memory) -> true)
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy((dataForDecision, memory) ->
-                //TODO check validity of the place
-                //we do not have enough resources
-                !BotFacade.RESOURCE_MANAGER
-                    .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
+            .decisionStrategy((dataForDecision, memory) -> false)
             .build())
         .build();
   }
@@ -161,18 +151,10 @@ public class AgentTypeUtils {
         .sharedDesireKey(desireToShareKey)
         .counts(1)
         .decisionInDesire(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    //resources are available
-                    BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
+            .decisionStrategy((dataForDecision, memory) -> true)
             .build())
         .decisionInIntention(CommitmentDeciderInitializer.builder()
-            .decisionStrategy(
-                (dataForDecision, memory) ->
-                    //we do not have enough resources
-                    !BotFacade.RESOURCE_MANAGER
-                        .canSpendResourcesOn(unitTypeWrapper, memory.getAgentId()))
+            .decisionStrategy((dataForDecision, memory) -> false)
             .build())
         .build();
   }

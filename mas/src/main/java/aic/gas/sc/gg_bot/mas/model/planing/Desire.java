@@ -18,6 +18,7 @@ public abstract class Desire implements DesireKeyIdentificationInterface {
   @Getter
   final DesireParameters desireParameters;
 
+  @Getter
   final int originatorId;
 
   Desire(DesireKey desireKey, Memory memory) {

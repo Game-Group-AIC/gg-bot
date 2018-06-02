@@ -359,12 +359,12 @@ public class BotFacade extends DefaultBWListener {
 
     //TODO hack
     //stop workers
-    Set<Integer> toStop = new HashSet<>(stopWorkers.keySet());
-    toStop.forEach(integer -> stopWorkers.remove(integer));
-    workersInSystem.entrySet().stream()
-        .filter(entry -> toStop.contains(entry.getKey()))
-        .map(Entry::getValue)
-        .forEach(Unit::stop);
+//    Set<Integer> toStop = new HashSet<>(stopWorkers.keySet());
+//    toStop.forEach(integer -> stopWorkers.remove(integer));
+//    workersInSystem.entrySet().stream()
+//        .filter(entry -> toStop.contains(entry.getKey()))
+//        .map(Entry::getValue)
+//        .forEach(Unit::stop);
 
     //manage resources
     RESOURCE_MANAGER.processReservations(self.minerals(), self.gas(),

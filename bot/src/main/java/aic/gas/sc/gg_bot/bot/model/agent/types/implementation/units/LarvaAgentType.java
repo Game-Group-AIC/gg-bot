@@ -7,6 +7,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.bot.FactKeys.MORPH_TO;
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeUnit;
+import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
@@ -41,11 +42,13 @@ public class LarvaAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny())
-                .desiresToConsider(
-                    Stream.of(DesiresKeys.MORPH_TO_OVERLORD, DesiresKeys.BOOST_GROUND_MELEE,
-                        DesiresKeys.BOOST_GROUND_RANGED, DesiresKeys.BOOST_AIR,
-                        DesiresKeys.MORPH_TO_DRONE).collect(Collectors.toSet()))
+                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                    && BotFacade.RESOURCE_MANAGER.canSpendResourcesOn(dataForDecision.getDesireKey()
+                        .returnFactValueForGivenKey(MORPH_TO).get().returnType(),
+                    dataForDecision.getOriginatorID()))
+                .desiresToConsider(Stream.of(DesiresKeys.MORPH_TO_OVERLORD,
+                    DesiresKeys.BOOST_GROUND_MELEE, DesiresKeys.BOOST_GROUND_RANGED,
+                    DesiresKeys.BOOST_AIR, DesiresKeys.MORPH_TO_DRONE).collect(Collectors.toSet()))
                 .build()
             )
             .decisionInIntention(CommitmentDeciderInitializer.builder()

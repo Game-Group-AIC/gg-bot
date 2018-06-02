@@ -90,7 +90,6 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.ReadOnlyMemory;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.AgentType;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
-import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithAbstractPlan;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
@@ -98,7 +97,6 @@ import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWi
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithSharedDesire;
 import aic.gas.sc.gg_bot.mas.model.metadata.containers.FactWithOptionalValueSet;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
-import aic.gas.sc.gg_bot.mas.model.planing.ReactionOnChangeStrategy;
 import aic.gas.sc.gg_bot.mas.model.planing.command.ReasoningCommand;
 import java.util.Collections;
 import java.util.List;
@@ -331,7 +329,7 @@ public class BaseLocationAgentType {
                   double closestDistance = memory.returnFactSetValueForGivenKey(OUR_UNIT)
                       .orElse(Stream.empty())
                       .mapToDouble(aUnitOfPlayer -> aUnitOfPlayer.getPosition().getATilePosition()
-                              .distanceTo(aPosition.getATilePosition()))
+                          .distanceTo(aPosition.getATilePosition()))
                       .min().orElse(MAX_DISTANCE);
                   if (closestDistance < 5) {
                     memory.updateFact(WAS_VISITED, true);

@@ -10,6 +10,7 @@ import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import aic.gas.sc.gg_bot.mas.model.metadata.FactKey;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,8 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
       CommitmentDeciderInitializer removeCommitment, boolean isAbstract,
       ReactionOnChangeStrategy reactionOnChangeStrategy) {
     super(desireKey, memory);
-    this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters);
+    this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters,
+        this.originatorId);
     this.memory = memory;
     this.removeCommitment = removeCommitment;
     this.isAbstract = isAbstract;
@@ -45,11 +47,12 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
   }
 
   InternalDesire(DesireKey desireKey, WorkingMemory memory,
-      CommitmentDeciderInitializer commitmentDecider,
-      CommitmentDeciderInitializer removeCommitment, boolean isAbstract,
-      DesireParameters parentsDesireParameters, ReactionOnChangeStrategy reactionOnChangeStrategy) {
+      CommitmentDeciderInitializer commitmentDecider, CommitmentDeciderInitializer removeCommitment,
+      boolean isAbstract, DesireParameters parentsDesireParameters,
+      ReactionOnChangeStrategy reactionOnChangeStrategy) {
     super(desireKey, memory);
-    this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters);
+    this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters,
+        this.originatorId);
     this.memory = memory;
     this.removeCommitment = removeCommitment;
     this.isAbstract = isAbstract;
@@ -63,7 +66,8 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
       ReactionOnChangeStrategy reactionOnChangeStrategy) {
     super(desireParameters, originatorId);
     this.memory = memory;
-    this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters);
+    this.commitmentDecider = commitmentDecider.initializeCommitmentDecider(desireParameters,
+        this.originatorId);
     this.removeCommitment = removeCommitment;
     this.isAbstract = isAbstract;
     this.parentsDesireParameters = Optional.empty();
@@ -77,17 +81,15 @@ public abstract class InternalDesire<T extends Intention<? extends InternalDesir
 
   public boolean shouldCommit(List<DesireKey> madeCommitmentToTypes,
       List<DesireKey> didNotMakeCommitmentToTypes, List<DesireKey> typesAboutToMakeDecision) {
-    return commitmentDecider
-        .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
-            memory);
+    return commitmentDecider.shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+        typesAboutToMakeDecision, memory);
   }
 
   public boolean shouldCommit(List<DesireKey> madeCommitmentToTypes,
-      List<DesireKey> didNotMakeCommitmentToTypes,
-      List<DesireKey> typesAboutToMakeDecision, int numberOfCommittedAgents) {
-    return commitmentDecider
-        .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
-            memory, numberOfCommittedAgents);
+      List<DesireKey> didNotMakeCommitmentToTypes, List<DesireKey> typesAboutToMakeDecision,
+      Set<Integer> committedAgents) {
+    return commitmentDecider.shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+        typesAboutToMakeDecision, memory, committedAgents);
   }
 
   public <V> Optional<V> returnFactValueForGivenKey(FactKey<V> factKey) {

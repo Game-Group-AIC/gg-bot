@@ -73,7 +73,7 @@ public abstract class IntentionNodeNotTopLevel<V extends Intention<? extends Int
         List<DesireKey> didNotMakeCommitmentToTypes,
         List<DesireKey> typesAboutToMakeDecision) {
       if (intention.shouldRemoveCommitment(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
-          typesAboutToMakeDecision, intention.getSharedDesire().countOfCommittedAgents())) {
+          typesAboutToMakeDecision, intention.getSharedDesire().getIDsOfCommittedAgents())) {
 
         //share desire and wait for response of registration
         if (sharingDesireRemovalRoutine

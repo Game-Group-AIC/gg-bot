@@ -37,8 +37,7 @@ public class CommitmentDeciderInitializer {
 
   @Builder
   private CommitmentDeciderInitializer(DecisionStrategy decisionStrategy,
-      Set<DesireKey> desiresToConsider,
-      Set<FactWithOptionalValue<?>> staticBeliefsTypes,
+      Set<DesireKey> desiresToConsider, Set<FactWithOptionalValue<?>> staticBeliefsTypes,
       Set<FactWithOptionalValueSet<?>> staticBeliefsSetTypes,
       Set<FactWithOptionalValue<?>> parameterValueTypes,
       Set<FactWithOptionalValueSet<?>> parameterValueSetTypes,
@@ -66,8 +65,9 @@ public class CommitmentDeciderInitializer {
   /**
    * Returns new instance of CommitmentDecider initilized by parameters from this instance
    */
-  public CommitmentDecider initializeCommitmentDecider(DesireParameters desireParameters) {
-    return new CommitmentDecider(this, desireParameters);
+  public CommitmentDecider initializeCommitmentDecider(DesireParameters desireParameters,
+      int originatorID) {
+    return new CommitmentDecider(this, desireParameters, originatorID);
   }
 
 

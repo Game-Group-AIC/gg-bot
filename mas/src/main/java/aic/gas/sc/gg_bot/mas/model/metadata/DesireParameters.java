@@ -7,6 +7,7 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.FactSet;
 import aic.gas.sc.gg_bot.mas.model.knowledge.Memory;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.Getter;

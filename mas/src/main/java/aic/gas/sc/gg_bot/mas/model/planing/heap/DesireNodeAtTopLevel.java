@@ -81,9 +81,8 @@ public abstract class DesireNodeAtTopLevel<T extends InternalDesire<? extends In
     public Optional<IntentionNodeAtTopLevel<?, ?>> makeCommitment(
         List<DesireKey> madeCommitmentToTypes, List<DesireKey> didNotMakeCommitmentToTypes,
         List<DesireKey> typesAboutToMakeDecision) {
-      if (desire.getDesireForAgents().mayTryToCommit() && desire
-          .shouldCommit(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
-              typesAboutToMakeDecision, desire.countOfCommittedAgents())) {
+      if (desire.getDesireForAgents().mayTryToCommit() && desire.shouldCommit(madeCommitmentToTypes,
+          didNotMakeCommitmentToTypes, typesAboutToMakeDecision, desire.committedAgents())) {
 
         synchronized (lockMonitor) {
           if (heapOfTrees.getAgent().getDesireMediator()

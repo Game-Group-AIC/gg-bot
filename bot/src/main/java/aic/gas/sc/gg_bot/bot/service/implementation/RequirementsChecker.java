@@ -6,6 +6,8 @@ import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AbstractWrapper;
 import aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.TypeToBuy;
 import aic.gas.sc.gg_bot.bot.service.IRequirementsChecker;
 import bwapi.Player;
+import bwapi.Unit;
+import bwapi.UnitType;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,7 +41,9 @@ public class RequirementsChecker implements IRequirementsChecker {
     builtUnitTypes = Stream.concat(AUnitTypeWrapper.BUILDING_TYPES.stream(),
         AUnitTypeWrapper.UNITS_TYPES.stream())
         .filter(unitTypeWrapper -> player.getUnits().stream()
-            .anyMatch(unit -> unit.getType() == unitTypeWrapper.getType()))
+            .filter(Unit::isCompleted)
+            .anyMatch(unit -> unit.getType() == unitTypeWrapper.getType() || (unit.getType() ==
+                UnitType.Zerg_Lair && unitTypeWrapper.equals(AUnitTypeWrapper.HATCHERY_TYPE))))
         .collect(Collectors.toSet());
   }
 }

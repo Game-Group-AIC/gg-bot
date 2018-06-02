@@ -9,6 +9,7 @@ import static aic.gas.sc.gg_bot.abstract_bot.model.game.wrappers.AUnitTypeWrappe
 import aic.gas.sc.gg_bot.abstract_bot.model.bot.AgentTypes;
 import aic.gas.sc.gg_bot.bot.model.DesiresKeys;
 import aic.gas.sc.gg_bot.bot.model.agent.types.AgentTypeUnit;
+import aic.gas.sc.gg_bot.bot.service.implementation.BotFacade;
 import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.agents.configuration.ConfigurationWithCommand;
 import aic.gas.sc.gg_bot.mas.model.planing.CommitmentDeciderInitializer;
@@ -24,8 +25,8 @@ public class CreepColonyAgentType {
       .agentTypeID(AgentTypes.CREEP_COLONY)
       .initializationStrategy(type -> {
 
-        type.addConfiguration(
-            DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION, AgentTypeUnit.beliefsAboutMorphing);
+        type.addConfiguration(DesiresKeys.UPDATE_BELIEFS_ABOUT_CONSTRUCTION,
+            AgentTypeUnit.beliefsAboutMorphing);
 
         //upgrade to sunken
         ConfigurationWithCommand.WithActingCommandDesiredByOtherAgent upgradeToSunken = ConfigurationWithCommand.
@@ -43,7 +44,9 @@ public class CreepColonyAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
+                .decisionStrategy((dataForDecision, memory) -> BotFacade.RESOURCE_MANAGER
+                    .canSpendResourcesOn(SUNKEN_COLONY_TYPE, dataForDecision.getOriginatorID())
+                    && !dataForDecision.madeDecisionToAny()
                     && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get()
                     .equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
                         .getNearestBaseLocation().orElse(null)))
@@ -72,8 +75,10 @@ public class CreepColonyAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy((dataForDecision, memory) -> !dataForDecision.madeDecisionToAny()
-                    && dataForDecision.returnFactValueForGivenKey(BASE_TO_MOVE).get()
+                .decisionStrategy((dataForDecision, memory) -> BotFacade.RESOURCE_MANAGER
+                    .canSpendResourcesOn(SPORE_COLONY_TYPE, dataForDecision.getOriginatorID())
+                    && !dataForDecision.madeDecisionToAny() && dataForDecision
+                    .returnFactValueForGivenKey(BASE_TO_MOVE).get()
                     .equals(memory.returnFactValueForGivenKey(IS_UNIT).get()
                         .getNearestBaseLocation().orElse(null)))
                 .desiresToConsider(Stream.of(DesiresKeys.MORPH_TO_SPORE_COLONY,

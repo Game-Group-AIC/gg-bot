@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.extern.log4j.Log4j;
 
 /**
@@ -26,7 +27,7 @@ public class Util {
   private static final int offsetStatic = 4;
   private static int offset = offsetStatic;
   private static final int offsetResources = 1;
-  private static final int offsetDefense = -2;
+  private static final int offsetDefense = -1;
   private static final int lookupDistance = 30;
 
   //cache
@@ -88,19 +89,19 @@ public class Util {
             + maxDist; i++) {
           for (int j = Math.max(currentTile.getY() - maxDist, 0); j <= currentTile.getY()
               + maxDist; j++) {
-            if (game.canBuildHere(new TilePosition(i, j), buildingType.getType(),
-                worker.getUnit(), false)) {
-              ATilePosition position = ATilePosition.wrap(new TilePosition(i, j));
-              if (canBuildHere(buildingType, position, worker, game)) {
-                if (worker.getNearestBaseLocation().isPresent()) {
-                  CACHE.get(worker.getNearestBaseLocation().get()).put(buildingType, position);
-                }
-                return Optional.of(position);
+//            if (game.canBuildHere(new TilePosition(i, j), buildingType.getType(), worker.getUnit(),
+//                false)) {
+            ATilePosition position = ATilePosition.wrap((new TilePosition(i, j)).makeValid());
+            if (canBuildHereCheck(buildingType, position, worker, game)) {
+              if (worker.getNearestBaseLocation().isPresent()) {
+                CACHE.get(worker.getNearestBaseLocation().get()).put(buildingType, position);
               }
+              return Optional.of(position);
             }
+//            }
           }
         }
-        maxDist += 2;
+        maxDist += 3;
       }
       return Optional.empty();
     } finally {
@@ -124,44 +125,28 @@ public class Util {
               && position.getY() == currentTile.getY());
     }
 
-    return canBuildHere(buildingType, currentTile, worker, game);
+    return game.canBuildHere(currentTile.getWrappedPosition(), buildingType.getType(),
+        worker.getUnit());
+//        && canBuildHere(buildingType, currentTile, worker, game);
   }
 
-  private static boolean canBuildHere(AUnitTypeWrapper buildingType, ATilePosition currentTile,
-      AUnit worker, Game game) {
-
-    int defenseOffset = buildingType.isMilitaryBuilding() ? offsetDefense : 0;
-
-    // creep for Zerg
-    if (buildingType.getType().requiresCreep()) {
-      for (int k = currentTile.getX(); k <= currentTile.getX() + buildingType.getType()
-          .tileWidth(); k++) {
-        for (int l = currentTile.getY(); l <= currentTile.getY() + buildingType.getType()
-            .tileHeight(); l++) {
-          if (!game.hasCreep(k, l)) {
-            return false;
-          }
-        }
-      }
-    }
-
-    // units that are blocking the tile
-    for (Unit u : game.getUnitsInRadius(currentTile.getWrappedPosition().toPosition(),
-        lookupDistance)) {
-      if (u.getID() == worker.getUnitId() || u.isFlying()) {
-        continue;
-      }
-
-      int resourceOffset = u.getType().isMineralField() || u.getType().isRefinery()
-          || u.getType() == UnitType.Resource_Vespene_Geyser ? offsetResources : 0;
-
-      if (u.getTilePosition().getDistance(currentTile.getWrappedPosition()) <
-          Math.max(offset + resourceOffset + defenseOffset, 0)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
+//  private static boolean canBuildHere(AUnitTypeWrapper buildingType, ATilePosition currentTile,
+//      AUnit worker, Game game) {
+//    int defenseOffset = buildingType.isMilitaryBuilding() ? offsetDefense : 0;
+//
+//    // units that are blocking the tile
+//    return Stream.concat(Stream.concat(game.getUnitsInRadius(currentTile.getWrappedPosition()
+//        .toPosition(), lookupDistance).stream(), game.getMinerals().stream()), game.getGeysers()
+//        .stream())
+//        .filter(u -> u.getID() != worker.getUnitId())
+//        .filter(u -> !u.isFlying())
+//        .allMatch(u -> {
+//          int resourceOffset = u.getType().isMineralField() || u.getType().isRefinery()
+//              || u.getType() == UnitType.Resource_Vespene_Geyser ? offsetResources : 0;
+//          return Math.abs(u.getTilePosition().getX() - currentTile.getX()) >= Math.max(offset +
+//              resourceOffset + defenseOffset, 0) && Math.abs(u.getTilePosition().getY() -
+//              currentTile.getY()) >= Math.max(offset + resourceOffset + defenseOffset, 0);
+//        });
+//  }
 
 }

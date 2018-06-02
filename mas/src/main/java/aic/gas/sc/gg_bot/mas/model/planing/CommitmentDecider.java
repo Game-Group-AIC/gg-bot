@@ -5,6 +5,7 @@ import aic.gas.sc.gg_bot.mas.model.knowledge.WorkingMemory;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireKey;
 import aic.gas.sc.gg_bot.mas.model.metadata.DesireParameters;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Decision point to decide agent's commitmentDecider to task
@@ -15,9 +16,9 @@ public class CommitmentDecider {
   private final DataForDecision dataForDecision;
 
   CommitmentDecider(CommitmentDeciderInitializer commitmentDeciderInitializer,
-      DesireParameters desireParameters) {
+      DesireParameters desireParameters, int originatorID) {
     this.dataForDecision = new DataForDecision(desireParameters.getDesireKey(), desireParameters,
-        commitmentDeciderInitializer);
+        commitmentDeciderInitializer, originatorID);
     this.decisionStrategy = commitmentDeciderInitializer.getDecisionStrategy();
   }
 
@@ -25,11 +26,10 @@ public class CommitmentDecider {
    * Returns if agent should commit to desire and make intention from it
    */
   public boolean shouldCommit(List<DesireKey> madeCommitmentToTypes,
-      List<DesireKey> didNotMakeCommitmentToTypes,
-      List<DesireKey> typesAboutToMakeDecision, WorkingMemory memory) {
-    dataForDecision
-        .updateBeliefs(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
-            memory);
+      List<DesireKey> didNotMakeCommitmentToTypes, List<DesireKey> typesAboutToMakeDecision,
+      WorkingMemory memory) {
+    dataForDecision.updateBeliefs(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+        typesAboutToMakeDecision, memory);
     if (dataForDecision.isBeliefsChanged() || dataForDecision.isUseFactsInMemory()) {
       dataForDecision.setBeliefsChanged(false);
       return decisionStrategy.shouldCommit(dataForDecision, memory);
@@ -42,12 +42,10 @@ public class CommitmentDecider {
    * Returns if agent should commit to desire and make intention from it
    */
   public boolean shouldCommit(List<DesireKey> madeCommitmentToTypes,
-      List<DesireKey> didNotMakeCommitmentToTypes,
-      List<DesireKey> typesAboutToMakeDecision, WorkingMemory memory, int numberOfCommittedAgents) {
-    dataForDecision
-        .updateBeliefs(madeCommitmentToTypes, didNotMakeCommitmentToTypes, typesAboutToMakeDecision,
-            memory,
-            numberOfCommittedAgents);
+      List<DesireKey> didNotMakeCommitmentToTypes, List<DesireKey> typesAboutToMakeDecision,
+      WorkingMemory memory, Set<Integer> committedAgents) {
+    dataForDecision.updateBeliefs(madeCommitmentToTypes, didNotMakeCommitmentToTypes,
+        typesAboutToMakeDecision, memory, committedAgents);
     if (dataForDecision.isBeliefsChanged() || dataForDecision.isUseFactsInMemory()) {
       dataForDecision.setBeliefsChanged(false);
       return decisionStrategy.shouldCommit(dataForDecision, memory);

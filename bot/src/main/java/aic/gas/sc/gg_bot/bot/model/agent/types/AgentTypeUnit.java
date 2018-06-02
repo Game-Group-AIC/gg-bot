@@ -400,12 +400,13 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
             .returnFactValueForGivenKey(PLACE_TO_REACH).orElse(null)))
         .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(REPRESENTS_UNIT))
         .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(REPRESENTS_UNIT).get())
+        .filter(AUnit::isAlive)
         .filter(aUnitOfPlayer -> aUnitOfPlayer.isFlying() == me.isFlying())
         .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker()
             && !aUnitOfPlayer.getType().equals(AUnitTypeWrapper.OVERLORD_TYPE))
         .map(AUnit::getPosition)
-        .sorted(Comparator.comparingDouble(value -> toGo.getTilePosition().distanceTo(value
-            .getATilePosition())))
+        .sorted(Comparator.comparingDouble(value -> toGo.getTilePosition()
+            .distanceTo(value.getATilePosition())))
         .collect(Collectors.toList());
 
     //median
@@ -426,6 +427,7 @@ public class AgentTypeUnit extends AgentTypeMakingObservations<Game> {
             .returnFactValueForGivenKey(PLACE_TO_REACH).orElse(null)))
         .filter(readOnlyMemory -> readOnlyMemory.isFactKeyForValueInMemory(REPRESENTS_UNIT))
         .map(readOnlyMemory -> readOnlyMemory.returnFactValueForGivenKey(REPRESENTS_UNIT).get())
+        .filter(AUnit::isAlive)
         .filter(aUnitOfPlayer -> !aUnitOfPlayer.getType().isWorker()
             && !aUnitOfPlayer.getType().equals(AUnitTypeWrapper.OVERLORD_TYPE))
         .filter(aUnitOfPlayer -> aUnitOfPlayer.isFlying() == me.isFlying())
