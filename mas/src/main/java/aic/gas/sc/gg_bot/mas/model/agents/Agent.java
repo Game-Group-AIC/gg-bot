@@ -352,11 +352,11 @@ public abstract class Agent<E extends AgentType> implements AgentTypeBehaviourFa
 //            }
 //          }
 //        }
-        try {
-          sleep(50);
-        } catch (InterruptedException e) {
-          log.error(e.getLocalizedMessage());
-        }
+//        try {
+//          sleep(50);
+//        } catch (InterruptedException e) {
+//          log.error(e.getLocalizedMessage());
+//        }
       }
 
       removeAgent(removeAgentFromGlobalBeliefs);

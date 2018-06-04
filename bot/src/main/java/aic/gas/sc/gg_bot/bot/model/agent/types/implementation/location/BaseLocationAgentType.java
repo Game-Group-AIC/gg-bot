@@ -300,10 +300,10 @@ public class BaseLocationAgentType {
               }
             })
             .decisionInDesire(CommitmentDeciderInitializer.builder()
-                .decisionStrategy(
-                    (dataForDecision, memory) -> memory.returnFactSetValueForGivenKey(HAS_BASE)
-                        .orElse(Stream.empty()).findAny().isPresent() != memory
-                        .returnFactValueForGivenKey(IS_OUR_BASE).orElse(false))
+                .decisionStrategy((dataForDecision, memory) -> memory
+                    .returnFactSetValueForGivenKey(HAS_BASE).orElse(Stream.empty()).findAny()
+                    .isPresent() != memory.returnFactValueForGivenKey(IS_OUR_BASE)
+                    .orElse(false))
                 .build())
             .decisionInIntention(CommitmentDeciderInitializer.builder()
                 .decisionStrategy((dataForDecision, memory) -> true)

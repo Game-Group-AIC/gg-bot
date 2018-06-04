@@ -54,9 +54,8 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
   private void loadDecisionPoint(AgentTypeID agentTypeID, DesireKeyID desireKeyID,
       MapSizeEnums mapSize, ARace race) {
     try {
-      String fileName =
-          "/" + mapSize.name() + "/" + race.name() + "/" + agentTypeID.getName() + "/" + desireKeyID
-              .getName() + ".db";
+      String fileName = "/" + mapSize.name() + "/" + race.name() + "/" + agentTypeID.getName() + "/"
+          + desireKeyID.getName() + ".db";
       MetaPolicy metaPolicy = SerializationUtil.deserialize(DecisionLoadingServiceImpl.class
           .getResourceAsStream(fileName));
 
@@ -82,11 +81,9 @@ public class DecisionLoadingServiceImpl implements DecisionLoadingService {
   }
 
   @Override
-  public Policy getDecisionPoint(AgentTypeID agentTypeID,
-      DesireKeyID desireKeyID) {
+  public Policy getDecisionPoint(AgentTypeID agentTypeID, DesireKeyID desireKeyID) {
     try {
-      Policy policy = cache
-          .get(DecisionConfiguration.getMapSize())
+      Policy policy = cache.get(DecisionConfiguration.getMapSize())
           .get(DecisionConfiguration.getRace())
           .get(agentTypeID).get(desireKeyID);
 
